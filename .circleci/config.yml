@@ -154,7 +154,7 @@ workflows:
   default:
     jobs:
       - cache:
-          contexts:
+          context:
             - python
           filters:
             branches:
@@ -162,42 +162,42 @@ workflows:
             tags:
               only: /.*/
       - lint_black:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - lint_flake8:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - lint_isort:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - lint_package_types:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - lint_shell:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - lint_test_types:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - lint_yaml:
-          contexts:
+          context:
             - python
           requires:
             - cache
       - test:
-          contexts:
+          context:
             - python
           filters:
             branches:
@@ -207,7 +207,7 @@ workflows:
           requires:
             - cache
       - build:
-          contexts:
+          context:
             - python
           filters:
             branches:
