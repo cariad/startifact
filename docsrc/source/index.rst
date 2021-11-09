@@ -4,11 +4,12 @@ startifact
 **startifact** is a Python package for staging artifacts into Amazon Web Services,
 
 .. toctree::
-   :maxdepth: 2
    :caption: Content:
 
    self
    cli
+   classes/index
+   exceptions/index
 
 Installation
 ------------
