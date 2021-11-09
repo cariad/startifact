@@ -5,8 +5,8 @@ from startifact.cli import entry
 
 def test_bucket_name() -> None:
     writer = StringIO()
-    assert entry(["--bucket-name", "foo"], writer) == 0
-    assert writer.getvalue() == "TODO: stage now.\n"
+    assert entry(["foo", "--bucket-name", "bar"], writer) == 0
+    assert writer.getvalue() == "TODO: upload foo to bar\n"
 
 
 def test_none() -> None:
