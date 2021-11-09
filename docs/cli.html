@@ -188,7 +188,8 @@
 <h1>CLI usage<a class="headerlink" href="#cli-usage" title="Permalink to this headline">¶</a></h1>
 <section id="staging-to-a-bucket-when-you-know-the-name">
 <h2>Staging to a bucket when you know the name<a class="headerlink" href="#staging-to-a-bucket-when-you-know-the-name" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact --bucket-name MyStagingBucket
+<p>Pass the path to the artifact, its version, and <code class="docutils literal notranslate"><span class="pre">--bucket-name</span></code> to specify the name of the S3 bucket to upload to.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact artifact.tar.gz <span class="m">1</span>.0.0 --bucket-name MyStagingBucket
 </pre></div>
 </div>
 </section>
