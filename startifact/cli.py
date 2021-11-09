@@ -10,6 +10,7 @@ def entry(args: List[str], writer: IO[str]) -> int:
         epilog="Made with love by Cariad Eccleston: https://github.com/cariad/startifact",
     )
 
+    parser.add_argument("artifact", help="File to stage", nargs="?")
     parser.add_argument("--bucket-name", "--bn", help="S3 bucket name")
     parser.add_argument("--version", help="show version and exit", action="store_true")
 
@@ -20,9 +21,9 @@ def entry(args: List[str], writer: IO[str]) -> int:
         writer.write("\n")
         return 0
 
-    if not parsed.bucket_name:
+    if not parsed.artifact or not parsed.bucket_name:
         writer.write(parser.format_help())
         return 1
 
-    writer.write("TODO: stage now.\n")
+    writer.write(f"TODO: upload {parsed.artifact} to {parsed.bucket_name}\n")
     return 0
