@@ -21,6 +21,15 @@ def test_key() -> None:
     )
     assert a.key == "test@1.0.0"
 
+
+def test_start() -> None:
+    a = Artifact(
+        name="test",
+        path=Path("startifact/artifact.py"),
+        version="1.0.0",
+    )
+    assert str(a) == "test@1.0.0 at startifact/artifact.py"
+
 @mark.parametrize("name", ["foo"])
 def test_validate_name__ok(name: str) -> None:
     Artifact.validate_name(name)
