@@ -1,8 +1,10 @@
+from pathlib import Path
+
 from pytest import mark, raises
 
 from startifact import Artifact
-from pathlib import Path
 from startifact.exceptions import ArtifactNameError
+
 
 def test_b64_md5() -> None:
     a = Artifact(
@@ -29,6 +31,7 @@ def test_start() -> None:
         version="1.0.0",
     )
     assert str(a) == "test@1.0.0 at startifact/artifact.py"
+
 
 @mark.parametrize("name", ["foo"])
 def test_validate_name__ok(name: str) -> None:
