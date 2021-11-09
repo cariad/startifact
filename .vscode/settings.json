@@ -1,5 +1,8 @@
 {
   "cSpell.words": [
-    "mypy"
-  ]
+    "furo",
+    "mypy",
+    "startifact"
+  ],
+  "restructuredtext.confPath": "${workspaceFolder}/docsrc/source"
 }
