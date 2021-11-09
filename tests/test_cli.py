@@ -1,21 +1,72 @@
 from io import StringIO
+from pathlib import Path
 
-from startifact.cli import entry
+from mock import Mock
+
+from startifact.cli import Cli, Task
 
 
-def test_bucket_name() -> None:
+def test_invoke__none() -> None:
     writer = StringIO()
-    assert entry(["foo", "1.0.0", "--bucket-name", "bar"], writer) == 0
-    assert writer.getvalue() == "TODO: upload foo to bar (v1.0.0)\n"
-
-
-def test_none() -> None:
-    writer = StringIO()
-    assert entry([], writer) == 1
+    cli = Cli([])
+    assert cli.invoke(writer) == 1
     assert writer.getvalue().startswith("usage:")
 
 
-def test_version() -> None:
+def test_invoke__stage() -> None:
     writer = StringIO()
-    assert entry(["--version"], writer) == 0
+    cli = Cli(
+        [
+            "foo",
+            "./foo",
+            "1.0.0",
+            "--bucket-name",
+            "bar",
+        ]
+    )
+
+    s3 = Mock()
+    upload = Mock()
+    s3.path = "x/y"
+    s3.upload = upload
+
+    cli._s3 = s3  # pyright: reportPrivateUsage=false
+    assert cli.invoke(writer) == 0
+    upload.assert_called_with()
+    assert writer.getvalue() == "Uploaded to: x/y\n"
+
+
+def test_invoke__version() -> None:
+    writer = StringIO()
+    cli = Cli(["--version"])
+    assert cli.invoke(writer) == 0
     assert writer.getvalue() == "-1.-1.-1\n"
+
+
+def test_parse__none() -> None:
+    cli = Cli([])
+    assert cli.task == Task.HELP
+
+
+def test_parse__stage() -> None:
+    cli = Cli(
+        [
+            "foo",
+            "./foo",
+            "1.0.0",
+            "--bucket-name",
+            "bar",
+        ]
+    )
+    assert cli.task == Task.STAGE
+    assert cli.artifact
+    assert cli.artifact.name == "foo"
+    assert cli.artifact.path == Path("./foo").resolve().absolute()
+    assert cli.artifact.version == "1.0.0"
+    assert cli.s3
+    assert cli.s3.bucket == "bar"
+
+
+def test_parse__version() -> None:
+    cli = Cli(["--version"])
+    assert cli.task == Task.VERSION

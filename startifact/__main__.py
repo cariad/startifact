@@ -1,10 +1,11 @@
 from sys import argv, stdout
 
-from startifact.cli import entry
+from startifact.cli import Cli
 
 
 def cli_entry() -> None:
-    exit(entry(args=argv[1:], writer=stdout))
+    cli = Cli(argv[1:])
+    exit(cli.invoke(stdout))
 
 
 if __name__ == "__main__":
