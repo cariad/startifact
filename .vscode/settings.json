@@ -1,9 +1,12 @@
 {
   "cSpell.words": [
+    "autoclass",
+    "currentmodule",
     "epilog",
     "furo",
     "mypy",
-    "startifact"
+    "startifact",
+    "toctree",
   ],
   "restructuredtext.confPath": "${workspaceFolder}/docsrc/source"
 }

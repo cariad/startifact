@@ -1,0 +1,7 @@
+:class:`S3`
+===========
+
+.. currentmodule:: startifact
+
+.. autoclass:: S3
+    :members:

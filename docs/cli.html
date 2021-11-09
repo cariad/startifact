@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="startifact" href="index.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Classes" href="classes/index.html" /><link rel="prev" title="startifact" href="index.html" />
 
     <meta name="generator" content="sphinx-4.2.0, furo 2021.10.09"/>
         <title>CLI usage - startifact documentation</title>
@@ -158,6 +158,15 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">startifact</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">CLI usage</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="classes/index.html">Classes</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="classes/artifact.html"><code class="xref py py-class docutils literal notranslate"><span class="pre">Artifact</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="classes/s3.html"><code class="xref py py-class docutils literal notranslate"><span class="pre">S3</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="exceptions/index.html">Exceptions</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="exceptions/artifact_name.html"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArtifactNameError</span></code></a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -186,10 +195,21 @@
         <article role="main">
           <section id="cli-usage">
 <h1>CLI usage<a class="headerlink" href="#cli-usage" title="Permalink to this headline">¶</a></h1>
+<p>The first three arguments on the command line must be:</p>
+<ol class="arabic simple">
+<li><p>Name</p></li>
+<li><p>Path</p></li>
+<li><p>Version</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact MyServerlessFunction dist.tar.gz <span class="m">1</span>.0.0
+</pre></div>
+</div>
+<p>The remaining arguments depend on your particular situation.</p>
 <section id="staging-to-a-bucket-when-you-know-the-name">
 <h2>Staging to a bucket when you know the name<a class="headerlink" href="#staging-to-a-bucket-when-you-know-the-name" title="Permalink to this headline">¶</a></h2>
-<p>Pass the path to the artifact, its version, and <code class="docutils literal notranslate"><span class="pre">--bucket-name</span></code> to specify the name of the S3 bucket to upload to.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact artifact.tar.gz <span class="m">1</span>.0.0 --bucket-name MyStagingBucket
+<p>Set <code class="docutils literal notranslate"><span class="pre">--bucket-name</span></code> to specify the name of the S3 bucket to upload to.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact MyServerlessFunction dist.tar.gz <span class="m">1</span>.0.0 --bucket-name MyStagingBucket
 </pre></div>
 </div>
 </section>
@@ -200,7 +220,15 @@
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="classes/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Classes</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
           <a class="prev-page" href="index.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">

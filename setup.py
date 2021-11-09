@@ -50,9 +50,11 @@ setup(
     name="startifact",
     packages=[
         "startifact",
+        "startifact.exceptions",
     ],
     package_data={
         "startifact": ["py.typed"],
+        "startifact.exceptions": ["py.typed"],
     },
     python_requires=">=3.8",
     url="https://github.com/cariad/startifact",

@@ -1,0 +1,2 @@
+class StartifactError(Exception):
+    pass
