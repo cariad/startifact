@@ -5,9 +5,10 @@ startifact
 
 .. toctree::
    :maxdepth: 2
-   :caption: Docs
+   :caption: Content:
 
    self
+   cli
 
 Installation
 ------------

@@ -147,6 +147,7 @@ jobs:
             - pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run: pipenv run ./build.sh
       - run: pip install dist/*
+      - run: ./test-cli.sh
       - run: if [[ -z "${CIRCLE_TAG}" ]]; then circleci-agent step halt; fi
       - run: pipenv run twine upload dist/*
 
