@@ -48,6 +48,10 @@ def test_parse__none() -> None:
     assert cli.task == Task.HELP
 
 
+def test_parse__setup() -> None:
+    cli = Cli(["--setup"])
+    assert cli.task == Task.SETUP
+
 def test_parse__stage() -> None:
     cli = Cli(
         [

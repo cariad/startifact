@@ -10,6 +10,7 @@ from startifact.s3 import S3
 @unique
 class Task(IntEnum):
     HELP = auto()
+    SETUP = auto()
     STAGE = auto()
     VERSION = auto()
 
@@ -30,6 +31,11 @@ class Cli:
         )
         self._parser.add_argument("--bucket-name", "--bn", help="S3 bucket name")
         self._parser.add_argument(
+            "--setup",
+            help="performs initial setup",
+            action="store_true",
+        )
+        self._parser.add_argument(
             "--version",
             help="show version and exit",
             action="store_true",
@@ -39,33 +45,26 @@ class Cli:
         self._artifact: Optional[Artifact] = None
         self._s3: Optional[S3] = None
 
-        parsed = self._parser.parse_args(args)
+        self._args = self._parser.parse_args(args)
 
-        if parsed.version:
-            self._task = Task.VERSION
-
-        elif (
-            not parsed.artifact_name
-            or not parsed.artifact_path
-            or not parsed.artifact_version
-            or not parsed.bucket_name
-        ):
-            self._task = Task.HELP
-
-        else:
-
-            self._task = Task.STAGE
-
-            self._artifact = Artifact(
-                name=parsed.artifact_name,
-                path=parsed.artifact_path,
-                version=parsed.artifact_version,
+        self._artifact = (
+            Artifact(
+                name=self._args.artifact_name,
+                path=self._args.artifact_path,
+                version=self._args.artifact_version,
             )
+            if self.task == Task.STAGE
+            else None
+        )
 
-            self._s3 = S3(
+        self._s3 = (
+            S3(
                 artifact=self._artifact,
-                bucket=parsed.bucket_name,
+                bucket=self._args.bucket_name,
             )
+            if self._artifact
+            else None
+        )
 
     @property
     def artifact(self) -> Optional[Artifact]:
@@ -79,7 +78,21 @@ class Cli:
     def task(self) -> Task:
         """Gets the task that this CLI invocation will perform."""
 
-        return self._task
+        if self._args.setup:
+            return Task.SETUP
+
+        if self._args.version:
+            return Task.VERSION
+
+        if (
+            not self._args.artifact_name
+            or not self._args.artifact_path
+            or not self._args.artifact_version
+            or not self._args.bucket_name
+        ):
+            return Task.HELP
+
+        return Task.STAGE
 
     def invoke(self, writer: IO[str]) -> int:
         if self._task == Task.VERSION:
