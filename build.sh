@@ -11,15 +11,6 @@ fi
 
 echo "${version}" > startifact/VERSION
 
-rm -rf docs
-mkdir docs
-touch docs/.nojekyll
-
-pushd docsrc
-rm -rf build
-make
-popd
-
 rm -rf dist
 python setup.py bdist_wheel
 rm -rf build

@@ -10,31 +10,12 @@ from startifact.exceptions import ArtifactNameError
 
 class Artifact:
     """
-    Represents a versioned artifact in the local filesystem.
+    Represents an artifact.
 
     Arguments:
         name:    Name
         path:    Path to the artifact in the local filesystem
         version: Version
-
-    Example:
-
-    .. testcode::
-
-        from pathlib import Path
-        from startifact import Artifact
-
-        artifact = Artifact(
-            name="funding",
-            path=Path("..") / ".github" / "FUNDING.yml",
-            version="1.0.0",
-        )
-
-        print(artifact)
-
-    .. testoutput::
-
-        funding@1.0.0 at ../.github/FUNDING.yml
     """
 
     def __init__(self, name: str, path: Union[Path, str], version: str) -> None:

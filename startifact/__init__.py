@@ -1,6 +1,6 @@
 import importlib.resources as pkg_resources
 
-from startifact.artifact import Artifact
+from startifact.models import Artifact
 from startifact.s3 import S3
 
 with pkg_resources.open_text(__package__, "VERSION") as t:

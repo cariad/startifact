@@ -2,17 +2,17 @@ from pathlib import Path
 
 from pytest import mark, raises
 
-from startifact import Artifact
 from startifact.exceptions import ArtifactNameError
+from startifact.models import Artifact
 
 
 def test_b64_md5() -> None:
     a = Artifact(
         name="test",
-        path=Path("startifact/artifact.py"),
+        path=Path("startifact/models/artifact.py"),
         version="1.0.0",
     )
-    assert a.b64_md5 == "y6gKK57v6AHHVMuUcmjg3w=="
+    assert a.b64_md5 == "k3XlvGG8jvGyc8QT/AkcCw=="
 
 
 def test_key() -> None:

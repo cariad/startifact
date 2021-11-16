@@ -2,7 +2,7 @@ from typing import Optional
 
 from boto3.session import Session
 
-from startifact.artifact import Artifact
+from startifact.models import Artifact
 
 
 class S3:

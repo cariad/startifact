@@ -37,7 +37,7 @@ setup(
     description="Stages artifacts into Amazon Web Services",
     entry_points={
         "console_scripts": [
-            "startifact=startifact.__main__:cli_entry",
+            "startifact=startifact.__main__:Startifact.invoke_and_exit",
         ],
     },
     include_package_data=True,
@@ -51,10 +51,12 @@ setup(
     packages=[
         "startifact",
         "startifact.exceptions",
+        "startifact.tasks",
     ],
     package_data={
         "startifact": ["py.typed"],
         "startifact.exceptions": ["py.typed"],
+        "startifact.tasks": ["py.typed"],
     },
     python_requires=">=3.8",
     url="https://github.com/cariad/startifact",

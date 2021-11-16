@@ -44,7 +44,7 @@ To perform the initial setup, run:
 startifact --setup
 ```
 
-The `startifact --setup` command requires `ssm:GetParameter` on the configuration parameter. The default parameter name of `/startifact` will have an ARN like `arn:aws:ssm:<REGION>:<ACCOUNT ID>:parameter/startifact`.
+The operator's IAM policy must grant `ssm:GetParameter` and `ssm:PutParameter` on the configuration parameter. The default parameter name of `/startifact` will have an ARN like `arn:aws:ssm:<REGION>:<ACCOUNT ID>:parameter/startifact`.
 
 ## Usage
 

@@ -226,7 +226,7 @@ h2, h3, h4, h5, h6 {
     <article>
         <h1>📦 Startifact</h1>
 <p><strong>Startifact</strong> is a CLI app and Python package for <strong>st</strong>aging <strong>artifact</strong>s in Amazon Web Services.</p>
-<h2>Use case<a id="use-case"></a></h2>
+<h2>Use Case<a id="use-case"></a></h2>
 <p>Startifact is designed to be used by CI/CD pipelines in which:</p>
 <ul>
 <li>Software projects are continuously versioned, built and staged</li>
@@ -237,6 +237,26 @@ h2, h3, h4, h5, h6 {
 <li>Startifact helps software projects by providing a CLI app for versioning and staging builds</li>
 <li>Startifact helps deployments by registering artifacts in well-known Systems Manager Parameter Store paths for discovery</li>
 </ul>
+<h2>Getting Started<a id="getting-started"></a></h2>
+<h3>Prerequisites<a id="prerequisites"></a></h3>
+<p>Startifact requires <strong>Python 3.8</strong> or later.</p>
+<h3>Installation<a id="installation"></a></h3>
+<p>Install Startifact via <code>pip</code>:</p>
+<div class="highlight"><pre><span></span>pip install startifact
+</pre></div>
+
+<h3>Initial setup<a id="initial-setup"></a></h3>
+<p>To ensure Startifact is configured consistently across your suite of projects, it is configured via a Systems Manager Parameter that is read at run-time.</p>
+<p>To perform the initial setup, run:</p>
+<div class="highlight"><pre><span></span>startifact --setup
+</pre></div>
+
+<p>The operator's IAM policy must grant <code>ssm:GetParameter</code> and <code>ssm:PutParameter</code> on the configuration parameter. The default parameter name of <code>/startifact</code> will have an ARN like <code>arn:aws:ssm:<region>:<account id="None">:parameter/startifact</code>.</p>
+<h2>Usage<a id="usage"></a></h2>
+<h3>Staging an artifact<a id="staging-an-artifact"></a></h3>
+<p>The first three command line arguments are the <strong>name</strong>, <strong>local path</strong> and <strong>version</strong> of the artifact</p>
+<div class="highlight"><pre><span></span>startifact
+</pre></div>
     </article>
   </body>
 
