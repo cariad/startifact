@@ -41,8 +41,10 @@ To ensure Startifact is configured consistently across your suite of projects, i
 To perform the initial setup, run:
 
 ```bash
-startifact configure
+startifact --setup
 ```
+
+The `startifact --setup` command requires `ssm:GetParameter` on the configuration parameter. The default parameter name of `/startifact` will have an ARN like `arn:aws:ssm:<REGION>:<ACCOUNT ID>:parameter/startifact`.
 
 ## Usage
 
@@ -54,9 +56,3 @@ The first three command line arguments are the **name**, **local path** and **ve
 ```bash
 startifact
 ```
-
-## IAM Policies
-
-### Initial setup
-
-The `startifact configure` command requires...
