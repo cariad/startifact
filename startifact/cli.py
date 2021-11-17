@@ -48,6 +48,4 @@ class StartifactCLI(Cli):
             startifact.tasks.SetupTask,
             startifact.tasks.StageTask,
             startifact.tasks.VersionTask,
-            # HelpTask is intentionally the catch-all task:
-            startifact.tasks.HelpTask,
         ]

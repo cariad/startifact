@@ -37,7 +37,7 @@ setup(
     description="Stages artifacts into Amazon Web Services",
     entry_points={
         "console_scripts": [
-            "startifact=startifact.__main__:Startifact.invoke_and_exit",
+            "startifact=startifact.__main__:entry",
         ],
     },
     include_package_data=True,
