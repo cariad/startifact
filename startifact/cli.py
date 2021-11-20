@@ -47,5 +47,4 @@ class StartifactCLI(Cli):
         return [
             startifact.tasks.SetupTask,
             startifact.tasks.StageTask,
-            startifact.tasks.VersionTask,
         ]

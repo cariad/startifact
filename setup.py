@@ -42,7 +42,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "boto3 >=1.18.59, <2.0",
+        "boto3~=1.20",
     ],
     license="MIT",
     long_description=long_description,

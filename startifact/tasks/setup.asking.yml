@@ -1,0 +1,63 @@
+start:
+  - title: Startifact project setup
+  - text:
+      Startifact is designed for projects with multiple build jobs and artifacts
+      to wrangle. As such, the "startifact" command line application has no local
+      configuration. All configuration is stored in a single Amazon Web Services
+      Systems Manager parameter to ensure consistency across the project.
+  - text:
+      This setup script will create a Systems Manager parameter named
+      {param_fmt} in region {region_fmt} in account {account_fmt}.
+  - ask:
+      question: Is this okay?
+      branches:
+        - response: [y]
+          then:
+            - goto: bucket_parameter_name
+        - response: [n, ""]
+          then:
+            - goto: change_parameter_name
+
+change_parameter_name:
+  - text:
+      To change the parameter name, set the environment variable
+      {default_environ_name_fmt} to the parameter name you want then try again.
+  - stop: False
+
+bucket_parameter_name:
+  - text:
+      Startifact uploads artifacts to an S3 bucket. This bucket must exist
+      already, and there must be a Systems Manager parameter holding that
+      bucket's name.
+  - text:
+      This allows you to deploy your artifacts bucket without knowing its name
+      (assuming that your deployment records the bucket's name in Systems
+      Manager for reference).
+  - text:
+      If this Systems Manager parameter does not exist yet then abort this setup
+      script and create the parameter.
+  - ask:
+      question:
+        What's the name of the Systems Manager parameter that holds
+        the artifacts bucket name?
+      key: bucket_param
+      recall: true
+      branches:
+        - response: "^.+$"
+          then:
+            - goto: finalise
+
+finalise:
+  - text:
+      Ready to save your configuration to the {param_fmt} Systems Manager parameter in
+      region {region_fmt} in account {account_fmt}.
+  - responses: json
+  - ask:
+      question: Okay to save?
+      branches:
+        - response: y
+          then:
+            - stop: true
+        - response: n
+          then:
+            - stop: false

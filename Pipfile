@@ -7,6 +7,8 @@ name = "pypi"
 ansiscape = "~=1.0"
 boto3 = "~=1.18"
 cline = {editable = true, path = "./../cline"}
+ansiwrap = "~=0.8"
+asking = {path = "./../asking/dist/asking-_1._1._1-py3-none-any.whl"}
 
 [dev-packages]
 black = "==21.9b0"
@@ -25,3 +27,8 @@ yamllint = "*"
 
 [requires]
 python_version = "3.10"
+
+[scripts]
+build = "./scripts/build.sh"
+lint = "./scripts/lint.sh"
+test = "./scripts/test.sh"
