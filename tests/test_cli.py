@@ -13,9 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 @mark.parametrize(
     "args, expect",
     [
-        ([], startifact.tasks.HelpTask),
         (["--setup"], startifact.tasks.SetupTask),
-        (["--version"], startifact.tasks.VersionTask),
     ],
 )
 def test_task(args: List[str], expect: Type[AnyTask]) -> None:

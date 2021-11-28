@@ -1,199 +1,179 @@
 from base64 import b64encode
-from functools import cached_property
 from hashlib import md5
+from logging import getLogger
 from pathlib import Path
 from re import match
-from typing import Union
+from typing import Optional
+
+from boto3.session import Session
 
 from startifact.exceptions import ArtifactNameError
+from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
+from startifact.parameters import (
+    ArtifactLatestVersionParameter,
+    bucket_parameter,
+    config_param,
+)
+from startifact.types import ConfigurationDict
 
 
 class Artifact:
     """
-    Represents an artifact.
+    A versioned artifact.
 
     Arguments:
-        name:    Name
-        path:    Path to the artifact in the local filesystem
-        version: Version
+        name:    Name.
+        version: Version.
     """
 
-    def __init__(self, name: str, path: Union[Path, str], version: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        version: str,
+        config: Optional[ConfigurationDict] = None,
+    ) -> None:
         Artifact.validate_name(name)
         self._name = name
-        self._path = Path(path).resolve().absolute() if isinstance(path, str) else path
         self._version = version
-
-    def __str__(self) -> str:
-        return f"{self.key} at {self.path.as_posix()}"
-
-    @cached_property
-    def b64_md5(self) -> str:
-        """
-        Gets the MD5 hash of the file as a base64-encoded string.
-
-        Example:
-
-            .. testcode::
-
-                from pathlib import Path
-                from startifact import Artifact
-
-                artifact = Artifact(
-                    name="funding",
-                    path=Path("..") / ".github" / "FUNDING.yml",
-                    version="1.0.0",
-                )
-
-                print(artifact.b64_md5)
-
-            .. testoutput::
-
-                MVF/HRGvRdOTFpFDbQw95w==
-
-        """
-
-        hash = md5()
-        with open(self.path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash.update(chunk)
-        return b64encode(hash.digest()).decode("utf-8")
-
-    @property
-    def key(self) -> str:
-        """
-        Gets the fully-qualified name of the versioned artifact.
-
-        Example:
-
-        .. testcode::
-
-            from pathlib import Path
-            from startifact import Artifact
-
-            artifact = Artifact(
-                name="funding",
-                path=Path("..") / ".github" / "FUNDING.yml",
-                version="1.0.0",
-            )
-
-            print(artifact.key)
-
-        .. testoutput::
-
-            funding@1.0.0
-        """
-
-        return f"{self._name}@{self._version}"
+        self._config = config or config_param.configuration
 
     @property
     def name(self) -> str:
         """
         Gets the name of the artifact.
-
-        Example:
-
-        .. testcode::
-
-            from pathlib import Path
-            from startifact import Artifact
-
-            artifact = Artifact(
-                name="funding",
-                path=Path("..") / ".github" / "FUNDING.yml",
-                version="1.0.0",
-            )
-
-            print(artifact.name)
-
-        .. testoutput::
-
-            funding
         """
 
         return self._name
 
     @property
-    def path(self) -> Path:
+    def version(self) -> str:
         """
-        Gets the path to the artifact in the local filesystem.
-
-        Example:
-
-        .. testcode::
-
-            from pathlib import Path
-            from startifact import Artifact
-
-            artifact = Artifact(
-                name="funding",
-                path=Path("..") / ".github" / "FUNDING.yml",
-                version="1.0.0",
-            )
-
-            print(artifact.path.as_posix())
-
-        .. testoutput::
-
-            ../.github/FUNDING.yml
+        Version.
         """
 
-        return self._path
+        return self._version
+
+    @property
+    def parameter_region(self) -> str:
+        """
+        Region that holds the Systems Manager parameter.
+        """
+
+        return self._config["parameter_region"]
 
     @staticmethod
     def validate_name(name: str) -> None:
         """
-        Validates the proposed artifact name.
+        Validates a proposed artifact name.
 
         Raises:
-            :exc:`.ArtifactNameError`: if the proposed name is not acceptable
-
-
-        Example:
-
-        .. testcode::
-
-            from startifact import Artifact
-            from startifact.exceptions import ArtifactNameError
-
-            try:
-                Artifact.validate_name("spaces disallowed")
-            except ArtifactNameError as ex:
-                print(ex)
-
-        .. testoutput::
-
-            artifact name "spaces disallowed" does not satisfy "^[a-zA-Z0-9_\\-\\.]+$"
-
+            ArtifactNameError: If the proposed name is not acceptable
         """
 
         expression = r"^[a-zA-Z0-9_\-\.]+$"
         if not match(expression, name):
             raise ArtifactNameError(name, expression)
 
-    @property
-    def version(self) -> str:
-        """
-        Gets the version of the artifact.
 
-        Example:
 
-        .. testcode::
 
-            from pathlib import Path
-            from startifact import Artifact
+def get_b64_md5(path: Path) -> str:
+    """
+    Gets the MD5 hash of the file as a base64-encoded string.
+    """
 
-            artifact = Artifact(
-                name="funding",
-                path=Path("..") / ".github" / "FUNDING.yml",
-                version="1.0.0",
-            )
+    hash = md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash.update(chunk)
+    return b64encode(hash.digest()).decode("utf-8")
 
-            print(artifact.version)
 
-        .. testoutput::
+def exists(key: str, session: Session) -> bool:
+    s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
 
-            1.0.0
-        """
+    try:
+        s3.head_object(Bucket=bucket_parameter.bucket_name, Key=key)
+        return True
+    except s3.exceptions.ClientError as ex:
+        if ex.response["Error"]["Code"] == "404":
+            return False
+        raise ex
 
-        return self._version
+
+def resolve_version(name: str, version: Optional[str] = None) -> str:
+    """
+    Resolves a version description to an explicit version number.
+
+    An empty version or "latest" will refer to the latest version.
+    """
+
+    if version and version.lower() != "latest":
+        return version
+
+    return ArtifactLatestVersionParameter(name).get()
+
+
+def make_bucket_session() -> Session:
+    logger = getLogger("startifact")
+    region = config_param.configuration["bucket_region"]
+    logger.debug('Creating bucket session in "%s".', region)
+    return Session(region_name=region)
+
+
+def make_fqn(name: str, version: str) -> str:
+    return f"{name}@{version}"
+
+
+def make_s3_key(name: str, version: str) -> str:
+    prefix = config_param.configuration["bucket_key_prefix"]
+    fqn = make_fqn(name, version)
+    return f"{prefix}{fqn}"
+
+
+def download(name: str, version: str, path: Path) -> None:
+    logger = getLogger("startifact")
+    logger.debug('Will attempt to download version %s of %s.', version, name)
+
+    version = resolve_version(name=name, version=version)
+
+    logger.debug("Resolved version: %s", version)
+
+    s3 = make_bucket_session().client("s3")  # pyright: reportUnknownMemberType=false
+    s3.download_file(
+        Bucket=bucket_parameter.bucket_name,
+        Key=make_s3_key(name, version),
+        Filename=path.as_posix(),
+    )
+
+
+def stage(name: str, version: str, path: Path) -> None:
+    """
+
+    Raises:
+        ArtifactVersionExistsError: If this artifact version is already staged.
+    """
+
+    logger = getLogger("startifact")
+
+    bucket_session = make_bucket_session()
+
+    s3 = bucket_session.client("s3")  # pyright: reportUnknownMemberType=false
+
+    key = make_s3_key(name, version)
+
+    if exists(key, bucket_session):
+        raise ArtifactVersionExistsError(name, version)
+
+    logger.debug("Will stage file: %s", path.as_posix())
+    logger.debug("Will stage to bucket: %s", bucket_parameter.bucket_name)
+    logger.debug("Will stage to key: %s", key)
+    with open(path, "rb") as f:
+        s3.put_object(
+            Body=f,
+            Bucket=bucket_parameter.bucket_name,
+            ContentMD5=get_b64_md5(path),
+            Key=key,
+        )
+
+    ArtifactLatestVersionParameter(name).set(version)

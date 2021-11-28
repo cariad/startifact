@@ -7,9 +7,11 @@ from startifact.exceptions.parameter_store import (
     ParameterNotFoundError,
     ParameterStoreError,
 )
+from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
 
 __all__ = [
     "ArtifactNameError",
+    "ArtifactVersionExistsError",
     "ParameterNotFoundError",
     "ParameterStoreError",
     "NotAllowedToGetParameter",

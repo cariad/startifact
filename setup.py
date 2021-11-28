@@ -13,7 +13,7 @@ classifiers = [
     "Environment :: Console",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
-    "Operating System :: POSIX :: Linux",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -42,6 +42,9 @@ setup(
     },
     include_package_data=True,
     install_requires=[
+        "ansiscape~=1.0",
+        "asking==1.0.0a4",
+        "cline~=1.1",
         "boto3~=1.20",
     ],
     license="MIT",

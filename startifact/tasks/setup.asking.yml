@@ -11,10 +11,10 @@ start:
   - ask:
       question: Is this okay?
       branches:
-        - response: [y]
+        - response: [y, ""]
           then:
-            - goto: bucket_parameter_name
-        - response: [n, ""]
+            - goto: bucket_param_name
+        - response: n
           then:
             - goto: change_parameter_name
 
@@ -22,9 +22,9 @@ change_parameter_name:
   - text:
       To change the parameter name, set the environment variable
       {default_environ_name_fmt} to the parameter name you want then try again.
-  - stop: False
+  - stop: false
 
-bucket_parameter_name:
+bucket_param_name:
   - text:
       Startifact uploads artifacts to an S3 bucket. This bucket must exist
       already, and there must be a Systems Manager parameter holding that
@@ -40,10 +40,69 @@ bucket_parameter_name:
       question:
         What's the name of the Systems Manager parameter that holds
         the artifacts bucket name?
-      key: bucket_param
+      key: bucket_param_name
       recall: true
       branches:
         - response: "^.+$"
+          then:
+            - goto: bucket_param_region
+
+bucket_param_region:
+  - ask:
+      question: Which region is that parameter in?
+      key: bucket_param_region
+      recall: true
+      branches:
+        - response: "^.+$"
+          then:
+            - goto: bucket_region
+
+bucket_region:
+  - ask:
+      question: Which region is the bucket in?
+      key: bucket_region
+      recall: true
+      branches:
+        - response: "^.+$"
+          then:
+            - goto: bucket_key_prefix
+
+bucket_key_prefix:
+  - ask:
+      question: Key prefix?
+      key: bucket_key_prefix
+      recall: true
+      branches:
+        - response: "^.*$"
+          then:
+            - goto: parameter_region
+
+parameter_region:
+  - ask:
+      question: In which region should artifact parameters be created?
+      key: parameter_region
+      recall: true
+      branches:
+        - response: "^.+$"
+          then:
+            - goto: parameter_name_prefix
+
+parameter_name_prefix:
+  - text:
+      By default, the latest version of each artifact will be recorded in
+      Systems Manager as /NAME/VERSION.
+  - text:
+      If, for example, you configure the prefix to "/prefix-" then your
+      artifacts will be recorded as /prefix-NAME/VERSION.
+  - text:
+      If, for example, you configure the prefix to "/prefix/" then your
+      artifacts will be recorded as /prefix/NAME/VERSION.
+  - ask:
+      question: Parameter name prefix?
+      key: parameter_name_prefix
+      recall: true
+      branches:
+        - response: "^.*$"
           then:
             - goto: finalise
 
