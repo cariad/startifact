@@ -1,4 +1,5 @@
 from startifact.exceptions.artifact_name import ArtifactNameError
+from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
 from startifact.exceptions.parameter_store import (
     NotAllowedToGetConfigParameter,
     NotAllowedToGetParameter,
@@ -7,7 +8,6 @@ from startifact.exceptions.parameter_store import (
     ParameterNotFoundError,
     ParameterStoreError,
 )
-from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
 
 __all__ = [
     "ArtifactNameError",

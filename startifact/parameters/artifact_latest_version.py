@@ -1,4 +1,3 @@
-from logging import getLogger
 from boto3.session import Session
 
 from startifact.parameters.configuration import config_param

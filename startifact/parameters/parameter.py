@@ -1,4 +1,5 @@
 from abc import ABC, abstractproperty
+from logging import getLogger
 from typing import Generic, Optional, TypeVar
 
 from boto3.session import Session
@@ -10,7 +11,7 @@ from startifact.exceptions import (
     ParameterNotFoundError,
     ParameterStoreError,
 )
-from logging import getLogger
+
 TParameterValue = TypeVar("TParameterValue")
 
 

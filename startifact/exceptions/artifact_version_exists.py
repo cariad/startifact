@@ -11,4 +11,4 @@ class ArtifactVersionExistsError(ArtifactError):
     """
 
     def __init__(self, name: str, version: str) -> None:
-        super().__init__(f'{name} {version} is already staged.')
+        super().__init__(f"{name} {version} is already staged.")

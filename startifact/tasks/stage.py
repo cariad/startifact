@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from cline import CommandLineArguments, Task
-from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
 
-from startifact.models import Artifact
+from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
 from startifact.models.artifact import stage
 
 

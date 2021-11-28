@@ -75,8 +75,6 @@ class Artifact:
             raise ArtifactNameError(name, expression)
 
 
-
-
 def get_b64_md5(path: Path) -> str:
     """
     Gets the MD5 hash of the file as a base64-encoded string.
@@ -133,7 +131,7 @@ def make_s3_key(name: str, version: str) -> str:
 
 def download(name: str, version: str, path: Path) -> None:
     logger = getLogger("startifact")
-    logger.debug('Will attempt to download version %s of %s.', version, name)
+    logger.debug("Will attempt to download version %s of %s.", version, name)
 
     version = resolve_version(name=name, version=version)
 

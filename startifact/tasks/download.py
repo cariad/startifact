@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from logging import getLogger
 from pathlib import Path
 
 from cline import CommandLineArguments, Task
 
 from startifact.models.artifact import download, resolve_version
-from logging import getLogger
+
 
 @dataclass
 class DownloadTaskArguments:
