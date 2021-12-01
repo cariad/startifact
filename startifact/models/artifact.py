@@ -5,12 +5,118 @@ from pathlib import Path
 from re import match
 from typing import Optional, Union
 
-from boto3.session import Session
+from boto3.session import Session as Boto3Session
 
+from startifact.account import Account
 from startifact.exceptions import ArtifactNameError
 from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
-from startifact.parameters import ArtifactLatestVersionParameter, bucket_parameter
-from startifact.static import config_param
+from startifact.parameters import (
+    BucketParameter,
+    ConfigurationParameter,
+    LatestVersionParameter,
+)
+
+
+class Session:
+    def __init__(self) -> None:
+        self._session = Boto3Session()
+
+        self._account = Account(self._session)
+        self._config_param = ConfigurationParameter(self._account, self._session)
+
+        config = self._config_param.value
+
+        self._bucket_param = BucketParameter(
+            account=self._account,
+            name=config["bucket_param_name"],
+            session=Boto3Session(region_name=config["bucket_param_region"]),
+        )
+
+        self._bucket_session = Boto3Session(region_name=config["bucket_region"])
+
+        self._versions_session = Boto3Session(region_name=config["parameter_region"])
+
+        self._logger = getLogger("startifact")
+
+    def download(
+        self, name: str, path: Union[Path, str], version: Optional[str] = None
+    ) -> None:
+        self._logger.debug("Will attempt to download version %s of %s.", version, name)
+        version = self.resolve_version(name=name, version=version)
+        self._logger.debug("Resolved version: %s", version)
+
+        s3 = self._bucket_session.client("s3")  # pyright: reportUnknownMemberType=false
+        s3.download_file(
+            Bucket=self._bucket_param.value,
+            Key=self.make_s3_key(name, version),
+            Filename=path.as_posix() if isinstance(path, Path) else path,
+        )
+
+    def exists(self, key: str) -> bool:
+        s3 = self._bucket_session.client("s3")  # pyright: reportUnknownMemberType=false
+
+        try:
+            s3.head_object(Bucket=self._bucket_param.value, Key=key)
+            return True
+        except s3.exceptions.ClientError as ex:
+            if ex.response["Error"]["Code"] == "404":
+                return False
+            raise ex
+
+    def resolve_version(self, name: str, version: Optional[str] = None) -> str:
+        """
+        Resolves a version description to an explicit version number.
+
+        An empty version or "latest" will refer to the latest version.
+        """
+
+        if version and version.lower() != "latest":
+            return version
+
+        return self.get_latest_version(name)
+
+    def stage(self, project: str, version: str, path: Union[Path, str]) -> None:
+        """
+
+        Raises:
+            ArtifactVersionExistsError: If this artifact version is already staged.
+        """
+
+        s3 = self._bucket_session.client("s3")  # pyright: reportUnknownMemberType=false
+
+        key = self.make_s3_key(project, version)
+
+        if self.exists(key):
+            raise ArtifactVersionExistsError(project, version)
+
+        self._logger.debug("Will stage file: %s", path)
+        self._logger.debug("Will stage to bucket: %s", self._bucket_param.value)
+        self._logger.debug("Will stage to key: %s", key)
+        with open(path, "rb") as f:
+            s3.put_object(
+                Body=f,
+                Bucket=self._bucket_param.value,
+                ContentMD5=get_b64_md5(path),
+                Key=key,
+            )
+
+        self.make_latest_version_parameter(project).set(version)
+
+    def get_latest_version(self, project: str) -> str:
+        return self.make_latest_version_parameter(project).get()
+
+    def make_latest_version_parameter(self, project: str) -> LatestVersionParameter:
+        return LatestVersionParameter(
+            account=self._account,
+            prefix=self._config_param.value["parameter_name_prefix"],
+            project=project,
+            session=self._versions_session,
+        )
+
+    def make_s3_key(self, project: str, version: str) -> str:
+        prefix = self._config_param.value["bucket_key_prefix"]
+        fqn = make_fqn(project, version)
+        return f"{prefix}{fqn}"
 
 
 def validate_name(name: str) -> None:
@@ -38,95 +144,5 @@ def get_b64_md5(path: Union[Path, str]) -> str:
     return b64encode(hash.digest()).decode("utf-8")
 
 
-def exists(key: str, session: Session) -> bool:
-    s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
-
-    try:
-        s3.head_object(Bucket=bucket_parameter.value, Key=key)
-        return True
-    except s3.exceptions.ClientError as ex:
-        if ex.response["Error"]["Code"] == "404":
-            return False
-        raise ex
-
-
-def get_latest_version(name: str) -> str:
-    return ArtifactLatestVersionParameter(name).get()
-
-
-def resolve_version(name: str, version: Optional[str] = None) -> str:
-    """
-    Resolves a version description to an explicit version number.
-
-    An empty version or "latest" will refer to the latest version.
-    """
-
-    if version and version.lower() != "latest":
-        return version
-
-    return get_latest_version(name)
-
-
-def make_bucket_session() -> Session:
-    logger = getLogger("startifact")
-    region = config_param.value["bucket_region"]
-    logger.debug('Creating bucket session in "%s".', region)
-    return Session(region_name=region)
-
-
 def make_fqn(name: str, version: str) -> str:
     return f"{name}@{version}"
-
-
-def make_s3_key(name: str, version: str) -> str:
-    prefix = config_param.value["bucket_key_prefix"]
-    fqn = make_fqn(name, version)
-    return f"{prefix}{fqn}"
-
-
-def download(name: str, path: Union[Path, str], version: Optional[str] = None) -> None:
-    logger = getLogger("startifact")
-    logger.debug("Will attempt to download version %s of %s.", version, name)
-
-    version = resolve_version(name=name, version=version)
-
-    logger.debug("Resolved version: %s", version)
-
-    s3 = make_bucket_session().client("s3")  # pyright: reportUnknownMemberType=false
-    s3.download_file(
-        Bucket=bucket_parameter.value,
-        Key=make_s3_key(name, version),
-        Filename=path.as_posix() if isinstance(path, Path) else path,
-    )
-
-
-def stage(name: str, version: str, path: Union[Path, str]) -> None:
-    """
-
-    Raises:
-        ArtifactVersionExistsError: If this artifact version is already staged.
-    """
-
-    logger = getLogger("startifact")
-
-    bucket_session = make_bucket_session()
-
-    s3 = bucket_session.client("s3")  # pyright: reportUnknownMemberType=false
-
-    key = make_s3_key(name, version)
-
-    if exists(key, bucket_session):
-        raise ArtifactVersionExistsError(name, version)
-
-    logger.debug("Will stage file: %s", path)
-    logger.debug("Will stage to bucket: %s", bucket_parameter.value)
-    logger.debug("Will stage to key: %s", key)
-    with open(path, "rb") as f:
-        s3.put_object(
-            Body=f,
-            Bucket=bucket_parameter.value,
-            ContentMD5=get_b64_md5(path),
-            Key=key,
-        )
-
-    ArtifactLatestVersionParameter(name).set(version)

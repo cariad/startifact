@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
+from typing import Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.models.artifact import download, resolve_version
+from startifact.models.artifact import Session
 
 
 @dataclass
@@ -33,6 +34,11 @@ class DownloadTaskArguments:
     Artifact version.
     """
 
+    session: Optional[Session] = None
+    """
+    Session.
+    """
+
 
 class DownloadTask(Task[DownloadTaskArguments]):
     """
@@ -41,8 +47,9 @@ class DownloadTask(Task[DownloadTaskArguments]):
 
     def invoke(self) -> int:
         getLogger("startifact").setLevel(self.args.log_level)
-        version = resolve_version(self.args.project, version=self.args.version)
-        download(self.args.project, self.args.path, version=version)
+        session = self.args.session or Session()
+        version = session.resolve_version(self.args.project, version=self.args.version)
+        session.download(self.args.project, self.args.path, version=version)
         abs_path = self.args.path.resolve().absolute().as_posix()
         self.out.write(f"Downloaded {self.args.project} {version}: {abs_path}\n")
 

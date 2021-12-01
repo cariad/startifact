@@ -1,25 +1,30 @@
 from io import StringIO
 
 from cline import CommandLineArguments
-from mock import patch
+from mock import Mock
 
 from startifact.exceptions import ArtifactVersionExistsError
 from startifact.tasks.stage import StageTask, StageTaskArguments
 
 
 def test_invoke() -> None:
+    session = Mock()
+
+    stage = Mock()
+    session.stage = stage
+
     args = StageTaskArguments(
         log_level="WARNING",
         path="./foo.zip",
         project="foo",
+        session=session,
         version="1.2.3",
     )
 
     out = StringIO()
     task = StageTask(args, out)
 
-    with patch("startifact.tasks.stage.stage") as stage:
-        exit_code = task.invoke()
+    exit_code = task.invoke()
 
     stage.assert_called_once_with("foo", "1.2.3", "./foo.zip")
 
@@ -40,19 +45,23 @@ To download this artifact, run one of:
 
 
 def test_invoke__exists() -> None:
+    session = Mock()
+
+    stage = Mock(side_effect=ArtifactVersionExistsError("foo", "1.2.3"))
+    session.stage = stage
+
     args = StageTaskArguments(
         log_level="WARNING",
         path="./foo.zip",
         project="foo",
+        session=session,
         version="1.2.3",
     )
 
     out = StringIO()
     task = StageTask(args, out)
 
-    with patch("startifact.tasks.stage.stage") as stage:
-        stage.side_effect = ArtifactVersionExistsError("foo", "1.2.3")
-        exit_code = task.invoke()
+    exit_code = task.invoke()
 
     assert (
         out.getvalue()

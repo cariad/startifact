@@ -127,11 +127,9 @@ The latest staged version of each artifact will be recorded in System Manager pa
 
 #### Q7: Artifact parameter name prefix
 
-By default, the latest staged version of each artifact will be recorded in a Systems Manager parameter named "/NAME/latest".
+By default, the latest staged version of each artifact will be recorded in a Systems Manager parameter named "/{name}/latest".
 
-If you specify the name prefix "/org-" then parameters will be named "/org-NAME/latest".
-
-If you specify the name prefix "/org/" then parameters will be named "/org/NAME/latest".
+Any name prefix you specify will be prepended to this name. For example, the prefix "/org" will create parameters named "/org/{name}/latest".
 
 #### Q8: Confirmation
 

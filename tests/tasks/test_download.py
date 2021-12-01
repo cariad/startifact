@@ -2,26 +2,32 @@ from io import StringIO
 from pathlib import Path
 
 from cline import CommandLineArguments
-from mock import patch
+from mock import Mock
 
 from startifact.tasks.download import DownloadTask, DownloadTaskArguments
 
 
 def test_invoke() -> None:
+    session = Mock()
+
+    resolve_version = Mock(return_value="4.5.6")
+    session.resolve_version = resolve_version
+
+    download = Mock()
+    session.download = download
+
     args = DownloadTaskArguments(
         log_level="WARNING",
         path=Path("dist.zip"),
         project="foo",
+        session=session,
         version="latest",
     )
 
     out = StringIO()
     task = DownloadTask(args, out)
 
-    with patch("startifact.tasks.download.resolve_version") as resolve_version:
-        resolve_version.return_value = "4.5.6"
-        with patch("startifact.tasks.download.download") as download:
-            exit_code = task.invoke()
+    exit_code = task.invoke()
 
     resolve_version.assert_called_once_with("foo", version="latest")
     download.assert_called_once_with("foo", Path("dist.zip"), version="4.5.6")

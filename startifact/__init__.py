@@ -1,12 +1,10 @@
 import importlib.resources as pkg_resources
 
-from startifact.models.artifact import download, get_latest_version, stage
+from startifact.models.artifact import Session
 
 with pkg_resources.open_text(__package__, "VERSION") as t:
     __version__ = t.readline().strip()
 
 __all__ = [
-    "download",
-    "get_latest_version",
-    "stage",
+    "Session",
 ]

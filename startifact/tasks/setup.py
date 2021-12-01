@@ -9,7 +9,6 @@ from cline import CommandLineArguments, Task
 
 from startifact.account import Account
 from startifact.parameters import ConfigurationParameter
-from startifact.static import config_param
 from startifact.types import ConfigurationDict
 
 
@@ -97,6 +96,7 @@ class SetupTask(Task[SetupTaskArguments]):
 
         session = Session()
         account = Account(session=session)
+        config_param = ConfigurationParameter(account, session)
 
         return SetupTaskArguments(
             account=account,

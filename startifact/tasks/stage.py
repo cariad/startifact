@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from cline import CommandLineArguments, Task
 
 from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
-from startifact.models.artifact import stage
+from startifact.models.artifact import Session
 
 
 @dataclass
@@ -30,6 +30,11 @@ class StageTaskArguments:
     Version.
     """
 
+    session: Optional[Session] = None
+    """
+    Session.
+    """
+
 
 class StageTask(Task[StageTaskArguments]):
     """
@@ -38,10 +43,11 @@ class StageTask(Task[StageTaskArguments]):
 
     def invoke(self) -> int:
         project = self.args.project
+        session = self.args.session or Session()
         version = self.args.version
 
         try:
-            stage(project, version, self.args.path)
+            session.stage(project, version, self.args.path)
         except ArtifactVersionExistsError as ex:
             self.out.write("\n")
             self.out.write(str(ex))

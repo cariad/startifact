@@ -18,8 +18,8 @@ def config_param(
     session: Mock,
 ) -> ConfigurationParameter:
     return ConfigurationParameter(
-        session,
         account,
+        session,
         value=empty_config,
     )
 

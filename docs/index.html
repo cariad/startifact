@@ -419,9 +419,8 @@ h2, h3, h4, h5, h6 {
 <h4>Q6: Artifact parameter region<a id="q6-artifact-parameter-region"></a></h4>
 <p>The latest staged version of each artifact will be recorded in System Manager parameters. These parameters can be created in any region.</p>
 <h4>Q7: Artifact parameter name prefix<a id="q7-artifact-parameter-name-prefix"></a></h4>
-<p>By default, the latest staged version of each artifact will be recorded in a Systems Manager parameter named "/NAME/latest".</p>
-<p>If you specify the name prefix "/org-" then parameters will be named "/org-NAME/latest".</p>
-<p>If you specify the name prefix "/org/" then parameters will be named "/org/NAME/latest".</p>
+<p>By default, the latest staged version of each artifact will be recorded in a Systems Manager parameter named "/{name}/latest".</p>
+<p>Any name prefix you specify will be prepended to this name. For example, the prefix "/org" will create parameters named "/org/{name}/latest".</p>
 <h4>Q8: Confirmation<a id="q8-confirmation"></a></h4>
 <p>This is your last chance to verify the configuration before it is saved.</p>
 <p>When saved, changes take effect immediately across your entire organisation.</p>

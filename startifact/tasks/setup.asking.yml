@@ -88,11 +88,8 @@ parameter_name_prefix:
       By default, the latest version of each artifact will be recorded in
       Systems Manager as /NAME/latest.
   - text:
-      If, for example, you configure the prefix to "/prefix-" then your
-      artifacts will be recorded as /prefix-NAME/latest.
-  - text:
-      If, for example, you configure the prefix to "/prefix/" then your
-      artifacts will be recorded as /prefix/NAME/latest.
+      Any name prefix you specify will be prepended to this name. For example,
+      the prefix "/org" will create parameters named "/org/NAME/latest".
   - ask:
       question: Artifact parameter name prefix?
       key: parameter_name_prefix

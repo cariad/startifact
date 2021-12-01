@@ -12,17 +12,6 @@ from startifact.types import ConfigurationDict
 
 
 class ConfigurationParameter(Parameter[ConfigurationDict]):
-    # def __init__(
-    #     self,
-    #     account: Optional[Account] = None,
-    #     session: Optional[Session] = None,
-    #     value: Optional[ConfigurationDict] = None,
-    # ) -> None:
-    #     super().__init__(
-    #         account=account,
-    #         session=session or Session(),
-    #         value=value)
-
     @classmethod
     def get_default_name(cls) -> str:
         """

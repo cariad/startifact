@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Literal
+from typing import Literal, Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.models.artifact import resolve_version
+from startifact.models.artifact import Session
 
 
 @dataclass
@@ -28,6 +28,11 @@ class GetTaskArguments:
     Project.
     """
 
+    session: Optional[Session] = None
+    """
+    Session.
+    """
+
 
 class GetTask(Task[GetTaskArguments]):
     """
@@ -37,7 +42,9 @@ class GetTask(Task[GetTaskArguments]):
     def invoke(self) -> int:
         getLogger("startifact").setLevel(self.args.log_level)
 
-        version = resolve_version(self.args.project)
+        session = self.args.session or Session()
+
+        version = session.resolve_version(self.args.project)
         self.out.write(version)
         self.out.write("\n")
         return 0
