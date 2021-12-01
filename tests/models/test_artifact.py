@@ -3,7 +3,6 @@
 # from pytest import mark, raises
 
 # from startifact.exceptions import ArtifactNameError
-# from startifact.models import Artifact
 
 
 # def test_b64_md5() -> None:

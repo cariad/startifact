@@ -11,65 +11,19 @@ from startifact.exceptions import ArtifactNameError
 from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
 from startifact.parameters import ArtifactLatestVersionParameter, bucket_parameter
 from startifact.static import config_param
-from startifact.types import ConfigurationDict
 
 
-class Artifact:
+def validate_name(name: str) -> None:
     """
-    A versioned artifact.
+    Validates a proposed artifact name.
 
-    Arguments:
-        name:    Name.
-        version: Version.
+    Raises:
+        ArtifactNameError: If the proposed name is not acceptable
     """
 
-    def __init__(
-        self,
-        name: str,
-        version: str,
-        config: Optional[ConfigurationDict] = None,
-    ) -> None:
-        Artifact.validate_name(name)
-        self._name = name
-        self._version = version
-        self._config = config or config_param.value
-
-    @property
-    def name(self) -> str:
-        """
-        Gets the name of the artifact.
-        """
-
-        return self._name
-
-    @property
-    def version(self) -> str:
-        """
-        Version.
-        """
-
-        return self._version
-
-    @property
-    def parameter_region(self) -> str:
-        """
-        Region that holds the Systems Manager parameter.
-        """
-
-        return self._config["parameter_region"]
-
-    @staticmethod
-    def validate_name(name: str) -> None:
-        """
-        Validates a proposed artifact name.
-
-        Raises:
-            ArtifactNameError: If the proposed name is not acceptable
-        """
-
-        expression = r"^[a-zA-Z0-9_\-\.]+$"
-        if not match(expression, name):
-            raise ArtifactNameError(name, expression)
+    expression = r"^[a-zA-Z0-9_\-\.]+$"
+    if not match(expression, name):
+        raise ArtifactNameError(name, expression)
 
 
 def get_b64_md5(path: Union[Path, str]) -> str:
