@@ -28,7 +28,7 @@ class GetTask(Task[GetTaskArguments]):
     def make_args(cls, args: CommandLineArguments) -> GetTaskArguments:
         args.assert_string("get", ["version"])
         return GetTaskArguments(
-            project=args.get_string("name"),
+            project=args.get_string("project"),
             property=args.get_string("get"),
             log_level=args.get_string("log_level").upper(),
         )

@@ -10,19 +10,38 @@ from startifact.models.artifact import stage
 
 @dataclass
 class StageTaskArguments:
-    name: str
-    version: str
-    path: Union[Path, str]
     log_level: str
+    """
+    Log level.
+    """
+
+    path: Union[Path, str]
+    """
+    Path to file to upload.
+    """
+
+    project: str
+    """
+    Project name.
+    """
+
+    version: str
+    """
+    Version.
+    """
 
 
 class StageTask(Task[StageTaskArguments]):
+    """
+    Stages an artifact in Amazon Web services.
+    """
+
     def invoke(self) -> int:
-        name = self.args.name
+        project = self.args.project
         version = self.args.version
 
         try:
-            stage(name=name, version=version, path=self.args.path)
+            stage(project, version, self.args.path)
         except ArtifactVersionExistsError as ex:
             self.out.write("\n")
             self.out.write(str(ex))
@@ -30,17 +49,18 @@ class StageTask(Task[StageTaskArguments]):
             return 1
 
         self.out.write("\n")
-        self.out.write(f"Successfully staged {name} {version}! 🎉\n")
-        self.out.write("To download this artifact, run either:\n\n")
-        self.out.write(f"    startifact {name} latest --download <PATH>\n")
-        self.out.write(f"    startifact {name} {version} --download <PATH>\n\n")
+        self.out.write(f"Successfully staged {project} {version}! 🎉\n")
+        self.out.write("To download this artifact, run one of:\n\n")
+        self.out.write(f"    startifact {project} --download <PATH>\n")
+        self.out.write(f"    startifact {project} latest --download <PATH>\n")
+        self.out.write(f"    startifact {project} {version} --download <PATH>\n\n")
         return 0
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> StageTaskArguments:
         return StageTaskArguments(
-            name=args.get_string("name"),
-            version=args.get_string("version"),
+            log_level=args.get_string("log_level", "warning").upper(),
             path=args.get_string("stage"),
-            log_level=args.get_string("log_level").upper(),
+            project=args.get_string("project"),
+            version=args.get_string("version"),
         )

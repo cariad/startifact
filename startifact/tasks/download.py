@@ -28,7 +28,7 @@ class DownloadTask(Task[DownloadTaskArguments]):
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> DownloadTaskArguments:
         return DownloadTaskArguments(
-            name=args.get_string("name"),
+            name=args.get_string("project"),
             version=args.get_string("version", "latest"),
             path=Path(args.get_string("download")),
             log_level=args.get_string("log_level").upper(),

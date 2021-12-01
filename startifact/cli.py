@@ -17,7 +17,7 @@ class StartifactCLI(ArgumentParserCli):
             epilog="Made with love by Cariad Eccleston: https://github.com/cariad/startifact",
         )
 
-        parser.add_argument("name", help="Artifact name", nargs="?")
+        parser.add_argument("project", help="Project name", nargs="?")
         parser.add_argument(
             "version",
             help="Artifact version",
