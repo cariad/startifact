@@ -3,7 +3,7 @@ from hashlib import md5
 from logging import getLogger
 from pathlib import Path
 from re import match
-from typing import Optional
+from typing import Optional, Union
 
 from boto3.session import Session
 
@@ -75,7 +75,7 @@ class Artifact:
             raise ArtifactNameError(name, expression)
 
 
-def get_b64_md5(path: Path) -> str:
+def get_b64_md5(path: Union[Path, str]) -> str:
     """
     Gets the MD5 hash of the file as a base64-encoded string.
     """
@@ -99,6 +99,10 @@ def exists(key: str, session: Session) -> bool:
         raise ex
 
 
+def get_latest_version(name: str) -> str:
+    return ArtifactLatestVersionParameter(name).get()
+
+
 def resolve_version(name: str, version: Optional[str] = None) -> str:
     """
     Resolves a version description to an explicit version number.
@@ -109,7 +113,7 @@ def resolve_version(name: str, version: Optional[str] = None) -> str:
     if version and version.lower() != "latest":
         return version
 
-    return ArtifactLatestVersionParameter(name).get()
+    return get_latest_version(name)
 
 
 def make_bucket_session() -> Session:
@@ -129,7 +133,7 @@ def make_s3_key(name: str, version: str) -> str:
     return f"{prefix}{fqn}"
 
 
-def download(name: str, version: str, path: Path) -> None:
+def download(name: str, path: Union[Path, str], version: Optional[str] = None) -> None:
     logger = getLogger("startifact")
     logger.debug("Will attempt to download version %s of %s.", version, name)
 
@@ -141,11 +145,11 @@ def download(name: str, version: str, path: Path) -> None:
     s3.download_file(
         Bucket=bucket_parameter.bucket_name,
         Key=make_s3_key(name, version),
-        Filename=path.as_posix(),
+        Filename=path.as_posix() if isinstance(path, Path) else path,
     )
 
 
-def stage(name: str, version: str, path: Path) -> None:
+def stage(name: str, version: str, path: Union[Path, str]) -> None:
     """
 
     Raises:
@@ -163,7 +167,7 @@ def stage(name: str, version: str, path: Path) -> None:
     if exists(key, bucket_session):
         raise ArtifactVersionExistsError(name, version)
 
-    logger.debug("Will stage file: %s", path.as_posix())
+    logger.debug("Will stage file: %s", path)
     logger.debug("Will stage to bucket: %s", bucket_parameter.bucket_name)
     logger.debug("Will stage to key: %s", key)
     with open(path, "rb") as f:

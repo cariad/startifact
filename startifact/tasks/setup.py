@@ -24,7 +24,9 @@ class SetupTask(Task[SetupTaskArguments]):
             references={
                 "account_fmt": bright_yellow(self.args.account.account_id).encoded,
                 "param_fmt": bright_yellow(config_param.get_default_name()).encoded,
-                "default_environ_name_fmt": bright_yellow("STARTIFACT_PARAM").encoded,
+                "default_environ_name_fmt": bright_yellow(
+                    "STARTIFACT_PARAMETER"
+                ).encoded,
                 "region_fmt": bright_yellow(self.args.session.region_name).encoded,
             },
         )

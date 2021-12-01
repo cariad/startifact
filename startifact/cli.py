@@ -23,10 +23,17 @@ class StartifactCLI(ArgumentParserCli):
             help="Artifact version",
             nargs="?",
         )
+
         parser.add_argument(
             "--download",
             help="download an artifact to a local path (version is optional)",
             metavar="TO",
+        )
+
+        parser.add_argument(
+            "--get",
+            help="get a project property",
+            metavar="{version}",
         )
 
         parser.add_argument(
@@ -59,6 +66,7 @@ class StartifactCLI(ArgumentParserCli):
 
         return [
             startifact.tasks.DownloadTask,
+            startifact.tasks.GetTask,
             startifact.tasks.StageTask,
             startifact.tasks.SetupTask,
         ]

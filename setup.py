@@ -43,7 +43,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "ansiscape~=1.0",
-        "asking==1.0.0a4",
+        "asking~=1.0",
         "cline~=1.1",
         "boto3~=1.20",
     ],

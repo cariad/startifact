@@ -344,38 +344,166 @@ h2, h3, h4, h5, h6 {
   <body>
     <article>
         <h1>📦 Startifact</h1>
-<p><strong>Startifact</strong> is a CLI app and Python package for <strong>st</strong>aging <strong>artifact</strong>s in Amazon Web Services.</p>
-<h2>Use Case<a id="use-case"></a></h2>
-<p>Startifact is designed to be used by CI/CD pipelines in which:</p>
-<ul>
-<li>Software projects are continuously versioned, built and staged</li>
-<li>A deployment process continuously discovers and deploys those builds</li>
-</ul>
-<p>Startifact contributes on both of these points:</p>
-<ul>
-<li>Startifact helps software projects by providing a CLI app for versioning and staging builds</li>
-<li>Startifact helps deployments by registering artifacts in well-known Systems Manager Parameter Store paths for discovery</li>
-</ul>
+<p><strong>Startifact</strong> is a CLI app and Python package for staging, versioning and downloading artifacts from Amazon Web Services.</p>
+<p>Startifact uses a shared configuration held in Systems Manager so all of your CI/CD jobs automatically pick up the same configuration.</p>
+<p><nav class="toc"><ol><li><a href="#getting-started">Getting Started</a><ol><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#installation">Installation</a></li></ol></li><li><a href="#deploying-an-s3-bucket">Deploying an S3 bucket</a></li><li><a href="#organisation-setup">Organisation setup</a><ol><li><a href="#introduction">Introduction</a></li><li><a href="#choosing-where-to-host-the-configuration">Choosing where to host the configuration</a></li><li><a href="#performing-or-updating-the-organisation-setup">Performing or updating the organisation setup</a></li><li><a href="#questions">Questions</a><ol><li><a href="#q1-confirm-the-configuration-parameter-location">Q1: Confirm the configuration parameter location</a></li><li><a href="#q2-bucket-name-parameter">Q2: Bucket name parameter</a></li><li><a href="#q3-bucket-name-parameter-region">Q3: Bucket name parameter region</a></li><li><a href="#q4-bucket-region">Q4: Bucket region</a></li><li><a href="#q5-bucket-key-prefix">Q5: Bucket key prefix</a></li><li><a href="#q6-artifact-parameter-region">Q6: Artifact parameter region</a></li><li><a href="#q7-artifact-parameter-name-prefix">Q7: Artifact parameter name prefix</a></li><li><a href="#q8-confirmation">Q8: Confirmation</a></li></ol></li></ol></li><li><a href="#iam-policies">IAM policies</a></li><li><a href="#usage">Usage</a><ol><li><a href="#cli-usage">CLI usage</a><ol><li><a href="#staging-an-artifact-via-the-cli">Staging an artifact via the CLI</a></li><li><a href="#getting-the-latest-version-number-of-a-project-via-the-cli">Getting the latest version number of a project via the CLI</a></li><li><a href="#downloading-the-latest-version-of-an-artifact-via-the-cli">Downloading the latest version of an artifact via the CLI</a></li><li><a href="#downloading-a-specific-version-of-an-artifact-via-the-cli">Downloading a specific version of an artifact via the CLI</a></li></ol></li><li><a href="#python-usage">Python usage</a><ol><li><a href="#staging-an-artifact-via-python">Staging an artifact via Python</a></li><li><a href="#getting-the-latest-version-number-of-a-project-via-python">Getting the latest version number of a project via Python</a></li><li><a href="#downloading-the-latest-version-of-an-artifact-via-python">Downloading the latest version of an artifact via Python</a></li><li><a href="#downloading-a-specific-version-of-an-artifact-via-python">Downloading a specific version of an artifact via Python</a></li></ol></li></ol></li><li><a href="#project">Project</a><ol><li><a href="#contributing">Contributing</a></li><li><a href="#licence">Licence</a></li><li><a href="#author">Author</a></li><li><a href="#acknowledgements">Acknowledgements</a></li></ol></li></ol></nav></p>
 <h2>Getting Started<a id="getting-started"></a></h2>
 <h3>Prerequisites<a id="prerequisites"></a></h3>
-<p>Startifact requires <strong>Python 3.8</strong> or later.</p>
+<ul>
+<li>Python 3.8 or later.</li>
+<li><a href="#deploying-an-s3-bucket">S3 bucket with the name recorded in Systems Manager</a>.</li>
+</ul>
 <h3>Installation<a id="installation"></a></h3>
-<p>Install Startifact via <code>pip</code>:</p>
+<p>Install Startifact via pip:</p>
 <div class="highlight"><pre><span></span>pip install startifact
 </pre></div>
 
-<h3>Initial setup<a id="initial-setup"></a></h3>
-<p>To ensure Startifact is configured consistently across your suite of projects, it is configured via a Systems Manager Parameter that is read at run-time.</p>
-<p>To perform the initial setup, run:</p>
+<h2>Deploying an S3 bucket<a id="deploying-an-s3-bucket"></a></h2>
+<p>It's essential to note that Startifact will not let you configure the name of your S3 artifacts bucket directly. You must set the name of a Systems Manager parameter where the bucket's name can be read.</p>
+<p><em>Why?</em></p>
+<p>The short answer is: so you don't have to deploy buckets with hard-coded names. But why is that a bad thing?</p>
+<p>Remember that bucket names are globally unique. If your organisation is in the habit of naming buckets with a well-known schema, like "org.development.frontend" and "org.production.assets", it wouldn't take a malicious actor long to realise that they can squat on the bucket, say, "org.development.new-feature" and ruin your automation. <strong>Patterns are exploitable.</strong></p>
+<p>I choose to be pessimistic about the bucket names available to me. When I deploy buckets via CloudFormation, I omit their names and let CloudFormation pick any available name for me. In that same template, I also create a Systems Manager parameter that holds the bucket's generated name for later reference.</p>
+<p>Here's a complete CloudFormation template you can copy, paste and deploy:</p>
+<div class="highlight"><pre><span></span><span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifact storage</span>
+<span class="nt">Resources</span><span class="p">:</span>
+  <span class="nt">Bucket</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::S3::Bucket</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">PublicAccessBlockConfiguration</span><span class="p">:</span>
+        <span class="nt">BlockPublicAcls</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+        <span class="nt">BlockPublicPolicy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+        <span class="nt">IgnorePublicAcls</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+        <span class="nt">RestrictPublicBuckets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+
+  <span class="nt">BucketParameter</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::SSM::Parameter</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="c1"># This name can be anything you want:</span>
+      <span class="nt">Name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/artifacts-bucket</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+      <span class="nt">Value</span><span class="p">:</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Bucket</span>
+</pre></div>
+
+<h2>Organisation setup<a id="organisation-setup"></a></h2>
+<h3>Introduction<a id="introduction"></a></h3>
+<p>Startifact is designed to be used within organisations with multiple CI/CD jobs that push and pull artifacts.</p>
+<p>Startifact achieves this with a single shared configuration, rather than needing every CI/CD job to be individually configured to match the others.</p>
+<p>Startifact uses Systems Manager Parameter Store to host the single shared configuration.</p>
+<h3>Choosing where to host the configuration<a id="choosing-where-to-host-the-configuration"></a></h3>
+<p>By default, Startifact reads and writes configuration to a Systems Manager parameter named <code>/startifact</code> in your default account and region.</p>
+<p>To change that parameter name, set an environment variable named <code>STARTIFACT_PARAMETER</code>.</p>
+<h3>Performing or updating the organisation setup<a id="performing-or-updating-the-organisation-setup"></a></h3>
 <div class="highlight"><pre><span></span>startifact --setup
 </pre></div>
 
-<p>The operator's IAM policy must grant <code>ssm:GetParameter</code> and <code>ssm:PutParameter</code> on the configuration parameter. The default parameter name of <code>/startifact</code> will have an ARN like <code>arn:aws:ssm:<region>:<account id="None">:parameter/startifact</code>.</p>
+<h3>Questions<a id="questions"></a></h3>
+<h4>Q1: Confirm the configuration parameter location<a id="q1-confirm-the-configuration-parameter-location"></a></h4>
+<p>You will be asked to confirm the name and location of the shared configuration parameter.</p>
+<p>To change the name of the parameter, stop the setup then set an environment variable named <code>STARTIFACT_PARAMETER</code>.</p>
+<p>To change the account or region, stop the setup then adjust your Amazon Web Services credentials.</p>
+<h4>Q2: Bucket name parameter<a id="q2-bucket-name-parameter"></a></h4>
+<p>You will be asked to enter the name of the Systems Manager parameter that holds the name of your artifacts bucket.</p>
+<p>See <a href="#deploying-an-s3-bucket">Deploying an S3 bucket</a> for more information.</p>
+<p>If you copied and deployed the example CloudFormation template exactly then your bucket parameter is named "/artifacts-bucket".</p>
+<h4>Q3: Bucket name parameter region<a id="q3-bucket-name-parameter-region"></a></h4>
+<p>You will be asked to enter the region that holds the bucket name parameter you entered in Question 2.</p>
+<p>This can be different from the region where the bucket itself is deployed.</p>
+<h4>Q4: Bucket region<a id="q4-bucket-region"></a></h4>
+<p>You will be asked to enter the region that holds the artifacts bucket itself.</p>
+<p>This can be different from the region where the bucket's name parameter is deployed.</p>
+<h4>Q5: Bucket key prefix<a id="q5-bucket-key-prefix"></a></h4>
+<p>You will be asked to enter any key prefix you want Startifact to use in the artifacts bucket.</p>
+<p>The prefix is optional and will be empty by default.</p>
+<h4>Q6: Artifact parameter region<a id="q6-artifact-parameter-region"></a></h4>
+<p>The latest staged version of each artifact will be recorded in System Manager parameters. These parameters can be created in any region.</p>
+<h4>Q7: Artifact parameter name prefix<a id="q7-artifact-parameter-name-prefix"></a></h4>
+<p>By default, the latest staged version of each artifact will be recorded in a Systems Manager parameter named "/NAME/latest".</p>
+<p>If you specify the name prefix "/org-" then parameters will be named "/org-NAME/latest".</p>
+<p>If you specify the name prefix "/org/" then parameters will be named "/org/NAME/latest".</p>
+<h4>Q8: Confirmation<a id="q8-confirmation"></a></h4>
+<p>This is your last chance to verify the configuration before it is saved.</p>
+<p>When saved, changes take effect immediately across your entire organisation.</p>
+<h2>IAM policies<a id="iam-policies"></a></h2>
+<p>The user performing the organisation setup must be granted:</p>
+<ul>
+<li><code>ssm:GetParameter</code> and <code>ssm:PutParameter</code> on the configuration parameter. This is <code>arn:aws:ssm:{REGION}:{ACCOUNT ID}:parameter/startifact</code> by default, but adjust if you are using a different parameter name.</li>
+</ul>
+<p>Any users or roles that download artifacts must be granted:</p>
+<ul>
+<li><code>ssm:GetParameter</code> on the configuration parameter.</li>
+<li><code>ssm:GetParameter</code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</li>
+<li><code>s3:GetObject</code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</li>
+</ul>
+<p>Any users or roles that stage artifacts must be granted:</p>
+<ul>
+<li><code>ssm:GetParameter</code> on the configuration parameter.</li>
+<li><code>ssm:PutParameter</code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</li>
+<li><code>s3:ListBucket</code> on the artifacts bucket.</li>
+<li><code>s3:PutObject</code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</li>
+</ul>
 <h2>Usage<a id="usage"></a></h2>
-<h3>Staging an artifact<a id="staging-an-artifact"></a></h3>
-<p>The first three command line arguments are the <strong>name</strong>, <strong>local path</strong> and <strong>version</strong> of the artifact</p>
-<div class="highlight"><pre><span></span>startifact
+<h3>CLI usage<a id="cli-usage"></a></h3>
+<h4>Staging an artifact via the CLI<a id="staging-an-artifact-via-the-cli"></a></h4>
+<div class="highlight"><pre><span></span>startifact my-project 1.0.0 --stage README.md
 </pre></div>
+
+<h4>Getting the latest version number of a project via the CLI<a id="getting-the-latest-version-number-of-a-project-via-the-cli"></a></h4>
+<p>The version number will be emitted to <code>stdout</code>.</p>
+<div class="highlight"><pre><span></span>startifact my-project --get version
+</pre></div>
+
+<h4>Downloading the latest version of an artifact via the CLI<a id="downloading-the-latest-version-of-an-artifact-via-the-cli"></a></h4>
+<div class="highlight"><pre><span></span>startifact my-project --download ./my-project-latest.tar.gz
+</pre></div>
+
+<h4>Downloading a specific version of an artifact via the CLI<a id="downloading-a-specific-version-of-an-artifact-via-the-cli"></a></h4>
+<div class="highlight"><pre><span></span>startifact my-project 1.0.1 --download ./my-project-1.0.1.tar.gz
+</pre></div>
+
+<h3>Python usage<a id="python-usage"></a></h3>
+<h4>Staging an artifact via Python<a id="staging-an-artifact-via-python"></a></h4>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">stage</span>
+
+<span class="n">stage</span><span class="p">(</span><span class="s2">"my-project"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">,</span> <span class="s2">"./dist.tar.gz"</span><span class="p">)</span>
+</pre></div>
+
+<h4>Getting the latest version number of a project via Python<a id="getting-the-latest-version-number-of-a-project-via-python"></a></h4>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">get_latest_version</span>
+
+<span class="n">version</span> <span class="o">=</span> <span class="n">get_latest_version</span><span class="p">(</span><span class="s2">"my-project"</span><span class="p">)</span>
+</pre></div>
+
+<h4>Downloading the latest version of an artifact via Python<a id="downloading-the-latest-version-of-an-artifact-via-python"></a></h4>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">download</span>
+
+<span class="n">download</span><span class="p">(</span><span class="s2">"my-project"</span><span class="p">,</span> <span class="s2">"./my-project.tar.gz"</span><span class="p">)</span>
+</pre></div>
+
+<h4>Downloading a specific version of an artifact via Python<a id="downloading-a-specific-version-of-an-artifact-via-python"></a></h4>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">download</span>
+
+<span class="n">download</span><span class="p">(</span><span class="s2">"my-project"</span><span class="p">,</span> <span class="s2">"./my-project.tar.gz"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">)</span>
+</pre></div>
+
+<h2>Project<a id="project"></a></h2>
+<h3>Contributing<a id="contributing"></a></h3>
+<p>To contribute a bug report, enhancement or feature request, please raise an issue at <a href="https://github.com/cariad/startifact/issues">github.com/cariad/startifact/issues</a>.</p>
+<p>If you want to contribute a code change, please raise an issue first so we can chat about the direction you want to take.</p>
+<h3>Licence<a id="licence"></a></h3>
+<p>Startifact is released at <a href="https://github.com/cariad/startifact">github.com/cariad/startifact</a> under the MIT Licence.</p>
+<p>See <a href="https://github.com/cariad/startifact/blob/main/LICENSE">LICENSE</a> for more information.</p>
+<h3>Author<a id="author"></a></h3>
+<p>Hello! 👋 I'm <strong>Cariad Eccleston</strong> and I'm a freelance DevOps and backend engineer. My contact details are available on my personal wiki at <a href="https://cariad.earth">cariad.earth</a>.</p>
+<p>Please consider supporting my open source projects by <a href="https://github.com/sponsors/cariad/">sponsoring me on GitHub</a>.</p>
+<h3>Acknowledgements<a id="acknowledgements"></a></h3>
+<ul>
+<li>Interactive configuration by <a href="https://github.com/cariad/asking">Asking</a>.</li>
+<li>CLI orchestration by <a href="https://github.com/cariad/cline">Cline</a>.</li>
+<li>Command line colours and styling by <a href="https://github.com/cariad/ansiscape">Ansiscape</a>.</li>
+<li>This documentation was pressed by <a href="https://github.com/cariad/edition">Edition</a>.</li>
+</ul>
     </article>
   </body>
 

@@ -30,7 +30,7 @@ class NotAllowedToGetConfigParameter(ParameterStoreError):
             str(exception),
             "\n\nIf your configuration is held in a "
             + "different parameter then set the environment variable "
-            + "STARTIFACT_PARAM to the name of that parameter.\n\nIf the "
+            + "STARTIFACT_PARAMETER to the name of that parameter.\n\nIf the "
             + "parameter name is correct then ensure your IAM policy grants "
             + '"ssm:GetParameter" on the parameter.\n\nNote that IAM policy changes '
             + "can take several minutes to take effect.",
@@ -43,7 +43,7 @@ class NotAllowedToPutConfigParameter(ParameterStoreError):
             str(exception),
             "\n\nIf your configuration is held in a "
             + "different parameter then set the environment variable "
-            + "STARTIFACT_PARAM to the name of that parameter.\n\nIf the "
+            + "STARTIFACT_PARAMETER to the name of that parameter.\n\nIf the "
             + "parameter name is correct then ensure your IAM policy grants "
             + '"ssm:PutParameter" on the parameter.\n\nNote that IAM policy changes '
             + "can take several minutes to take effect.",

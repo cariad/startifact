@@ -37,7 +37,7 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
         Parameter name.
         """
 
-        return environ.get("STARTIFACT_PARAM", self.get_default_name())
+        return environ.get("STARTIFACT_PARAMETER", self.get_default_name())
 
     @property
     def configuration(self) -> ConfigurationDict:

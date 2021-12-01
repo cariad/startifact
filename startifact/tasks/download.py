@@ -19,7 +19,7 @@ class DownloadTask(Task[DownloadTaskArguments]):
     def invoke(self) -> int:
         getLogger("startifact").setLevel(self.args.log_level)
         version = resolve_version(name=self.args.name, version=self.args.version)
-        download(name=self.args.name, version=version, path=self.args.path)
+        download(self.args.name, self.args.path, version=version)
         abs_path = self.args.path.resolve().absolute().as_posix()
         self.out.write(f"Downloaded {self.args.name} {version}: {abs_path}\n")
 

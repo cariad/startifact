@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Union
 
 from cline import CommandLineArguments, Task
 
@@ -11,7 +12,7 @@ from startifact.models.artifact import stage
 class StageTaskArguments:
     name: str
     version: str
-    path: Path
+    path: Union[Path, str]
     log_level: str
 
 
@@ -40,6 +41,6 @@ class StageTask(Task[StageTaskArguments]):
         return StageTaskArguments(
             name=args.get_string("name"),
             version=args.get_string("version"),
-            path=Path(args.get_string("stage")),
+            path=args.get_string("stage"),
             log_level=args.get_string("log_level").upper(),
         )

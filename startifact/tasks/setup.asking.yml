@@ -1,45 +1,30 @@
 start:
-  - title: Startifact project setup
+  - title: Startifact organisation setup
   - text:
-      Startifact is designed for projects with multiple build jobs and artifacts
-      to wrangle. As such, the "startifact" command line application has no local
-      configuration. All configuration is stored in a single Amazon Web Services
-      Systems Manager parameter to ensure consistency across the project.
+      Please refer to the documentation at
+      https://cariad.github.io/startifact/#organisation-setup for guidance.
   - text:
-      This setup script will create a Systems Manager parameter named
-      {param_fmt} in region {region_fmt} in account {account_fmt}.
+      The shared configuration parameter will be created as {param_fmt} in
+      region {region_fmt} in account {account_fmt}.
   - ask:
       question: Is this okay?
       branches:
-        - response: [y, ""]
+        - response: y
           then:
             - goto: bucket_param_name
         - response: n
           then:
-            - goto: change_parameter_name
-
-change_parameter_name:
-  - text:
-      To change the parameter name, set the environment variable
-      {default_environ_name_fmt} to the parameter name you want then try again.
-  - stop: false
+            - stop: false
 
 bucket_param_name:
   - text:
-      Startifact uploads artifacts to an S3 bucket. This bucket must exist
-      already, and there must be a Systems Manager parameter holding that
-      bucket's name.
+      The name of your artifacts bucket must be held in an existing Systems Manager
+      parameter.
   - text:
-      This allows you to deploy your artifacts bucket without knowing its name
-      (assuming that your deployment records the bucket's name in Systems
-      Manager for reference).
-  - text:
-      If this Systems Manager parameter does not exist yet then abort this setup
-      script and create the parameter.
+      If either your bucket or its parameter have not been deployed yet, please refer to
+      https://cariad.github.io/startifact/#deploying-an-s3-bucket.
   - ask:
-      question:
-        What's the name of the Systems Manager parameter that holds
-        the artifacts bucket name?
+      question: Bucket name parameter?
       key: bucket_param_name
       recall: true
       branches:
@@ -49,7 +34,7 @@ bucket_param_name:
 
 bucket_param_region:
   - ask:
-      question: Which region is that parameter in?
+      question: Bucket name parameter region?
       key: bucket_param_region
       recall: true
       branches:
@@ -59,7 +44,7 @@ bucket_param_region:
 
 bucket_region:
   - ask:
-      question: Which region is the bucket in?
+      question: Bucket region?
       key: bucket_region
       recall: true
       branches:
@@ -68,8 +53,14 @@ bucket_region:
             - goto: bucket_key_prefix
 
 bucket_key_prefix:
+  - text:
+      A key prefix isn't necessary if Startifact is the only tool that will read
+      and write from the artifacts bucket.
+  - text:
+      If the bucket needs to be shared with other processes then a unique key
+      prefix can prevent Startifact clobbering and being clobbered.
   - ask:
-      question: Key prefix?
+      question: Bucket key prefix?
       key: bucket_key_prefix
       recall: true
       branches:
@@ -78,8 +69,12 @@ bucket_key_prefix:
             - goto: parameter_region
 
 parameter_region:
+  - text:
+      Startifact records the latest version of each artifact as Systems Manager
+      parameters.
+  - text: These parameters can be created in any region.
   - ask:
-      question: In which region should artifact parameters be created?
+      question: Artifact parameter region?
       key: parameter_region
       recall: true
       branches:
@@ -90,15 +85,15 @@ parameter_region:
 parameter_name_prefix:
   - text:
       By default, the latest version of each artifact will be recorded in
-      Systems Manager as /NAME/VERSION.
+      Systems Manager as /NAME/latest.
   - text:
       If, for example, you configure the prefix to "/prefix-" then your
-      artifacts will be recorded as /prefix-NAME/VERSION.
+      artifacts will be recorded as /prefix-NAME/latest.
   - text:
       If, for example, you configure the prefix to "/prefix/" then your
-      artifacts will be recorded as /prefix/NAME/VERSION.
+      artifacts will be recorded as /prefix/NAME/latest.
   - ask:
-      question: Parameter name prefix?
+      question: Artifact parameter name prefix?
       key: parameter_name_prefix
       recall: true
       branches:
