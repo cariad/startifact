@@ -1,15 +1,14 @@
 from boto3.session import Session
 
-from startifact.parameters.configuration import config_param
 from startifact.parameters.parameter import Parameter
+from startifact.static import account, config_param
 
 
 class BucketParameter(Parameter[str]):
     def __init__(self) -> None:
-        config = config_param.configuration
-        session = Session(region_name=config["bucket_param_region"])
-        super().__init__(session)
-        self._name = config["bucket_param_name"]
+        session = Session(region_name=config_param.value["bucket_param_region"])
+        super().__init__(session, account)
+        self._name = config_param.value["bucket_param_name"]
 
     @property
     def name(self) -> str:
@@ -19,11 +18,8 @@ class BucketParameter(Parameter[str]):
 
         return self._name
 
-    @property
-    def bucket_name(self) -> str:
-        if not self._value:
-            self._value = self.get()
-        return self._value
+    def make_value(self) -> str:
+        return self.get()
 
 
 bucket_parameter = BucketParameter()

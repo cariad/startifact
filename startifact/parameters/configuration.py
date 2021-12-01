@@ -1,10 +1,6 @@
 from json import dumps, loads
 from os import environ
-from typing import Optional
 
-from boto3.session import Session
-
-from startifact.account import Account
 from startifact.exceptions import (
     NotAllowedToGetConfigParameter,
     NotAllowedToGetParameter,
@@ -16,12 +12,16 @@ from startifact.types import ConfigurationDict
 
 
 class ConfigurationParameter(Parameter[ConfigurationDict]):
-    def __init__(
-        self,
-        session: Optional[Session] = None,
-        account: Optional[Account] = None,
-    ) -> None:
-        super().__init__(session=session or Session(), account=account)
+    # def __init__(
+    #     self,
+    #     account: Optional[Account] = None,
+    #     session: Optional[Session] = None,
+    #     value: Optional[ConfigurationDict] = None,
+    # ) -> None:
+    #     super().__init__(
+    #         account=account,
+    #         session=session or Session(),
+    #         value=value)
 
     @classmethod
     def get_default_name(cls) -> str:
@@ -39,31 +39,28 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
 
         return environ.get("STARTIFACT_PARAMETER", self.get_default_name())
 
-    @property
-    def configuration(self) -> ConfigurationDict:
-        if not self._value:
-            try:
-                value = self.get("{}")
-            except NotAllowedToGetParameter as ex:
-                raise NotAllowedToGetConfigParameter(ex)
+    def make_value(self) -> ConfigurationDict:
+        try:
+            raw = self.get("{}")
+        except NotAllowedToGetParameter as ex:
+            raise NotAllowedToGetConfigParameter(ex)
 
-            self._value: ConfigurationDict = loads(value)
+        config: ConfigurationDict = loads(raw)
 
-            # Set default values so we can lean on them later.
-            self._value["bucket_param_name"] = self._value.get("bucket_param_name", "")
-            self._value["bucket_param_region"] = self._value.get(
-                "bucket_param_region",
-                self._session.region_name,
-            )
-            self._value["bucket_region"] = self._value.get(
-                "bucket_region",
-                self._session.region_name,
-            )
+        # Set default values so we can lean on them later.
+        config["bucket_param_name"] = config.get("bucket_param_name", "")
+        config["bucket_param_region"] = config.get(
+            "bucket_param_region",
+            self._session.region_name,
+        )
+        config["bucket_region"] = config.get(
+            "bucket_region",
+            self._session.region_name,
+        )
 
-        return self._value
+        return config
 
     def save_changes(self) -> None:
-
         # The value dictionary has been passed around by reference so Asking can
         # update it, so we already have our own reference to it.
         value = dumps(self._value, indent=2, sort_keys=True)
@@ -72,6 +69,3 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
             self.set(value)
         except NotAllowedToPutParameter as ex:
             raise NotAllowedToPutConfigParameter(ex)
-
-
-config_param = ConfigurationParameter()

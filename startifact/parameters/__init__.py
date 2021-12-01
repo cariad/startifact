@@ -1,9 +1,9 @@
 from startifact.parameters.artifact_latest_version import ArtifactLatestVersionParameter
 from startifact.parameters.bucket import bucket_parameter
-from startifact.parameters.configuration import config_param
+from startifact.parameters.configuration import ConfigurationParameter
 
 __all__ = [
     "ArtifactLatestVersionParameter",
-    "config_param",
     "bucket_parameter",
+    "ConfigurationParameter",
 ]

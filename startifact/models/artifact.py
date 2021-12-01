@@ -9,11 +9,8 @@ from boto3.session import Session
 
 from startifact.exceptions import ArtifactNameError
 from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
-from startifact.parameters import (
-    ArtifactLatestVersionParameter,
-    bucket_parameter,
-    config_param,
-)
+from startifact.parameters import ArtifactLatestVersionParameter, bucket_parameter
+from startifact.static import config_param
 from startifact.types import ConfigurationDict
 
 
@@ -35,7 +32,7 @@ class Artifact:
         Artifact.validate_name(name)
         self._name = name
         self._version = version
-        self._config = config or config_param.configuration
+        self._config = config or config_param.value
 
     @property
     def name(self) -> str:
@@ -91,7 +88,7 @@ def exists(key: str, session: Session) -> bool:
     s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
 
     try:
-        s3.head_object(Bucket=bucket_parameter.bucket_name, Key=key)
+        s3.head_object(Bucket=bucket_parameter.value, Key=key)
         return True
     except s3.exceptions.ClientError as ex:
         if ex.response["Error"]["Code"] == "404":
@@ -118,7 +115,7 @@ def resolve_version(name: str, version: Optional[str] = None) -> str:
 
 def make_bucket_session() -> Session:
     logger = getLogger("startifact")
-    region = config_param.configuration["bucket_region"]
+    region = config_param.value["bucket_region"]
     logger.debug('Creating bucket session in "%s".', region)
     return Session(region_name=region)
 
@@ -128,7 +125,7 @@ def make_fqn(name: str, version: str) -> str:
 
 
 def make_s3_key(name: str, version: str) -> str:
-    prefix = config_param.configuration["bucket_key_prefix"]
+    prefix = config_param.value["bucket_key_prefix"]
     fqn = make_fqn(name, version)
     return f"{prefix}{fqn}"
 
@@ -143,7 +140,7 @@ def download(name: str, path: Union[Path, str], version: Optional[str] = None) -
 
     s3 = make_bucket_session().client("s3")  # pyright: reportUnknownMemberType=false
     s3.download_file(
-        Bucket=bucket_parameter.bucket_name,
+        Bucket=bucket_parameter.value,
         Key=make_s3_key(name, version),
         Filename=path.as_posix() if isinstance(path, Path) else path,
     )
@@ -168,12 +165,12 @@ def stage(name: str, version: str, path: Union[Path, str]) -> None:
         raise ArtifactVersionExistsError(name, version)
 
     logger.debug("Will stage file: %s", path)
-    logger.debug("Will stage to bucket: %s", bucket_parameter.bucket_name)
+    logger.debug("Will stage to bucket: %s", bucket_parameter.value)
     logger.debug("Will stage to key: %s", key)
     with open(path, "rb") as f:
         s3.put_object(
             Body=f,
-            Bucket=bucket_parameter.bucket_name,
+            Bucket=bucket_parameter.value,
             ContentMD5=get_b64_md5(path),
             Key=key,
         )

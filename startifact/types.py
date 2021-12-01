@@ -8,3 +8,5 @@ class ConfigurationDict(TypedDict):
     bucket_key_prefix: str
     parameter_region: str
     parameter_name_prefix: str
+    save_ok: str
+    start_ok: str

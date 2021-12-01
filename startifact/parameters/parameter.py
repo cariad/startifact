@@ -1,4 +1,4 @@
-from abc import ABC, abstractproperty
+from abc import ABC, abstractmethod, abstractproperty
 from logging import getLogger
 from typing import Generic, Optional, TypeVar
 
@@ -16,10 +16,15 @@ TParameterValue = TypeVar("TParameterValue")
 
 
 class Parameter(ABC, Generic[TParameterValue]):
-    def __init__(self, session: Session, account: Optional[Account] = None) -> None:
-        self._account = account or Account(session)
+    def __init__(
+        self,
+        session: Session,
+        account: Account,
+        value: Optional[TParameterValue] = None,
+    ) -> None:
+        self._account = account
         self._session = session
-        self._value: Optional[TParameterValue] = None
+        self._value = value
 
     @property
     def arn(self) -> str:
@@ -68,3 +73,18 @@ class Parameter(ABC, Generic[TParameterValue]):
             if ex.response["Error"]["Code"] == "AccessDeniedException":
                 raise NotAllowedToPutParameter(self.arn)
             raise ex
+
+    @abstractmethod
+    def make_value(self) -> TParameterValue:
+        """
+        Creates and returns the meaningful parameter value.
+        """
+
+    @property
+    def value(self) -> TParameterValue:
+        """
+        Meaningful parameter value.
+        """
+        if self._value is None:
+            self._value = self.make_value()
+        return self._value
