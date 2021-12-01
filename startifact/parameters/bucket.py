@@ -9,6 +9,9 @@ class BucketParameter(Parameter[str]):
         super().__init__(account, session)
         self._name = name
 
+    def make_value(self) -> str:
+        return self.get()
+
     @property
     def name(self) -> str:
         """
@@ -16,6 +19,3 @@ class BucketParameter(Parameter[str]):
         """
 
         return self._name
-
-    def make_value(self) -> str:
-        return self.get()
