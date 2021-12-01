@@ -159,6 +159,21 @@ def test_get__other_client_error(account: Account, session: Mock) -> None:
         param.get()
 
 
+def test_make_value(account: Account, session: Mock) -> None:
+    param = LatestVersionParameter(
+        account=account,
+        prefix="",
+        project="foo",
+        session=session,
+    )
+
+    get = Mock(return_value="bar")
+    setattr(param, "get", get)
+
+    assert param.make_value() == "bar"
+    get.assert_called_once_with()
+
+
 def test_set__access_denied(account: Account, session: Mock) -> None:
     exceptions = Mock()
     exceptions.ClientError = ClientError

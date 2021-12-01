@@ -34,20 +34,21 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
         except NotAllowedToGetParameter as ex:
             raise NotAllowedToGetConfigParameter(ex)
 
-        config: ConfigurationDict = loads(raw)
+        c: ConfigurationDict = loads(raw)
+
+        region = self._session.region_name
 
         # Set default values so we can lean on them later.
-        config["bucket_param_name"] = config.get("bucket_param_name", "")
-        config["bucket_param_region"] = config.get(
-            "bucket_param_region",
-            self._session.region_name,
-        )
-        config["bucket_region"] = config.get(
-            "bucket_region",
-            self._session.region_name,
-        )
+        c["bucket_key_prefix"] = c.get("bucket_key_prefix", "")
+        c["bucket_param_name"] = c.get("bucket_param_name", "")
+        c["bucket_param_region"] = c.get("bucket_param_region", region)
+        c["bucket_region"] = c.get("bucket_region", region)
+        c["parameter_name_prefix"] = c.get("parameter_name_prefix", "")
+        c["parameter_region"] = c.get("parameter_region", region)
+        c["save_ok"] = c.get("save_ok", "")
+        c["start_ok"] = c.get("start_ok", "")
 
-        return config
+        return c
 
     def save_changes(self) -> None:
         # The value dictionary has been passed around by reference so Asking can
