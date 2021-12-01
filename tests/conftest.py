@@ -2,7 +2,7 @@ from mock import Mock
 from pytest import fixture
 
 from startifact.account import Account
-from startifact.parameters.configuration import ConfigurationParameter
+from startifact.parameters import ConfigurationParameter
 from startifact.types import ConfigurationDict
 
 

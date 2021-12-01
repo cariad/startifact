@@ -30,7 +30,11 @@ def test_invoke() -> None:
     exit_code = task.invoke()
 
     resolve_version.assert_called_once_with("foo", version="latest")
-    download.assert_called_once_with("foo", Path("dist.zip"), version="4.5.6")
+    download.assert_called_once_with(
+        path=Path("dist.zip"),
+        project="foo",
+        version="4.5.6",
+    )
 
     assert out.getvalue().startswith("Downloaded foo 4.5.6: ")
     assert out.getvalue().endswith("dist.zip\n")

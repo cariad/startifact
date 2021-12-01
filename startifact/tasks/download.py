@@ -5,7 +5,7 @@ from typing import Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.models.artifact import Session
+from startifact.session import Session
 
 
 @dataclass
@@ -49,7 +49,11 @@ class DownloadTask(Task[DownloadTaskArguments]):
         getLogger("startifact").setLevel(self.args.log_level)
         session = self.args.session or Session()
         version = session.resolve_version(self.args.project, version=self.args.version)
-        session.download(self.args.project, self.args.path, version=version)
+        session.download(
+            path=self.args.path,
+            project=self.args.project,
+            version=version,
+        )
         abs_path = self.args.path.resolve().absolute().as_posix()
         self.out.write(f"Downloaded {self.args.project} {version}: {abs_path}\n")
 

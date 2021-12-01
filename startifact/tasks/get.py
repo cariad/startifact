@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.models.artifact import Session
+from startifact.session import Session
 
 
 @dataclass

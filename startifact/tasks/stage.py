@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
-from startifact.models.artifact import Session
+from startifact.exceptions import ArtifactVersionExistsError
+from startifact.session import Session
 
 
 @dataclass
@@ -15,7 +15,7 @@ class StageTaskArguments:
     Log level.
     """
 
-    path: Union[Path, str]
+    path: Path
     """
     Path to file to upload.
     """
@@ -47,7 +47,7 @@ class StageTask(Task[StageTaskArguments]):
         version = self.args.version
 
         try:
-            session.stage(project, version, self.args.path)
+            session.stage(path=self.args.path, project=project, version=version)
         except ArtifactVersionExistsError as ex:
             self.out.write("\n")
             self.out.write(str(ex))
@@ -66,7 +66,7 @@ class StageTask(Task[StageTaskArguments]):
     def make_args(cls, args: CommandLineArguments) -> StageTaskArguments:
         return StageTaskArguments(
             log_level=args.get_string("log_level", "warning").upper(),
-            path=args.get_string("stage"),
+            path=Path(args.get_string("stage")),
             project=args.get_string("project"),
             version=args.get_string("version"),
         )

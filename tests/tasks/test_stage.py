@@ -1,4 +1,5 @@
 from io import StringIO
+from pathlib import Path
 
 from cline import CommandLineArguments
 from mock import Mock
@@ -15,7 +16,7 @@ def test_invoke() -> None:
 
     args = StageTaskArguments(
         log_level="WARNING",
-        path="./foo.zip",
+        path=Path("foo.zip"),
         project="foo",
         session=session,
         version="1.2.3",
@@ -26,7 +27,11 @@ def test_invoke() -> None:
 
     exit_code = task.invoke()
 
-    stage.assert_called_once_with("foo", "1.2.3", "./foo.zip")
+    stage.assert_called_once_with(
+        path=Path("foo.zip"),
+        project="foo",
+        version="1.2.3",
+    )
 
     assert (
         out.getvalue()
@@ -52,7 +57,7 @@ def test_invoke__exists() -> None:
 
     args = StageTaskArguments(
         log_level="WARNING",
-        path="./foo.zip",
+        path=Path("foo.zip"),
         project="foo",
         session=session,
         version="1.2.3",
@@ -78,13 +83,13 @@ def test_make_args() -> None:
     args = CommandLineArguments(
         {
             "project": "foo",
-            "stage": "./foo.zip",
+            "stage": "foo.zip",
             "version": "1.2.3",
         }
     )
     assert StageTask.make_args(args) == StageTaskArguments(
         log_level="WARNING",
-        path="./foo.zip",
+        path=Path("foo.zip"),
         project="foo",
         version="1.2.3",
     )
