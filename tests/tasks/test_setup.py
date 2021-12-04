@@ -5,7 +5,7 @@ from mock import Mock
 from startifact.account import Account
 from startifact.parameters.configuration import ConfigurationParameter
 from startifact.tasks.setup import SetupTask, SetupTaskArguments
-from startifact.types import ConfigurationDict
+from startifact.types import Configuration
 
 
 def test_invoke(
@@ -13,7 +13,7 @@ def test_invoke(
     config_param: ConfigurationParameter,
     session: Mock,
 ) -> None:
-    directions = ConfigurationDict(
+    directions = Configuration(
         bucket_param_name="/bucket",
         bucket_param_region="us-east-1",
         bucket_region="eu-west-2",
@@ -35,7 +35,7 @@ def test_invoke(
     task = SetupTask(args, out)
     exit_code = task.invoke()
 
-    assert config_param.value == ConfigurationDict(
+    assert config_param.value == Configuration(
         bucket_param_name="/bucket",
         bucket_param_region="us-east-1",
         bucket_region="eu-west-2",
@@ -52,7 +52,7 @@ def test_invoke(
 def test_invoke__fail(
     account: Account,
     config_param: ConfigurationParameter,
-    empty_config: ConfigurationDict,
+    empty_config: Configuration,
     session: Mock,
 ) -> None:
     directions = empty_config.copy()
@@ -78,7 +78,7 @@ def test_make_script() -> None:
 
 def test_make_state(
     config_param: ConfigurationParameter,
-    empty_config: ConfigurationDict,
+    empty_config: Configuration,
 ) -> None:
     state = SetupTask.make_state(
         account="000000000000",

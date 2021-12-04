@@ -8,7 +8,7 @@ from startifact.exceptions.parameter_store import (
     NotAllowedToPutParameter,
 )
 from startifact.parameters import ConfigurationParameter
-from startifact.types import ConfigurationDict
+from startifact.types import Configuration
 
 
 def test_make_value(account: Account, session: Mock) -> None:
@@ -20,7 +20,7 @@ def test_make_value(account: Account, session: Mock) -> None:
     get = Mock(return_value="{}")
     setattr(param, "get", get)
 
-    assert param.make_value() == ConfigurationDict(
+    assert param.make_value() == Configuration(
         bucket_key_prefix="",
         bucket_param_name="",
         bucket_param_region="eu-west-2",

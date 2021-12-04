@@ -9,7 +9,7 @@ from cline import CommandLineArguments, Task
 
 from startifact.account import Account
 from startifact.parameters import ConfigurationParameter
-from startifact.types import ConfigurationDict
+from startifact.types import Configuration
 
 
 @dataclass
@@ -33,7 +33,7 @@ class SetupTaskArguments:
     boto3 session.
     """
 
-    directions: Optional[ConfigurationDict] = None
+    directions: Optional[Configuration] = None
     """
     Non-interactive directions. Intended only for testing.
     """
@@ -56,7 +56,7 @@ class SetupTask(Task[SetupTaskArguments]):
         account: str,
         config: ConfigurationParameter,
         region: str,
-        directions: Optional[ConfigurationDict] = None,
+        directions: Optional[Configuration] = None,
     ) -> State:
         return State(
             config.value,

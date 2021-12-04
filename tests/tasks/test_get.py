@@ -9,8 +9,8 @@ from startifact.tasks.get import GetTask, GetTaskArguments
 def test_invoke() -> None:
     session = Mock()
 
-    resolve_version = Mock(return_value="4.5.6")
-    session.resolve_version = resolve_version
+    get_latest_version = Mock(return_value="4.5.6")
+    session.get_latest_version = get_latest_version
 
     args = GetTaskArguments(
         get="version",
@@ -24,7 +24,7 @@ def test_invoke() -> None:
 
     exit_code = task.invoke()
 
-    resolve_version.assert_called_once_with("foo")
+    get_latest_version.assert_called_once_with("foo")
     assert out.getvalue() == "4.5.6\n"
     assert exit_code == 0
 

@@ -8,10 +8,10 @@ from startifact.exceptions import (
     NotAllowedToPutParameter,
 )
 from startifact.parameters.parameter import Parameter
-from startifact.types import ConfigurationDict
+from startifact.types import Configuration
 
 
-class ConfigurationParameter(Parameter[ConfigurationDict]):
+class ConfigurationParameter(Parameter[Configuration]):
     """
     Systems Manager parameter that holds the organisation configuration.
     """
@@ -24,13 +24,13 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
 
         return "/Startifact"
 
-    def make_value(self) -> ConfigurationDict:
+    def make_value(self) -> Configuration:
         try:
             raw = self.get("{}")
         except NotAllowedToGetParameter as ex:
             raise NotAllowedToGetConfiguration(str(ex))
 
-        c: ConfigurationDict = loads(raw)
+        c: Configuration = loads(raw)
 
         region = self._session.region_name
 

@@ -31,31 +31,43 @@
                     <h2>API Documentation</h2>
                         <ul class="memberlist">
             <li>
-                    <a class="class" href="#ConfigurationDict">ConfigurationDict</a>
+                    <a class="class" href="#Configuration">Configuration</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="variable" href="#ConfigurationDict.bucket_key_prefix">bucket_key_prefix</a>
+                                <a class="variable" href="#Configuration.bucket_key_prefix">bucket_key_prefix</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.bucket_param_name">bucket_param_name</a>
+                                <a class="variable" href="#Configuration.bucket_param_name">bucket_param_name</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.bucket_param_region">bucket_param_region</a>
+                                <a class="variable" href="#Configuration.bucket_param_region">bucket_param_region</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.bucket_region">bucket_region</a>
+                                <a class="variable" href="#Configuration.bucket_region">bucket_region</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.parameter_name_prefix">parameter_name_prefix</a>
+                                <a class="variable" href="#Configuration.parameter_name_prefix">parameter_name_prefix</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.parameter_region">parameter_region</a>
+                                <a class="variable" href="#Configuration.parameter_region">parameter_region</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.save_ok">save_ok</a>
+                                <a class="variable" href="#Configuration.save_ok">save_ok</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ConfigurationDict.start_ok">start_ok</a>
+                                <a class="variable" href="#Configuration.start_ok">start_ok</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#Download">Download</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#Download.__init__">Download</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Download.version">version</a>
                         </li>
                 </ul>
 
@@ -80,10 +92,11 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+            <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypedDict</span>
 
 
-<span class="k">class</span> <span class="nc">ConfigurationDict</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Configuration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -110,12 +123,12 @@
 
     <span class="n">parameter_name_prefix</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Artefact parameter name prefix.</span>
+<span class="sd">    Artifact parameter name prefix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">parameter_region</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Artefact parameter name region.</span>
+<span class="sd">    Artifact parameter name region.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">save_ok</span><span class="p">:</span> <span class="nb">str</span>
@@ -128,23 +141,35 @@
 <span class="sd">    Most recent confirmation that the user is ready to start the configuration</span>
 <span class="sd">    script.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Download</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Information about a downloaded artifact.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets the explicit version that was downloaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 </pre></div>
 
         </details>
 
             </section>
-                <section id="ConfigurationDict">
+                <section id="Configuration">
                                 <div class="attr class">
-        <a class="headerlink" href="#ConfigurationDict">#&nbsp;&nbsp</a>
+        <a class="headerlink" href="#Configuration">#&nbsp;&nbsp</a>
 
         
         <span class="def">class</span>
-        <span class="name">ConfigurationDict</span><wbr>(<span class="base">typing.TypedDict</span>):
+        <span class="name">Configuration</span><wbr>(<span class="base">typing.TypedDict</span>):
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ConfigurationDict</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+            <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Configuration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -171,12 +196,12 @@
 
     <span class="n">parameter_name_prefix</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Artefact parameter name prefix.</span>
+<span class="sd">    Artifact parameter name prefix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">parameter_region</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Artefact parameter name region.</span>
+<span class="sd">    Artifact parameter name region.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">save_ok</span><span class="p">:</span> <span class="nb">str</span>
@@ -197,8 +222,8 @@
 </div>
 
 
-                            <div id="ConfigurationDict.bucket_key_prefix" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.bucket_key_prefix">#&nbsp;&nbsp</a>
+                            <div id="Configuration.bucket_key_prefix" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.bucket_key_prefix">#&nbsp;&nbsp</a>
 
         <span class="name">bucket_key_prefix</span><span class="annotation">: str</span>
     </div>
@@ -208,8 +233,8 @@
 
 
                             </div>
-                            <div id="ConfigurationDict.bucket_param_name" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.bucket_param_name">#&nbsp;&nbsp</a>
+                            <div id="Configuration.bucket_param_name" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.bucket_param_name">#&nbsp;&nbsp</a>
 
         <span class="name">bucket_param_name</span><span class="annotation">: str</span>
     </div>
@@ -219,8 +244,8 @@
 
 
                             </div>
-                            <div id="ConfigurationDict.bucket_param_region" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.bucket_param_region">#&nbsp;&nbsp</a>
+                            <div id="Configuration.bucket_param_region" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.bucket_param_region">#&nbsp;&nbsp</a>
 
         <span class="name">bucket_param_region</span><span class="annotation">: str</span>
     </div>
@@ -230,8 +255,8 @@
 
 
                             </div>
-                            <div id="ConfigurationDict.bucket_region" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.bucket_region">#&nbsp;&nbsp</a>
+                            <div id="Configuration.bucket_region" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.bucket_region">#&nbsp;&nbsp</a>
 
         <span class="name">bucket_region</span><span class="annotation">: str</span>
     </div>
@@ -241,30 +266,30 @@
 
 
                             </div>
-                            <div id="ConfigurationDict.parameter_name_prefix" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.parameter_name_prefix">#&nbsp;&nbsp</a>
+                            <div id="Configuration.parameter_name_prefix" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.parameter_name_prefix">#&nbsp;&nbsp</a>
 
         <span class="name">parameter_name_prefix</span><span class="annotation">: str</span>
     </div>
 
-            <div class="docstring"><p>Artefact parameter name prefix.</p>
+            <div class="docstring"><p>Artifact parameter name prefix.</p>
 </div>
 
 
                             </div>
-                            <div id="ConfigurationDict.parameter_region" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.parameter_region">#&nbsp;&nbsp</a>
+                            <div id="Configuration.parameter_region" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.parameter_region">#&nbsp;&nbsp</a>
 
         <span class="name">parameter_region</span><span class="annotation">: str</span>
     </div>
 
-            <div class="docstring"><p>Artefact parameter name region.</p>
+            <div class="docstring"><p>Artifact parameter name region.</p>
 </div>
 
 
                             </div>
-                            <div id="ConfigurationDict.save_ok" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.save_ok">#&nbsp;&nbsp</a>
+                            <div id="Configuration.save_ok" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.save_ok">#&nbsp;&nbsp</a>
 
         <span class="name">save_ok</span><span class="annotation">: str</span>
     </div>
@@ -274,8 +299,8 @@
 
 
                             </div>
-                            <div id="ConfigurationDict.start_ok" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ConfigurationDict.start_ok">#&nbsp;&nbsp</a>
+                            <div id="Configuration.start_ok" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Configuration.start_ok">#&nbsp;&nbsp</a>
 
         <span class="name">start_ok</span><span class="annotation">: str</span>
     </div>
@@ -290,21 +315,74 @@ script.</p>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt>builtins.dict</dt>
-                                <dd id="ConfigurationDict.__init__" class="class">dict</dd>
-                <dd id="ConfigurationDict.get" class="function">get</dd>
-                <dd id="ConfigurationDict.setdefault" class="function">setdefault</dd>
-                <dd id="ConfigurationDict.pop" class="function">pop</dd>
-                <dd id="ConfigurationDict.popitem" class="function">popitem</dd>
-                <dd id="ConfigurationDict.keys" class="function">keys</dd>
-                <dd id="ConfigurationDict.items" class="function">items</dd>
-                <dd id="ConfigurationDict.values" class="function">values</dd>
-                <dd id="ConfigurationDict.update" class="function">update</dd>
-                <dd id="ConfigurationDict.fromkeys" class="function">fromkeys</dd>
-                <dd id="ConfigurationDict.clear" class="function">clear</dd>
-                <dd id="ConfigurationDict.copy" class="function">copy</dd>
+                                <dd id="Configuration.__init__" class="class">dict</dd>
+                <dd id="Configuration.get" class="function">get</dd>
+                <dd id="Configuration.setdefault" class="function">setdefault</dd>
+                <dd id="Configuration.pop" class="function">pop</dd>
+                <dd id="Configuration.popitem" class="function">popitem</dd>
+                <dd id="Configuration.keys" class="function">keys</dd>
+                <dd id="Configuration.items" class="function">items</dd>
+                <dd id="Configuration.values" class="function">values</dd>
+                <dd id="Configuration.update" class="function">update</dd>
+                <dd id="Configuration.fromkeys" class="function">fromkeys</dd>
+                <dd id="Configuration.clear" class="function">clear</dd>
+                <dd id="Configuration.copy" class="function">copy</dd>
 
             </div>
                                 </dl>
+                            </div>
+                </section>
+                <section id="Download">
+                                <div class="attr class">
+        <a class="headerlink" href="#Download">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@dataclass</div>
+
+        <span class="def">class</span>
+        <span class="name">Download</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Download</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Information about a downloaded artifact.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets the explicit version that was downloaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Information about a downloaded artifact.</p>
+</div>
+
+
+                            <div id="Download.__init__" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Download.__init__">#&nbsp;&nbsp</a>
+
+        
+            <span class="name">Download</span><span class="signature">(version: str)</span>
+    </div>
+
+        
+    
+
+                            </div>
+                            <div id="Download.version" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Download.version">#&nbsp;&nbsp</a>
+
+        <span class="name">version</span><span class="annotation">: str</span>
+    </div>
+
+            <div class="docstring"><p>Gets the explicit version that was downloaded.</p>
+</div>
+
+
                             </div>
                 </section>
     </main>

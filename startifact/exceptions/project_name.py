@@ -7,4 +7,4 @@ class ProjectNameError(ValueError):
     """
 
     def __init__(self, name: str, expression: str) -> None:
-        super().__init__(f'artefact name "{name}" does not satisfy "{expression}"')
+        super().__init__(f'artifact name "{name}" does not satisfy "{expression}"')

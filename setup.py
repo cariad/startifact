@@ -34,7 +34,7 @@ setup(
     author="Cariad Eccleston",
     author_email="cariad@cariad.earth",
     classifiers=classifiers,
-    description="Stages artefacts into Amazon Web Services",
+    description="Stages artifacts into Amazon Web Services",
     entry_points={
         "console_scripts": [
             "startifact=startifact.__main__:entry",
