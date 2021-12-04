@@ -4,7 +4,7 @@
 
 **Startifact** is a command line application and Python package for staging and retrieving versioned artefacts in Amazon Web Services.
 
-Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact).
+Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact/startifact.html).
 
 ## Installation
 
@@ -16,7 +16,7 @@ pip install startifact
 
 Startifact uses a single shared configuration across all of your CI/CD pipelines.
 
-Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact).
+Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact/startifact.html).
 
 ## Usage
 
