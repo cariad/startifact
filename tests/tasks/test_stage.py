@@ -4,7 +4,7 @@ from pathlib import Path
 from cline import CommandLineArguments
 from mock import Mock
 
-from startifact.exceptions import ArtifactVersionExistsError
+from startifact.exceptions import AlreadyStagedError
 from startifact.tasks.stage import StageTask, StageTaskArguments
 
 
@@ -37,7 +37,7 @@ def test_invoke() -> None:
         out.getvalue()
         == """
 Successfully staged foo 1.2.3! 🎉
-To download this artifact, run one of:
+To download this artefact, run one of:
 
     startifact foo --download <PATH>
     startifact foo latest --download <PATH>
@@ -52,7 +52,7 @@ To download this artifact, run one of:
 def test_invoke__exists() -> None:
     session = Mock()
 
-    stage = Mock(side_effect=ArtifactVersionExistsError("foo", "1.2.3"))
+    stage = Mock(side_effect=AlreadyStagedError("foo", "1.2.3"))
     session.stage = stage
 
     args = StageTaskArguments(

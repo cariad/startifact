@@ -8,7 +8,7 @@ from startifact.account import Account
 from startifact.exceptions import (
     NotAllowedToGetParameter,
     NotAllowedToPutParameter,
-    ParameterNotFoundError,
+    ParameterNotFound,
     ParameterStoreError,
 )
 
@@ -19,10 +19,9 @@ class Parameter(ABC, Generic[TParameterValue]):
     """
     A Systems Manager parameter.
 
-    Arguments:
-        account: Amazon Web Services account.
-        session: boto3 session.
-        value:   Warm cache value.
+    - account: Amazon Web Services account.
+    - session: Boto3 session.
+    - value:   Warm cache value.
     """
 
     def __init__(
@@ -38,7 +37,7 @@ class Parameter(ABC, Generic[TParameterValue]):
     @property
     def arn(self) -> str:
         """
-        Parameter ARN.
+        Gets the ARN.
         """
 
         name = self.name[1:] if self.name.startswith("/") else self.name
@@ -50,18 +49,14 @@ class Parameter(ABC, Generic[TParameterValue]):
         """
         Gets the parameter's value.
 
-        Arguments:
-            default: Value to return if the parameter does not exist.
+        Raises `startifact.exceptions.NotAllowedToGetParameter` if the current
+        identity is not allowed to get this parameter's value.
 
-        Raises:
-            NotAllowedToGetParameter: If the current identity is not permitted
-            to get this parameter's value.
+        Raises `startifact.exceptions.ParameterNotFoundError` if the parameter
+        does not exist and a default value was not specified.
 
-            ParameterNotFoundError: If the parameter does not exist and a
-            default value was not specified.
-
-            ParameterStoreError: If Systems Manager returns an unexpected
-            response.
+        Raises `startifact.exceptions.ParameterStoreError` if Systems Manager
+        returns an unexpected response.
         """
 
         ssm = self._session.client("ssm")  # pyright: reportUnknownMemberType=false
@@ -74,7 +69,7 @@ class Parameter(ABC, Generic[TParameterValue]):
 
         except ssm.exceptions.ParameterNotFound:
             if default is None:
-                raise ParameterNotFoundError(self.name)
+                raise ParameterNotFound(self.name)
             return default
 
         except ssm.exceptions.ClientError as ex:
@@ -90,16 +85,23 @@ class Parameter(ABC, Generic[TParameterValue]):
     @abstractmethod
     def make_value(self) -> TParameterValue:
         """
-        Creates and returns the meaningful parameter value.
+        Creates and returns the parameter's meaningful value.
         """
 
     @abstractproperty
     def name(self) -> str:
         """
-        Parameter name.
+        Gets the parameter's name.
         """
 
     def set(self, value: str) -> None:
+        """
+        Sets the parameter's value.
+
+        Raises `startifact.exceptions.NotAllowedToPutParameter` if the current
+        identity is not allowed to update this parameter's value.
+        """
+
         ssm = self._session.client("ssm")  # pyright: reportUnknownMemberType=false
         try:
             ssm.put_parameter(
@@ -116,8 +118,9 @@ class Parameter(ABC, Generic[TParameterValue]):
     @property
     def value(self) -> TParameterValue:
         """
-        Meaningful parameter value.
+        Gets the parameter's meaningful value.
         """
+
         if self._value is None:
             self._value = self.make_value()
         return self._value

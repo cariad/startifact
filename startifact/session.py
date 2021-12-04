@@ -8,8 +8,8 @@ from typing import Optional, Union
 import boto3.session
 
 from startifact.account import Account
-from startifact.exceptions import ArtifactNameError
-from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
+from startifact.exceptions import ProjectNameError
+from startifact.exceptions.already_staged import AlreadyStagedError
 from startifact.parameters import (
     BucketParameter,
     ConfigurationParameter,
@@ -20,7 +20,7 @@ from startifact.types import ConfigurationDict
 
 class Session:
     """
-    Startifact session.
+    A Startifact session.
     """
 
     def __init__(
@@ -50,7 +50,7 @@ class Session:
     @property
     def account(self) -> Account:
         """
-        Amazon Web Services account.
+        Gets the Amazon Web Services account.
         """
 
         if self._account is None:
@@ -60,7 +60,7 @@ class Session:
     @property
     def bucket(self) -> str:
         """
-        Bucket name.
+        Gets the bucket name.
         """
 
         if self._bucket is None:
@@ -82,16 +82,16 @@ class Session:
     @property
     def default_session(self) -> boto3.session.Session:
         """
-        Default boto3 session.
+        Gets the default boto3 session.
         """
 
         if self._default_session is None:
             self._default_session = self.make_boto_session()
         return self._default_session
 
-    def download(self, path: Path, project: str, version: Optional[str] = None) -> None:
+    def download(self, project: str, path: Path, version: Optional[str] = None) -> None:
         """
-        Downloads an artifact.
+        Downloads an artefact.
 
         Arguments:
             path:    Download path.
@@ -110,14 +110,7 @@ class Session:
 
     def exists(self, project: str, version: str) -> bool:
         """
-        Checks if an artifact version is already staged.
-
-        Arguments:
-            project: Project.
-            version: Version.
-
-        Returns:
-            `True` if the artifact version exists, otherwise `False`.
+        Checks if an artefact version is already staged.
         """
 
         s3 = self.s3_session.client("s3")  # pyright: reportUnknownMemberType=false
@@ -134,12 +127,6 @@ class Session:
     def make_boto_session(self, region: Optional[str] = None) -> boto3.session.Session:
         """
         Creates a new boto3 session.
-
-        Arguments:
-            region: Region.
-
-        Returns:
-            boto3 session.
         """
 
         if region is None:
@@ -149,13 +136,6 @@ class Session:
     def resolve_version(self, project: str, version: Optional[str] = None) -> str:
         """
         Resolves a potentially descriptive version to an explicit number.
-
-        Arguments:
-            project: Project.
-            version: Version to resolve. Defaults to the latest version.
-
-        Returns:
-            Explicit version number.
         """
 
         if version is not None and version.lower() != "latest":
@@ -169,7 +149,7 @@ class Session:
     @property
     def s3_session(self) -> boto3.session.Session:
         """
-        boto3 session for S3 interaction.
+        Gets the Boto3 session for S3 interaction.
         """
 
         if self._s3_session is None:
@@ -180,7 +160,7 @@ class Session:
     @property
     def ssm_session_for_bucket(self) -> boto3.session.Session:
         """
-        boto3 session for interacting with bucket parameters.
+        Gets the Boto3 session for interacting with bucket parameters.
         """
 
         if self._ssm_session_for_bucket is None:
@@ -191,7 +171,7 @@ class Session:
     @property
     def ssm_session_for_versions(self) -> boto3.session.Session:
         """
-        boto3 session for interacting with version parameters.
+        Gets the Boto3 session for interacting with version parameters.
         """
 
         if self._ssm_session_for_versions is None:
@@ -199,15 +179,21 @@ class Session:
             self._ssm_session_for_versions = self.make_boto_session(region)
         return self._ssm_session_for_versions
 
-    def stage(self, path: Path, project: str, version: str) -> None:
+    def stage(self, project: str, version: str, path: Path) -> None:
+        """
+        Stages an artefact.
+
+        Raises `startifact.exceptions.ProjectNameError` if the project name is
+        not acceptable.
+
+        Raises `startifact.exceptions.AlreadyStagedError` if this version is
+        already staged.
         """
 
-        Raises:
-            ArtifactVersionExistsError: If this artifact version is already staged.
-        """
+        self.validate_project_name(project)
 
         if self.exists(project, version):
-            raise ArtifactVersionExistsError(project, version)
+            raise AlreadyStagedError(project, version)
 
         key = self.make_s3_key(project, version)
 
@@ -230,12 +216,6 @@ class Session:
     def get_latest_version(self, project: str) -> str:
         """
         Gets the latest version of a project.
-
-        Arguments:
-            project: Project.
-
-        Returns:
-            Version number.
         """
 
         return self.make_latest_version_parameter(project).get()
@@ -254,19 +234,6 @@ class Session:
         return f"{prefix}{fqn}"
 
     @staticmethod
-    def validate_name(name: str) -> None:
-        """
-        Validates a proposed artifact name.
-
-        Raises:
-            ArtifactNameError: If the proposed name is not acceptable
-        """
-
-        expression = r"^[a-zA-Z0-9_\-\.]+$"
-        if not match(expression, name):
-            raise ArtifactNameError(name, expression)
-
-    @staticmethod
     def get_b64_md5(path: Union[Path, str]) -> str:
         """
         Gets the MD5 hash of the file as a base64-encoded string.
@@ -281,3 +248,16 @@ class Session:
     @staticmethod
     def make_fqn(name: str, version: str) -> str:
         return f"{name}@{version}"
+
+    @staticmethod
+    def validate_project_name(name: str) -> None:
+        """
+        Validates a proposed project name.
+
+        Raises `startifact.exceptions.ProjectNameError` if the proposed name is
+        not acceptable.
+        """
+
+        expression = r"^[a-zA-Z0-9_\-\.]+$"
+        if not match(expression, name):
+            raise ProjectNameError(name, expression)

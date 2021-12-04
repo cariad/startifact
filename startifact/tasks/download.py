@@ -11,7 +11,7 @@ from startifact.session import Session
 @dataclass
 class DownloadTaskArguments:
     """
-    Artifact download arguments.
+    Artefact download arguments.
     """
 
     log_level: str
@@ -31,7 +31,7 @@ class DownloadTaskArguments:
 
     version: str
     """
-    Artifact version.
+    Artefact version.
     """
 
     session: Optional[Session] = None
@@ -42,7 +42,7 @@ class DownloadTaskArguments:
 
 class DownloadTask(Task[DownloadTaskArguments]):
     """
-    Downloads an artifact.
+    Downloads an artefact.
     """
 
     def invoke(self) -> int:

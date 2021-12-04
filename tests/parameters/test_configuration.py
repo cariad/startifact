@@ -2,12 +2,9 @@ from mock import Mock
 from pytest import raises
 
 from startifact.account import Account
-from startifact.exceptions import (
-    NotAllowedToGetConfigParameter,
-    NotAllowedToGetParameter,
-)
+from startifact.exceptions import NotAllowedToGetConfiguration, NotAllowedToGetParameter
 from startifact.exceptions.parameter_store import (
-    NotAllowedToPutConfigParameter,
+    NotAllowedToPutConfiguration,
     NotAllowedToPutParameter,
 )
 from startifact.parameters import ConfigurationParameter
@@ -44,7 +41,7 @@ def test_make_value__access_denied(account: Account, session: Mock) -> None:
     get = Mock(side_effect=NotAllowedToGetParameter(""))
     setattr(param, "get", get)
 
-    with raises(NotAllowedToGetConfigParameter):
+    with raises(NotAllowedToGetConfiguration):
         param.make_value()
 
 
@@ -57,5 +54,5 @@ def test_save_changes__access_denied(account: Account, session: Mock) -> None:
     set = Mock(side_effect=NotAllowedToPutParameter(""))
     setattr(param, "set", set)
 
-    with raises(NotAllowedToPutConfigParameter):
+    with raises(NotAllowedToPutConfiguration):
         param.save_changes()

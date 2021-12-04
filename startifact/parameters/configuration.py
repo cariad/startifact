@@ -2,9 +2,9 @@ from json import dumps, loads
 from os import environ
 
 from startifact.exceptions import (
-    NotAllowedToGetConfigParameter,
+    NotAllowedToGetConfiguration,
     NotAllowedToGetParameter,
-    NotAllowedToPutConfigParameter,
+    NotAllowedToPutConfiguration,
     NotAllowedToPutParameter,
 )
 from startifact.parameters.parameter import Parameter
@@ -12,27 +12,23 @@ from startifact.types import ConfigurationDict
 
 
 class ConfigurationParameter(Parameter[ConfigurationDict]):
+    """
+    Systems Manager parameter that holds the organisation configuration.
+    """
+
     @classmethod
     def get_default_name(cls) -> str:
         """
         Gets the default name.
         """
 
-        return "/startifact"
-
-    @property
-    def name(self) -> str:
-        """
-        Parameter name.
-        """
-
-        return environ.get("STARTIFACT_PARAMETER", self.get_default_name())
+        return "/Startifact"
 
     def make_value(self) -> ConfigurationDict:
         try:
             raw = self.get("{}")
         except NotAllowedToGetParameter as ex:
-            raise NotAllowedToGetConfigParameter(ex)
+            raise NotAllowedToGetConfiguration(str(ex))
 
         c: ConfigurationDict = loads(raw)
 
@@ -50,7 +46,15 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
 
         return c
 
+    @property
+    def name(self) -> str:
+        return environ.get("STARTIFACT_PARAMETER", self.get_default_name())
+
     def save_changes(self) -> None:
+        """
+        Saves changes to the configuration.
+        """
+
         # The value dictionary has been passed around by reference so Asking can
         # update it, so we already have our own reference to it.
         value = dumps(self._value, indent=2, sort_keys=True)
@@ -58,4 +62,4 @@ class ConfigurationParameter(Parameter[ConfigurationDict]):
         try:
             self.set(value)
         except NotAllowedToPutParameter as ex:
-            raise NotAllowedToPutConfigParameter(ex)
+            raise NotAllowedToPutConfiguration(str(ex))

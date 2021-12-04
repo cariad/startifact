@@ -5,6 +5,10 @@ from startifact.parameters.parameter import Parameter
 
 
 class BucketParameter(Parameter[str]):
+    """
+    Systems Manager parameter that holds the bucket name.
+    """
+
     def __init__(self, account: Account, name: str, session: Session) -> None:
         super().__init__(account, session)
         self._name = name
@@ -14,8 +18,4 @@ class BucketParameter(Parameter[str]):
 
     @property
     def name(self) -> str:
-        """
-        Parameter name.
-        """
-
         return self._name

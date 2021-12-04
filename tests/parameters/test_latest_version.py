@@ -3,7 +3,7 @@ from mock import Mock
 from pytest import mark, raises
 
 from startifact.account import Account
-from startifact.exceptions import NotAllowedToGetParameter, ParameterNotFoundError
+from startifact.exceptions import NotAllowedToGetParameter, ParameterNotFound
 from startifact.exceptions.parameter_store import (
     NotAllowedToPutParameter,
     ParameterStoreError,
@@ -14,8 +14,8 @@ from startifact.parameters import LatestVersionParameter
 @mark.parametrize(
     "prefix, expect",
     [
-        ("", "arn:aws:ssm:eu-west-2:000000000000:parameter/foo/latest"),
-        ("/woo", "arn:aws:ssm:eu-west-2:000000000000:parameter/woo/foo/latest"),
+        ("", "arn:aws:ssm:eu-west-2:000000000000:parameter/foo/Latest"),
+        ("/woo", "arn:aws:ssm:eu-west-2:000000000000:parameter/woo/foo/Latest"),
     ],
 )
 def test_arn(prefix: str, expect: str, account: Account, session: Mock) -> None:
@@ -47,7 +47,7 @@ def test_get(account: Account, session: Mock) -> None:
     actual = param.get()
 
     client.assert_called_once_with("ssm")
-    get_parameter.assert_called_once_with(Name="/foo/latest")
+    get_parameter.assert_called_once_with(Name="/foo/Latest")
     assert actual == "1.2.3"
 
 
@@ -85,7 +85,7 @@ def test_get__not_found(account: Account, session: Mock) -> None:
         session=session,
     )
 
-    with raises(ParameterNotFoundError):
+    with raises(ParameterNotFound):
         param.get()
 
 

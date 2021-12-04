@@ -1,21 +1,25 @@
-from startifact.exceptions.artifact_name import ArtifactNameError
-from startifact.exceptions.artifact_version_exists import ArtifactVersionExistsError
+"""
+All the custom exceptions that Startifact can raise.
+"""
+
+from startifact.exceptions.already_staged import AlreadyStagedError
 from startifact.exceptions.parameter_store import (
-    NotAllowedToGetConfigParameter,
+    NotAllowedToGetConfiguration,
     NotAllowedToGetParameter,
-    NotAllowedToPutConfigParameter,
+    NotAllowedToPutConfiguration,
     NotAllowedToPutParameter,
-    ParameterNotFoundError,
+    ParameterNotFound,
     ParameterStoreError,
 )
+from startifact.exceptions.project_name import ProjectNameError
 
 __all__ = [
-    "ArtifactNameError",
-    "ArtifactVersionExistsError",
-    "ParameterNotFoundError",
-    "ParameterStoreError",
+    "AlreadyStagedError",
+    "NotAllowedToGetConfiguration",
     "NotAllowedToGetParameter",
+    "NotAllowedToPutConfiguration",
     "NotAllowedToPutParameter",
-    "NotAllowedToGetConfigParameter",
-    "NotAllowedToPutConfigParameter",
+    "ParameterNotFound",
+    "ParameterStoreError",
+    "ProjectNameError",
 ]

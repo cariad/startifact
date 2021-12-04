@@ -6,9 +6,9 @@ from mock import Mock
 from mock.mock import ANY, patch
 from pytest import mark, raises
 
-from startifact import Session
 from startifact.account import Account
-from startifact.exceptions import ArtifactNameError, ArtifactVersionExistsError
+from startifact.exceptions import AlreadyStagedError, ProjectNameError
+from startifact.session import Session
 from startifact.types import ConfigurationDict
 
 
@@ -328,7 +328,7 @@ def test_stage(empty_config: ConfigurationDict) -> None:
 def test_stage__exists() -> None:
     session = Session()
     with patch.object(session, "exists", return_value=True):
-        with raises(ArtifactVersionExistsError):
+        with raises(AlreadyStagedError):
             session.stage(
                 path=Path("LICENSE"),
                 project="foo",
@@ -336,16 +336,15 @@ def test_stage__exists() -> None:
             )
 
 
-
 @mark.parametrize("name", ["foo"])
-def test_validate_name__ok(name: str) -> None:
-    Session.validate_name(name)
+def test_validate_project_name__ok(name: str) -> None:
+    Session.validate_project_name(name)
     assert True
 
 
 @mark.parametrize("name", ["", " ", "foo "])
-def test_validate_name__fail(name: str) -> None:
-    with raises(ArtifactNameError) as ex:
-        Session.validate_name(name)
-    expect = f'artifact name "{name}" does not satisfy "^[a-zA-Z0-9_\\-\\.]+$"'
+def test_validate_project_name__fail(name: str) -> None:
+    with raises(ProjectNameError) as ex:
+        Session.validate_project_name(name)
+    expect = f'artefact name "{name}" does not satisfy "^[a-zA-Z0-9_\\-\\.]+$"'
     assert str(ex.value) == expect

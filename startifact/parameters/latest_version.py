@@ -5,6 +5,11 @@ from startifact.parameters.parameter import Parameter
 
 
 class LatestVersionParameter(Parameter[str]):
+    """
+    Systems Manager parameter that holds the latest version number of an
+    artefact.
+    """
+
     def __init__(
         self,
         account: Account,
@@ -13,15 +18,11 @@ class LatestVersionParameter(Parameter[str]):
         session: Session,
     ) -> None:
         super().__init__(account, session)
-        self._name = f"{prefix}/{project}/latest"
+        self._name = f"{prefix}/{project}/Latest"
 
     def make_value(self) -> str:
         return self.get()
 
     @property
     def name(self) -> str:
-        """
-        Parameter name.
-        """
-
         return self._name

@@ -90,6 +90,6 @@ def test_make_state(
     assert state.references == {
         "account_fmt": "\x1b[38;5;11m000000000000\x1b[39m",
         "default_environ_name_fmt": "\x1b[38;5;11mSTARTIFACT_PARAMETER\x1b[39m",
-        "param_fmt": "\x1b[38;5;11m/startifact\x1b[39m",
+        "param_fmt": "\x1b[38;5;11m/Startifact\x1b[39m",
         "region_fmt": "\x1b[38;5;11meu-west-2\x1b[39m",
     }

@@ -2,7 +2,7 @@ start:
   - title: Startifact organisation setup
   - text:
       Please refer to the documentation at
-      https://cariad.github.io/startifact/#organisation-setup for guidance.
+      https://cariad.github.io/startifact for guidance.
   - text:
       The shared configuration parameter will be created as {param_fmt} in
       region {region_fmt} in account {account_fmt}.
@@ -19,7 +19,7 @@ start:
 
 bucket_param_name:
   - text:
-      The name of your artifacts bucket must be held in an existing Systems Manager
+      The name of your artefacts bucket must be held in an existing Systems Manager
       parameter.
   - text:
       If either your bucket or its parameter have not been deployed yet, please refer to
@@ -56,7 +56,7 @@ bucket_region:
 bucket_key_prefix:
   - text:
       A key prefix isn't necessary if Startifact is the only tool that will read
-      and write from the artifacts bucket.
+      and write from the artefacts bucket.
   - text:
       If the bucket needs to be shared with other processes then a unique key
       prefix can prevent Startifact clobbering and being clobbered.
@@ -71,11 +71,11 @@ bucket_key_prefix:
 
 parameter_region:
   - text:
-      Startifact records the latest version of each artifact as Systems Manager
+      Startifact records the latest version of each artefact as Systems Manager
       parameters.
   - text: These parameters can be created in any region.
   - ask:
-      question: Artifact parameter region?
+      question: Artefact parameter region?
       key: parameter_region
       recall: true
       branches:
@@ -85,13 +85,13 @@ parameter_region:
 
 parameter_name_prefix:
   - text:
-      By default, the latest version of each artifact will be recorded in
-      Systems Manager as /NAME/latest.
+      By default, the latest version of each artefact will be recorded in
+      Systems Manager as /NAME/Latest.
   - text:
       Any name prefix you specify will be prepended to this name. For example,
-      the prefix "/org" will create parameters named "/org/NAME/latest".
+      the prefix "/org" will create parameters named "/org/NAME/Latest".
   - ask:
-      question: Artifact parameter name prefix?
+      question: Artefact parameter name prefix?
       key: parameter_name_prefix
       recall: true
       branches:

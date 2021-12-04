@@ -4,7 +4,7 @@ from typing import Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.exceptions import ArtifactVersionExistsError
+from startifact.exceptions import AlreadyStagedError
 from startifact.session import Session
 
 
@@ -38,7 +38,7 @@ class StageTaskArguments:
 
 class StageTask(Task[StageTaskArguments]):
     """
-    Stages an artifact in Amazon Web services.
+    Stages an artefact in Amazon Web services.
     """
 
     def invoke(self) -> int:
@@ -48,7 +48,7 @@ class StageTask(Task[StageTaskArguments]):
 
         try:
             session.stage(path=self.args.path, project=project, version=version)
-        except ArtifactVersionExistsError as ex:
+        except AlreadyStagedError as ex:
             self.out.write("\n")
             self.out.write(str(ex))
             self.out.write(" 🔥\n\n")
@@ -56,7 +56,7 @@ class StageTask(Task[StageTaskArguments]):
 
         self.out.write("\n")
         self.out.write(f"Successfully staged {project} {version}! 🎉\n")
-        self.out.write("To download this artifact, run one of:\n\n")
+        self.out.write("To download this artefact, run one of:\n\n")
         self.out.write(f"    startifact {project} --download <PATH>\n")
         self.out.write(f"    startifact {project} latest --download <PATH>\n")
         self.out.write(f"    startifact {project} {version} --download <PATH>\n\n")

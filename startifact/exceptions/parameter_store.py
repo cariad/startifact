@@ -1,16 +1,26 @@
-from startifact.exceptions.startifact import StartifactError
+class ParameterStoreError(Exception):
+    """
+    Raised when an interaction with Systems Manager Parameter Store fails.
+    """
 
-
-class ParameterStoreError(StartifactError):
     pass
 
 
-class ParameterNotFoundError(ParameterStoreError):
+class ParameterNotFound(ParameterStoreError):
+    """
+    Raised when a Systems Manager parameter does not exist.
+    """
+
     def __init__(self, name: str) -> None:
         super().__init__(f'parameter "{name}" was not found')
 
 
 class NotAllowedToGetParameter(ParameterStoreError):
+    """
+    Raised when the current identity does not have permission to get a Systems
+    Manager parameter value.
+    """
+
     def __init__(self, arn: str) -> None:
         super().__init__(
             f'You do not have permission to get the Systems Manager parameter "{arn}".'
@@ -18,16 +28,28 @@ class NotAllowedToGetParameter(ParameterStoreError):
 
 
 class NotAllowedToPutParameter(ParameterStoreError):
+    """
+    Raised when the current identity does not have permission to put a Systems
+    Manager parameter value.
+    """
+
     def __init__(self, arn: str) -> None:
         super().__init__(
             f'You do not have permission to put the Systems Manager parameter "{arn}".'
         )
 
 
-class NotAllowedToGetConfigParameter(ParameterStoreError):
-    def __init__(self, exception: NotAllowedToGetParameter) -> None:
+class NotAllowedToGetConfiguration(ParameterStoreError):
+    """
+    Raised when the current identity does not have permission to get the
+    organisation configuration from Systems Manager.
+
+    - prefix: Message to prefix to the error.
+    """
+
+    def __init__(self, prefix: str) -> None:
         super().__init__(
-            str(exception),
+            prefix,
             "\n\nIf your configuration is held in a "
             + "different parameter then set the environment variable "
             + "STARTIFACT_PARAMETER to the name of that parameter.\n\nIf the "
@@ -37,10 +59,17 @@ class NotAllowedToGetConfigParameter(ParameterStoreError):
         )
 
 
-class NotAllowedToPutConfigParameter(ParameterStoreError):
-    def __init__(self, exception: NotAllowedToPutParameter) -> None:
+class NotAllowedToPutConfiguration(ParameterStoreError):
+    """
+    Raised when the current identity does not have permission to put the
+    organisation configuration into Systems Manager.
+
+    - prefix: Message to prefix to the error.
+    """
+
+    def __init__(self, prefix: str) -> None:
         super().__init__(
-            str(exception),
+            prefix,
             "\n\nIf your configuration is held in a "
             + "different parameter then set the environment variable "
             + "STARTIFACT_PARAMETER to the name of that parameter.\n\nIf the "

@@ -1,5 +1,7 @@
-from startifact.account import Account
 from mock import Mock
+
+from startifact.account import Account
+
 
 def test_account_id() -> None:
     get_caller_identity = Mock(return_value={"Account": "000000000000"})
@@ -7,7 +9,7 @@ def test_account_id() -> None:
     sts = Mock()
     sts.get_caller_identity = get_caller_identity
 
-    client=Mock(return_value=sts)
+    client = Mock(return_value=sts)
 
     session = Mock()
     session.client = client

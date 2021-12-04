@@ -5,25 +5,20 @@ from boto3.session import Session
 
 class Account:
     """
-    Amazon Web Services account.
+    Represents an Amazon Web Services account.
 
-    Arguments:
-        session:    boto3 session.
-        account_id: Account ID to preload into the cache.
+    - session: Boto3 session that will be used to discover account information.
+    - account_id: optional account ID to pre-populate the cache.
     """
 
-    def __init__(
-        self,
-        session: Session,
-        account_id: Optional[str] = None,
-    ) -> None:
+    def __init__(self, session: Session, account_id: Optional[str] = None) -> None:
         self._account_id = account_id
         self._session = session
 
     @property
     def account_id(self) -> str:
         """
-        Account ID.
+        Gets the account ID.
         """
 
         if not self._account_id:
@@ -33,4 +28,8 @@ class Account:
 
     @property
     def session(self) -> Session:
+        """
+        Gets the Boto3 session.
+        """
+
         return self._session

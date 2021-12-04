@@ -4,6 +4,5 @@ set -euo pipefail
 pytest -vv
 
 if [[ "${CI:=}" != "true" ]]; then
-  edition docs/source.md docs/index.html --press html
-  edition docs/source.md README.md       --press markdown
+  pdoc startifact --edit-url startifact=https://github.com/cariad/startifact/blob/main/startifact/ --output-directory docs
 fi
