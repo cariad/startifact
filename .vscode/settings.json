@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "Ansiscape",
     "autoclass",
     "currentmodule",
     "epilog",
@@ -7,6 +8,7 @@
     "mypy",
     "startifact",
     "toctree",
+    "xlarge"
   ],
   "restructuredtext.confPath": "${workspaceFolder}/docsrc/source"
 }

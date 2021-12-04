@@ -1,12 +1,10 @@
-from sys import argv, stdout
+from startifact import __version__
+from startifact.cli import StartifactCLI
 
-from startifact.cli import Cli
 
-
-def cli_entry() -> None:
-    cli = Cli(argv[1:])
-    exit(cli.invoke(stdout))
+def entry() -> None:
+    StartifactCLI.invoke_and_exit(app_version=__version__)
 
 
 if __name__ == "__main__":
-    cli_entry()
+    entry()

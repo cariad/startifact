@@ -4,23 +4,31 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-boto3 = "~=1.18"
+ansiscape = "~=1.0"
+asking = "~=1.0"
+boto3 = "~=1.20"
+cline = "~=1.1"
 
 [dev-packages]
-black = "==21.9b0"
-boto3-stubs = {extras = ["s3", "ssm"], version = "*"}
+black = "==21.11b1"
+boto3-stubs = {extras = ["s3", "ssm", "sts"], version = "*"}
 flake8 = "*"
-furo = "*"
 isort = "*"
 mock = "*"
 mypy = "*"
+pdoc = "*"
 pytest = "*"
 pytest-cov = "*"
 shellcheck-py = "*"
-sphinx = "*"
 twine = "*"
 types-mock = "*"
 yamllint = "*"
 
 [requires]
 python_version = "3.10"
+
+[scripts]
+build = "./scripts/build.sh"
+lint = "./scripts/lint.sh"
+serve-docs = "pdoc startifact --edit-url startifact=https://github.com/cariad/startifact/blob/main/startifact/ --no-browser"
+test = "./scripts/test.sh"
