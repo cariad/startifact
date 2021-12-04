@@ -1,1 +1,2 @@
+include startifact/tasks/setup.asking.yml
 include startifact/VERSION

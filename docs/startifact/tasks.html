@@ -155,7 +155,7 @@
         <span class="k">return</span> <span class="n">DownloadTaskArguments</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">)),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
-            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">),</span>
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
         <span class="p">)</span>
 </pre></div>
@@ -221,7 +221,7 @@
         <span class="k">return</span> <span class="n">DownloadTaskArguments</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">)),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
-            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">),</span>
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
         <span class="p">)</span>
 </pre></div>
@@ -678,7 +678,7 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
             <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">)),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
-            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
         <span class="p">)</span>
 </pre></div>
 
@@ -751,7 +751,7 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
             <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">)),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
-            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
         <span class="p">)</span>
 </pre></div>
 
