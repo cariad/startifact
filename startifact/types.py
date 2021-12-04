@@ -1,7 +1,8 @@
+from dataclasses import dataclass
 from typing import TypedDict
 
 
-class ConfigurationDict(TypedDict):
+class Configuration(TypedDict):
     """
     Configuration.
     """
@@ -28,12 +29,12 @@ class ConfigurationDict(TypedDict):
 
     parameter_name_prefix: str
     """
-    Artefact parameter name prefix.
+    Artifact parameter name prefix.
     """
 
     parameter_region: str
     """
-    Artefact parameter name region.
+    Artifact parameter name region.
     """
 
     save_ok: str
@@ -45,4 +46,16 @@ class ConfigurationDict(TypedDict):
     """
     Most recent confirmation that the user is ready to start the configuration
     script.
+    """
+
+
+@dataclass
+class Download:
+    """
+    Information about a downloaded artifact.
+    """
+
+    version: str
+    """
+    Gets the explicit version that was downloaded.
     """

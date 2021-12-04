@@ -246,12 +246,12 @@
 
         
         <span class="def">class</span>
-        <span class="name">ConfigurationParameter</span><wbr>(<span class="base"><a href="#Parameter">startifact.parameters.Parameter[startifact.types.ConfigurationDict]</a></span>):
+        <span class="name">ConfigurationParameter</span><wbr>(<span class="base"><a href="#Parameter">startifact.parameters.Parameter[startifact.types.Configuration]</a></span>):
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ConfigurationParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">[</span><span class="n">ConfigurationDict</span><span class="p">]):</span>
+            <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ConfigurationParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">[</span><span class="n">Configuration</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Systems Manager parameter that holds the organisation configuration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -264,13 +264,13 @@
 
         <span class="k">return</span> <span class="s2">&quot;/Startifact&quot;</span>
 
-    <span class="k">def</span> <span class="nf">make_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationDict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">make_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">NotAllowedToGetParameter</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotAllowedToGetConfiguration</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
 
-        <span class="n">c</span><span class="p">:</span> <span class="n">ConfigurationDict</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Configuration</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
 
         <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">region_name</span>
 
@@ -343,18 +343,18 @@
 
         
             <span class="def">def</span>
-            <span class="name">make_value</span><span class="signature">(self) -&gt; <a href="types.html#ConfigurationDict">startifact.types.ConfigurationDict</a></span>:
+            <span class="name">make_value</span><span class="signature">(self) -&gt; <a href="types.html#Configuration">startifact.types.Configuration</a></span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">make_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationDict</span><span class="p">:</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">make_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">NotAllowedToGetParameter</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotAllowedToGetConfiguration</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
 
-        <span class="n">c</span><span class="p">:</span> <span class="n">ConfigurationDict</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Configuration</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
 
         <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">region_name</span>
 
@@ -449,7 +449,7 @@
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">LatestVersionParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Systems Manager parameter that holds the latest version number of an</span>
-<span class="sd">    artefact.</span>
+<span class="sd">    artifact.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -473,7 +473,7 @@
         </details>
 
             <div class="docstring"><p>Systems Manager parameter that holds the latest version number of an
-artefact.</p>
+artifact.</p>
 </div>
 
 

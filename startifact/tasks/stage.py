@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from logging import getLogger
 from pathlib import Path
 from typing import Optional
 
 from cline import CommandLineArguments, Task
 
-from startifact.exceptions import AlreadyStagedError
+from startifact.exceptions import AlreadyStagedError, NoConfiguration
 from startifact.session import Session
 
 
@@ -38,25 +39,27 @@ class StageTaskArguments:
 
 class StageTask(Task[StageTaskArguments]):
     """
-    Stages an artefact in Amazon Web services.
+    Stages an artifact in Amazon Web services.
     """
 
     def invoke(self) -> int:
+        getLogger("startifact").setLevel(self.args.log_level)
+
         project = self.args.project
         session = self.args.session or Session()
         version = self.args.version
 
         try:
             session.stage(path=self.args.path, project=project, version=version)
-        except AlreadyStagedError as ex:
-            self.out.write("\n")
+        except (AlreadyStagedError, NoConfiguration) as ex:
+            self.out.write("\n🔥 ")
             self.out.write(str(ex))
-            self.out.write(" 🔥\n\n")
+            self.out.write("\n\n")
             return 1
 
         self.out.write("\n")
-        self.out.write(f"Successfully staged {project} {version}! 🎉\n")
-        self.out.write("To download this artefact, run one of:\n\n")
+        self.out.write(f"Successfully staged {project} {version}! 🎉\n\n")
+        self.out.write("To download this artifact, run one of:\n\n")
         self.out.write(f"    startifact {project} --download <PATH>\n")
         self.out.write(f"    startifact {project} latest --download <PATH>\n")
         self.out.write(f"    startifact {project} {version} --download <PATH>\n\n")

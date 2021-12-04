@@ -37,7 +37,8 @@ def test_invoke() -> None:
         out.getvalue()
         == """
 Successfully staged foo 1.2.3! 🎉
-To download this artefact, run one of:
+
+To download this artifact, run one of:
 
     startifact foo --download <PATH>
     startifact foo latest --download <PATH>
@@ -71,7 +72,7 @@ def test_invoke__exists() -> None:
     assert (
         out.getvalue()
         == """
-foo 1.2.3 is already staged. 🔥
+🔥 foo 1.2.3 is already staged.
 
 """
     )

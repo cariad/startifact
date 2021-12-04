@@ -13,20 +13,20 @@ class StartifactCLI(ArgumentParserCli):
         """
 
         parser = ArgumentParser(
-            description="Stages artefacts to Amazon Web Services",
+            description="Stages artifacts to Amazon Web Services",
             epilog="Made with love by Cariad Eccleston: https://github.com/cariad/startifact",
         )
 
         parser.add_argument("project", help="Project name", nargs="?")
         parser.add_argument(
             "artifact_version",
-            help="Artefact version",
+            help="Artifact version",
             nargs="?",
         )
 
         parser.add_argument(
             "--download",
-            help="download an artefact to a local path (version is optional)",
+            help="download an artifact to a local path (version is optional)",
             metavar="TO",
         )
 
@@ -43,7 +43,7 @@ class StartifactCLI(ArgumentParserCli):
         )
         parser.add_argument(
             "--stage",
-            help="stage an artefact from a local path (name and version required)",
+            help="stage an artifact from a local path (name and version required)",
             metavar="FROM",
         )
         parser.add_argument(

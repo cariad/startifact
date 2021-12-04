@@ -3,7 +3,7 @@ from pytest import fixture
 
 from startifact.account import Account
 from startifact.parameters import ConfigurationParameter
-from startifact.types import ConfigurationDict
+from startifact.types import Configuration
 
 
 @fixture
@@ -14,7 +14,7 @@ def account(session: Mock) -> Account:
 @fixture
 def config_param(
     account: Account,
-    empty_config: ConfigurationDict,
+    empty_config: Configuration,
     session: Mock,
 ) -> ConfigurationParameter:
     return ConfigurationParameter(
@@ -25,8 +25,8 @@ def config_param(
 
 
 @fixture
-def empty_config() -> ConfigurationDict:
-    return ConfigurationDict(
+def empty_config() -> Configuration:
+    return Configuration(
         bucket_param_name="",
         bucket_param_region="",
         bucket_region="",

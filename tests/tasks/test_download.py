@@ -5,15 +5,13 @@ from cline import CommandLineArguments
 from mock import Mock
 
 from startifact.tasks.download import DownloadTask, DownloadTaskArguments
+from startifact.types import Download
 
 
 def test_invoke() -> None:
     session = Mock()
 
-    resolve_version = Mock(return_value="4.5.6")
-    session.resolve_version = resolve_version
-
-    download = Mock()
+    download = Mock(return_value=Download(version="4.5.6"))
     session.download = download
 
     args = DownloadTaskArguments(
@@ -29,11 +27,10 @@ def test_invoke() -> None:
 
     exit_code = task.invoke()
 
-    resolve_version.assert_called_once_with("foo", version="latest")
     download.assert_called_once_with(
         path=Path("dist.zip"),
         project="foo",
-        version="4.5.6",
+        version="latest",
     )
 
     assert out.getvalue().startswith("Downloaded foo 4.5.6: ")

@@ -7,7 +7,7 @@ from startifact.parameters.parameter import Parameter
 class LatestVersionParameter(Parameter[str]):
     """
     Systems Manager parameter that holds the latest version number of an
-    artefact.
+    artifact.
     """
 
     def __init__(

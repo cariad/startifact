@@ -1,5 +1,5 @@
 """
-**Startifact** is a command line application and Python package for staging and retrieving versioned artefacts in Amazon Web Services.
+**Startifact** is a command line application and Python package for staging and retrieving versioned artifacts in Amazon Web Services.
 
 ## Installation
 
@@ -20,7 +20,7 @@ Startifact requires your bucket's name to be readable from a Systems Manager par
 Here's a complete CloudFormation template you can copy and deploy:
 
 ```yaml
-Description: Artefact storage
+Description: Artifact storage
 Resources:
   Bucket:
     Type: AWS::S3::Bucket
@@ -47,24 +47,24 @@ The user performing the one-time organisation setup must be granted:
 
 - `ssm:GetParameter` and `ssm:PutParameter` on the configuration parameter. This is `arn:aws:ssm:{REGION}:{ACCOUNT ID}:parameter/Startifact` by default, but adjust if you are using a different parameter name.
 
-Any users or roles that download artefacts must be granted:
+Any users or roles that download artifacts must be granted:
 
 - `ssm:GetParameter` on the configuration parameter.
 - `ssm:GetParameter` on the bucket name parameter.
 - `ssm:GetParameter` on every parameter beneath the name prefix (or *all* parameters if you have no name prefix).
-- `s3:GetObject` on every S3 object in the artefacts bucket beneath the key prefix (or *all* objects if you have no key prefix).
+- `s3:GetObject` on every S3 object in the artifacts bucket beneath the key prefix (or *all* objects if you have no key prefix).
 
-Any users or roles that stage artefacts must be granted:
+Any users or roles that stage artifacts must be granted:
 
 - `ssm:GetParameter` on the configuration parameter.
 - `ssm:GetParameter` on the bucket name parameter.
 - `ssm:PutParameter` on every parameter beneath the name prefix (or *all* parameters if you have no name prefix).
-- `s3:ListBucket` on the artefacts bucket.
-- `s3:PutObject` on every S3 object in the artefacts bucket beneath the key prefix (or *all* objects if you have no key prefix).
+- `s3:ListBucket` on the artifacts bucket.
+- `s3:PutObject` on every S3 object in the artifacts bucket beneath the key prefix (or *all* objects if you have no key prefix).
 
 ## Organisation configuration
 
-Startifact is designed to be run within organisations with multiple CI/CD pipelines that create versioned artefacts.
+Startifact is designed to be run within organisations with multiple CI/CD pipelines that create versioned artifacts.
 
 Rather than configure Startifact within each pipeline, Startifact reads from a shared organisation-level configuration in Systems Manager.
 
@@ -91,21 +91,21 @@ They will be asked to:
 1. Enter the name of the region that hosts the Systems Manager parameter that holds the bucket's name.
 1. Enter the name of the region that hosts the bucket.
 1. Optionally enter a bucket key prefix.
-1. Enter the name of the region where artefacts should be recorded in Systems Manager.
-1. Optionally enter a name prefix for the Systems Manager parameters that record artefact versions. Without a prefix, versions will be recorded as `/{project}/Latest`.
+1. Enter the name of the region where artifacts should be recorded in Systems Manager.
+1. Optionally enter a name prefix for the Systems Manager parameters that record artifact versions. Without a prefix, versions will be recorded as `/{project}/Latest`.
 1. Confirm the configuration parameter name, region and account one last time before committing.
 
 ## Command line usage
 
-### Staging an artefact
+### Staging an artifact
 
-To stage an artefact, pass the project name, version and `--stage` argument with the path to the artefact:
+To stage an artifact, pass the project name, version and `--stage` argument with the path to the artifact:
 
 ```text
 startifact SugarWater 1.0.9000 --stage dist.tar.gz
 ```
 
-Where the version number comes from depends on your CI/CD setup. I use Circle CI and I stage artefacts on tags, so I know I can pull the version number from the `CIRCLE_TAG` environment variable:
+Where the version number comes from depends on your CI/CD setup. I use Circle CI and I stage artifacts on tags, so I know I can pull the version number from the `CIRCLE_TAG` environment variable:
 
 ```text
 startifact SugarWater "${CIRCLE_TAG}" --stage dist.tar.gz
@@ -113,7 +113,7 @@ startifact SugarWater "${CIRCLE_TAG}" --stage dist.tar.gz
 
 ### Getting the latest version number of a project
 
-To get the version number of the latest artefact staged for a project, pass the project name and `--get` argument for `version`:
+To get the version number of the latest artifact staged for a project, pass the project name and `--get` argument for `version`:
 
 ```text
 startifact SugarWater --get version
@@ -121,21 +121,35 @@ startifact SugarWater --get version
 
 The version number will be emitted to `stdout`.
 
-### Downloading an artefact
+### Downloading an artifact
 
-To download an artefact, pass the project name, *optionally* the version number, and the `--download` argument with the path to download to:
+To download an artifact, pass the project name, *optionally* the version number, and the `--download` argument with the path to download to:
 
 ```text
 startifact SugarWater 1.0.0 --download dist.tar.gz
 ```
 
-If the version is omitted or `latest` then the latest artefact will be downloaded, otherwise the literal version will be downloaded.
+If the version is omitted or `latest` then the latest artifact will be downloaded, otherwise the literal version will be downloaded.
+
+## Python usage
+
+Import and create a `Session`.
+
+For example:
+
+```python
+from pathlib import Path
+from startifact import Session
+
+session = Session()
+session.stage("SugarWater", "1.0.9000", Path("dist.tar.gz"))
+```
 
 ## Project
 
-### Artifact or Artefact?
+### Artifact or Artifact?
 
-"Artefact" is the British English spelling. "Artifact" is the American English spelling.
+"Artifact" is the British English spelling. "Artifact" is the American English spelling.
 
 I tend towards American English in code and my native English in documentation.
 
@@ -162,14 +176,11 @@ Please consider supporting my open source projects by [sponsoring me on GitHub](
 - Interactive configuration by [Asking](https://github.com/cariad/asking).
 - CLI orchestration by [Cline](https://github.com/cariad/cline).
 - Command line colours and styling by [Ansiscape](https://github.com/cariad/ansiscape).
-
-## Python usage
 """
 
 import importlib.resources as pkg_resources
-from pathlib import Path
 
-from startifact.session import Session
+from startifact.session import Session as StartifactSession
 
 with pkg_resources.open_text(__package__, "VERSION") as t:
     __version__ = t.readline().strip()
@@ -178,34 +189,9 @@ with pkg_resources.open_text(__package__, "VERSION") as t:
     """
 
 
-def download(project: str, path: Path, version: str = "latest") -> None:
+def Session() -> StartifactSession:
     """
-    Downloads an artefact.
-    """
-
-    session = Session()
-    session.download(project=project, path=path, version=version)
-
-
-def get_latest_version(project: str) -> str:
-    """
-    Gets the latest version of a project.
+    Creates and returns a new Startifact session.
     """
 
-    session = Session()
-    return session.get_latest_version(project)
-
-
-def stage(project: str, version: str, path: Path) -> None:
-    """
-    Stages an artefact.
-
-    Raises `startifact.exceptions.ProjectNameError` if the project name is not
-    acceptable.
-
-    Raises `startifact.exceptions.AlreadyStagedError` if this version is
-    already staged.
-    """
-
-    session = Session()
-    session.stage(project=project, version=version, path=path)
+    return StartifactSession()
