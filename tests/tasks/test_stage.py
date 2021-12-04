@@ -15,7 +15,6 @@ def test_invoke() -> None:
     session.stage = stage
 
     args = StageTaskArguments(
-        log_level="WARNING",
         path=Path("foo.zip"),
         project="foo",
         session=session,
@@ -57,7 +56,6 @@ def test_invoke__exists() -> None:
     session.stage = stage
 
     args = StageTaskArguments(
-        log_level="WARNING",
         path=Path("foo.zip"),
         project="foo",
         session=session,
@@ -89,7 +87,6 @@ def test_make_args() -> None:
         }
     )
     assert StageTask.make_args(args) == StageTaskArguments(
-        log_level="WARNING",
         path=Path("foo.zip"),
         project="foo",
         version="1.2.3",

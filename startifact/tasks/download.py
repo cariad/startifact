@@ -48,11 +48,8 @@ class DownloadTask(Task[DownloadTaskArguments]):
     def invoke(self) -> int:
         getLogger("startifact").setLevel(self.args.log_level)
         session = self.args.session or Session()
-        download = session.download(
-            path=self.args.path,
-            project=self.args.project,
-            version=self.args.version,
-        )
+        artifact = session.artifact(self.args.project, self.args.version)
+        download = artifact.download(self.args.path)
         abs_path = self.args.path.resolve().absolute().as_posix()
         self.out.write(
             f"Downloaded {self.args.project} {download.version}: {abs_path}\n"

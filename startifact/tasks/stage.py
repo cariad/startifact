@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 from cline import CommandLineArguments, Task
 
@@ -11,11 +11,6 @@ from startifact.session import Session
 
 @dataclass
 class StageTaskArguments:
-    log_level: str
-    """
-    Log level.
-    """
-
     path: Path
     """
     Path to file to upload.
@@ -29,6 +24,16 @@ class StageTaskArguments:
     version: str
     """
     Version.
+    """
+
+    log_level: str = "WARNING"
+    """
+    Log level.
+    """
+
+    metadata: Optional[Dict[str, str]] = None
+    """
+    Metadata.
     """
 
     session: Optional[Session] = None
@@ -50,7 +55,9 @@ class StageTask(Task[StageTaskArguments]):
         version = self.args.version
 
         try:
-            session.stage(path=self.args.path, project=project, version=version)
+            artifact = session.artifact(project, version)
+            artifact.stage(self.args.path, metadata=self.args.metadata)
+
         except (AlreadyStagedError, NoConfiguration) as ex:
             self.out.write("\n🔥 ")
             self.out.write(str(ex))
@@ -67,8 +74,19 @@ class StageTask(Task[StageTaskArguments]):
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> StageTaskArguments:
+        logger = getLogger("startifact")
+
+        metadata: Dict[str, str] = {}
+
+        for pair in args.get_list("metadata", []):
+            split = pair.split("=", maxsplit=1)
+            if "=" in split[1]:
+                logger.warning('Value "%s" contains "=". Sure you want this?', split[1])
+            metadata[split[0]] = split[1]
+
         return StageTaskArguments(
             log_level=args.get_string("log_level", "warning").upper(),
+            metadata=metadata,
             path=Path(args.get_string("stage")),
             project=args.get_string("project"),
             version=args.get_string("artifact_version"),

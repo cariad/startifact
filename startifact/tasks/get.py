@@ -43,8 +43,8 @@ class GetTask(Task[GetTaskArguments]):
         getLogger("startifact").setLevel(self.args.log_level)
 
         session = self.args.session or Session()
-        version = session.get_latest_version(self.args.project)
-        self.out.write(version)
+        artifact = session.artifact(self.args.project, "latest")
+        self.out.write(artifact.version)
         self.out.write("\n")
         return 0
 
