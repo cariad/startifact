@@ -68,5 +68,5 @@ class StageTask(Task[StageTaskArguments]):
             log_level=args.get_string("log_level", "warning").upper(),
             path=Path(args.get_string("stage")),
             project=args.get_string("project"),
-            version=args.get_string("version"),
+            version=args.get_string("artifact_version"),
         )

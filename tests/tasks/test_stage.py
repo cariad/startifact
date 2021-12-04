@@ -82,9 +82,9 @@ foo 1.2.3 is already staged. 🔥
 def test_make_args() -> None:
     args = CommandLineArguments(
         {
+            "artifact_version": "1.2.3",
             "project": "foo",
             "stage": "foo.zip",
-            "version": "1.2.3",
         }
     )
     assert StageTask.make_args(args) == StageTaskArguments(

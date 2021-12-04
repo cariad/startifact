@@ -19,7 +19,7 @@ class StartifactCLI(ArgumentParserCli):
 
         parser.add_argument("project", help="Project name", nargs="?")
         parser.add_argument(
-            "version",
+            "artifact_version",
             help="Artefact version",
             nargs="?",
         )

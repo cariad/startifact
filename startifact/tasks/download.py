@@ -64,6 +64,6 @@ class DownloadTask(Task[DownloadTaskArguments]):
         return DownloadTaskArguments(
             path=Path(args.get_string("download")),
             project=args.get_string("project"),
-            version=args.get_string("version", "latest"),
+            version=args.get_string("artifact_version", "latest"),
             log_level=args.get_string("log_level", "warning").upper(),
         )
