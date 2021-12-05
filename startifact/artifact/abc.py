@@ -29,7 +29,7 @@ class ArtifactABC(ABC):
         session: Session,
         version: str,
     ) -> None:
-        fqn = f"{self.project}@{self.version}"
+        fqn = f"{project}@{version}"
 
         self._bucket = bucket
         self._cached_metadata: Optional[Dict[str, str]] = None
