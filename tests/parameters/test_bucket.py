@@ -7,6 +7,7 @@ from startifact.parameters import BucketParameter
 def test_make_value(account: Account, session: Mock) -> None:
     param = BucketParameter(
         account=account,
+        dry_run=False,
         name="foo",
         session=session,
     )
@@ -19,6 +20,7 @@ def test_make_value(account: Account, session: Mock) -> None:
 def test_name(account: Account, session: Mock) -> None:
     param = BucketParameter(
         account=account,
+        dry_run=False,
         name="foo",
         session=session,
     )

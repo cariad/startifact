@@ -43,6 +43,11 @@ class NewArtifact(ArtifactABC):
             path = Path(path)
 
         with open(path, "rb") as f:
+            if self._dry_run:
+                # Verify we can read the file:
+                f.read()
+                return
+
             s3.put_object(
                 Body=f,
                 Bucket=self.bucket,

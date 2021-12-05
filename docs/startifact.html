@@ -240,6 +240,11 @@ startifact    </h1>
 <div class="codehilite"><pre><span></span><code>startifact SugarWater 1.0.9000 --stage dist.tar.gz --metadata lang=dotnet --metadata hash=9876=
 </code></pre></div>
 
+<p>To perform a dry run, swap <code>--stage</code> for <code>--dry-run</code>:</p>
+
+<div class="codehilite"><pre><span></span><code>startifact SugarWater 1.0.9000 --dry-run dist.tar.gz
+</code></pre></div>
+
 <h3 id="getting-the-latest-artifact-version-via-the-cli">Getting the latest artifact version via the CLI</h3>
 
 <p>To get the version number of the latest artifact staged for a project, pass the project name and <code>--get</code> argument for <code>version</code>:</p>
@@ -481,6 +486,12 @@ startifact    </h1>
 
 <span class="sd">```text</span>
 <span class="sd">startifact SugarWater 1.0.9000 --stage dist.tar.gz --metadata lang=dotnet --metadata hash=9876=</span>
+<span class="sd">```</span>
+
+<span class="sd">To perform a dry run, swap `--stage` for `--dry-run`:</span>
+
+<span class="sd">```text</span>
+<span class="sd">startifact SugarWater 1.0.9000 --dry-run dist.tar.gz</span>
 <span class="sd">```</span>
 
 <span class="sd">### Getting the latest artifact version via the CLI</span>

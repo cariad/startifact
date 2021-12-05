@@ -7,20 +7,25 @@ from startifact.session import Session
 from startifact.tasks.arguments import StageTaskArguments, make_metadata
 
 
-class StageTask(Task[StageTaskArguments]):
-    """
-    Stages an artifact in Amazon Web services.
-    """
+class DryRunStageTask(Task[StageTaskArguments]):
+    """Performs a staging dry-run."""
 
     def invoke(self) -> int:
-        getLogger("startifact").setLevel(self.args.log_level)
+        logger = getLogger("startifact")
+        logger.setLevel(self.args.log_level)
 
         project = self.args.project
-        session = self.args.session or Session()
+        session = self.args.session or Session(dry_run=True)
+
+        if not session.dry_run:
+            self.out.write("🔥 Not a dry-run session.\n")
+            return 1
+
         version = self.args.version
 
         try:
             session.stage(
+                dry_run=True,
                 path=self.args.path,
                 project=project,
                 version=version,
@@ -33,12 +38,7 @@ class StageTask(Task[StageTaskArguments]):
             self.out.write("\n\n")
             return 1
 
-        self.out.write("\n")
-        self.out.write(f"Successfully staged {project} {version}! 🎉\n\n")
-        self.out.write("To download this artifact, run one of:\n\n")
-        self.out.write(f"    startifact {project} --download <PATH>\n")
-        self.out.write(f"    startifact {project} latest --download <PATH>\n")
-        self.out.write(f"    startifact {project} {version} --download <PATH>\n\n")
+        self.out.write("Dry-run succeeded. 🎉\n")
         return 0
 
     @classmethod
@@ -46,7 +46,7 @@ class StageTask(Task[StageTaskArguments]):
         return StageTaskArguments(
             log_level=args.get_string("log_level", "warning").upper(),
             metadata=make_metadata(args.get_list("metadata", [])),
-            path=args.get_string("stage"),
+            path=args.get_string("dry_run"),
             project=args.get_string("project"),
             version=args.get_string("artifact_version"),
         )

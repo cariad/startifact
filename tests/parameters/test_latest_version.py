@@ -21,6 +21,7 @@ from startifact.parameters import LatestVersionParameter
 def test_arn(prefix: str, expect: str, account: Account, session: Mock) -> None:
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix=prefix,
         project="foo",
         session=session,
@@ -39,6 +40,7 @@ def test_get(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -59,6 +61,7 @@ def test_get__invalid_response(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -80,6 +83,7 @@ def test_get__not_found(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -101,6 +105,7 @@ def test_get__not_found__with_default(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -126,6 +131,7 @@ def test_get__access_denied(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -150,6 +156,7 @@ def test_get__other_client_error(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -162,6 +169,7 @@ def test_get__other_client_error(account: Account, session: Mock) -> None:
 def test_make_value(account: Account, session: Mock) -> None:
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -190,6 +198,7 @@ def test_set__access_denied(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -197,6 +206,26 @@ def test_set__access_denied(account: Account, session: Mock) -> None:
 
     with raises(NotAllowedToPutParameter):
         param.set("bar")
+
+
+def test_set__dry_run(account: Account, session: Mock) -> None:
+    put_parameter = Mock()
+
+    ssm = Mock()
+    ssm.put_parameter = put_parameter
+
+    session.client = Mock(return_value=ssm)
+
+    param = LatestVersionParameter(
+        account=account,
+        dry_run=True,
+        prefix="",
+        project="foo",
+        session=session,
+    )
+
+    param.set("bar")
+    put_parameter.assert_not_called()
 
 
 def test_set__other_client_error(account: Account, session: Mock) -> None:
@@ -213,6 +242,7 @@ def test_set__other_client_error(account: Account, session: Mock) -> None:
 
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,
@@ -225,6 +255,7 @@ def test_set__other_client_error(account: Account, session: Mock) -> None:
 def test_value__makes_one_value(account: Account, session: Mock) -> None:
     param = LatestVersionParameter(
         account=account,
+        dry_run=False,
         prefix="",
         project="foo",
         session=session,

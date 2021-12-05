@@ -24,6 +24,7 @@ class ArtifactABC(ABC):
     def __init__(
         self,
         bucket: str,
+        dry_run: bool,
         key_prefix: str,
         project: str,
         session: Session,
@@ -33,7 +34,9 @@ class ArtifactABC(ABC):
 
         self._bucket = bucket
         self._cached_metadata: Optional[Dict[str, str]] = None
+        self._dry_run = dry_run
         self._key = f"{key_prefix}{fqn}"
+        self._key_prefix = key_prefix
         self._logger = getLogger("startifact")
         self._metadata_key = self._key + "/metadata"
         self._project = project
@@ -113,6 +116,9 @@ class ArtifactABC(ABC):
 
         s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
         body = dumps(self._metadata, indent=2, sort_keys=True).encode("utf-8")
+
+        if self._dry_run:
+            return
 
         s3.put_object(
             Body=body,

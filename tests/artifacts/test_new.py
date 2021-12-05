@@ -15,6 +15,7 @@ getLogger("startifact").setLevel("DEBUG")
 def make_artifact(session: Optional[Mock] = None) -> NewArtifact:
     return NewArtifact(
         bucket="ArtifactsBucket",
+        dry_run=False,
         key_prefix="prefix/",
         project="SugarWater",
         session=session or Mock(),
@@ -128,6 +129,30 @@ def test_save_metadata() -> None:
     )
 
 
+def test_save_metadata__dry_run() -> None:
+    put_object = Mock()
+
+    s3 = Mock()
+    s3.put_object = put_object
+
+    session = Mock()
+    session.client = Mock(return_value=s3)
+
+    artifact = NewArtifact(
+        bucket="ArtifactsBucket",
+        dry_run=True,
+        key_prefix="prefix/",
+        project="SugarWater",
+        session=session,
+        version="1.2.3",
+    )
+
+    artifact["foo"] = "bar"
+    artifact.save_metadata()
+
+    put_object.assert_not_called()
+
+
 def test_save_metadata__none() -> None:
     put_object = Mock()
 
@@ -167,6 +192,34 @@ def test_upload(path: Union[Path, str]) -> None:
         ContentMD5="6xhIwkLW8kCvybESBUX1iA==",  # cspell:disable-line
         Key="prefix/SugarWater@1.2.3",
     )
+
+
+def test_upload__dry_run() -> None:
+    exceptions = Mock()
+    exceptions.ClientError = ClientError
+
+    put_object = Mock()
+
+    s3 = Mock()
+    s3.exceptions = exceptions
+    s3.head_object = Mock(side_effect=make_client_error("404"))
+    s3.put_object = put_object
+
+    session = Mock()
+    session.client = Mock(return_value=s3)
+
+    artifact = NewArtifact(
+        bucket="ArtifactsBucket",
+        dry_run=True,
+        key_prefix="prefix/",
+        project="SugarWater",
+        session=session,
+        version="1.2.3",
+    )
+
+    artifact.upload("LICENSE")
+
+    put_object.assert_not_called()
 
 
 def test_upload__exists() -> None:

@@ -4,8 +4,8 @@ start:
       Please refer to the documentation at
       https://cariad.github.io/startifact for guidance.
   - text:
-      The shared configuration parameter will be created as {param_fmt} in
-      region {region_fmt} in account {account_fmt}.
+      You organisation's configuration will be created as a Systems Manager
+      parameter named {param_fmt} in {region_fmt} of account {account_fmt}.
   - ask:
       question: Is this okay?
       key: start_ok
@@ -19,13 +19,12 @@ start:
 
 bucket_param_name:
   - text:
-      The name of your artifacts bucket must be held in an existing Systems Manager
-      parameter.
+      Enter the name of the Systems Manager parameter that holds the name of
+      your artifacts bucket.
   - text:
-      If either your bucket or its parameter have not been deployed yet, please refer to
-      https://cariad.github.io/startifact/#deploying-an-s3-bucket.
+      This parameter must exist already.
   - ask:
-      question: Bucket name parameter?
+      question: Bucket parameter?
       key: bucket_param_name
       recall: true
       branches:

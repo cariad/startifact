@@ -14,6 +14,7 @@ def test_invoke() -> None:
 
     artifact = StagedArtifact(
         bucket="",
+        dry_run=False,
         key_prefix="",
         project="SugarWater",
         session=Mock(),

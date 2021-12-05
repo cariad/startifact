@@ -133,6 +133,12 @@ To attach metadata to the artifact, include any number of `--metadata` arguments
 startifact SugarWater 1.0.9000 --stage dist.tar.gz --metadata lang=dotnet --metadata hash=9876=
 ```
 
+To perform a dry run, swap `--stage` for `--dry-run`:
+
+```text
+startifact SugarWater 1.0.9000 --dry-run dist.tar.gz
+```
+
 ### Getting the latest artifact version via the CLI
 
 To get the version number of the latest artifact staged for a project, pass the project name and `--get` argument for `version`:

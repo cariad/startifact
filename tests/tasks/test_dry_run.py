@@ -5,8 +5,9 @@ from cline import CommandLineArguments
 from mock import Mock
 
 from startifact.exceptions import AlreadyStagedError
+from startifact.session import Session
+from startifact.tasks import DryRunStageTask
 from startifact.tasks.arguments import StageTaskArguments
-from startifact.tasks.stage import StageTask
 
 
 def test_invoke() -> None:
@@ -23,30 +24,19 @@ def test_invoke() -> None:
     )
 
     out = StringIO()
-    task = StageTask(args, out)
+    task = DryRunStageTask(args, out)
 
     exit_code = task.invoke()
 
     stage.assert_called_once_with(
+        dry_run=True,
         path=Path("foo.zip"),
         project="foo",
         version="1.2.3",
         metadata=None,
     )
 
-    assert (
-        out.getvalue()
-        == """
-Successfully staged foo 1.2.3! 🎉
-
-To download this artifact, run one of:
-
-    startifact foo --download <PATH>
-    startifact foo latest --download <PATH>
-    startifact foo 1.2.3 --download <PATH>
-
-"""
-    )
+    assert out.getvalue() == "Dry-run succeeded. 🎉\n"
 
     assert exit_code == 0
 
@@ -65,7 +55,7 @@ def test_invoke__exists() -> None:
     )
 
     out = StringIO()
-    task = StageTask(args, out)
+    task = DryRunStageTask(args, out)
 
     exit_code = task.invoke()
 
@@ -80,15 +70,31 @@ def test_invoke__exists() -> None:
     assert exit_code == 1
 
 
+def test_invoke__not_dry_run() -> None:
+    args = StageTaskArguments(
+        path=Path("foo.zip"),
+        project="foo",
+        session=Session(),
+        version="1.2.3",
+    )
+
+    out = StringIO()
+    task = DryRunStageTask(args, out)
+
+    exit_code = task.invoke()
+    assert out.getvalue() == "🔥 Not a dry-run session.\n"
+    assert exit_code == 1
+
+
 def test_make_args() -> None:
     args = CommandLineArguments(
         {
             "artifact_version": "1.2.3",
+            "dry_run": "foo.zip",
             "project": "foo",
-            "stage": "foo.zip",
         }
     )
-    assert StageTask.make_args(args) == StageTaskArguments(
+    assert DryRunStageTask.make_args(args) == StageTaskArguments(
         path="foo.zip",
         project="foo",
         version="1.2.3",
@@ -99,12 +105,12 @@ def test_make_args__with_metadata() -> None:
     args = CommandLineArguments(
         {
             "artifact_version": "1.2.3",
+            "dry_run": "foo.zip",
             "metadata": ["foo=bar"],
             "project": "foo",
-            "stage": "foo.zip",
         }
     )
-    assert StageTask.make_args(args) == StageTaskArguments(
+    assert DryRunStageTask.make_args(args) == StageTaskArguments(
         metadata={"foo": "bar"},
         path="foo.zip",
         project="foo",

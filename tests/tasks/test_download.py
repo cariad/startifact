@@ -10,7 +10,12 @@ from startifact.tasks.download import DownloadTask, DownloadTaskArguments
 
 def test_invoke() -> None:
     artifact = StagedArtifact(
-        bucket="", key_prefix="", project="SugarWater", session=Mock(), version="1.2.3"
+        bucket="",
+        dry_run=False,
+        key_prefix="",
+        project="SugarWater",
+        session=Mock(),
+        version="1.2.3",
     )
 
     out = StringIO()

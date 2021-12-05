@@ -21,6 +21,7 @@ def test_download(path: Path | str) -> None:
 
     artifact = StagedArtifact(
         bucket="ArtifactsBucket",
+        dry_run=False,
         key_prefix="prefix/",
         project="SugarWater",
         session=session,
@@ -48,6 +49,7 @@ def test_get_metadata() -> None:
 
     artifact = StagedArtifact(
         bucket="ArtifactsBucket",
+        dry_run=False,
         key_prefix="prefix/",
         project="SugarWater",
         session=session,
@@ -78,6 +80,7 @@ def test_get_metadata__none() -> None:
 
     artifact = StagedArtifact(
         bucket="ArtifactsBucket",
+        dry_run=False,
         key_prefix="prefix/",
         project="SugarWater",
         session=session,
@@ -97,6 +100,7 @@ def test_immutable_metadata() -> None:
 
     artifact = StagedArtifact(
         bucket="ArtifactsBucket",
+        dry_run=False,
         key_prefix="prefix/",
         project="SugarWater",
         session=session,
