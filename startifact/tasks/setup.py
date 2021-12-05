@@ -96,7 +96,11 @@ class SetupTask(Task[SetupTaskArguments]):
 
         session = Session()
         account = Account(session=session)
-        config_param = ConfigurationParameter(account, session)
+        config_param = ConfigurationParameter(
+            account=account,
+            dry_run=False,
+            session=session,
+        )
 
         return SetupTaskArguments(
             account=account,

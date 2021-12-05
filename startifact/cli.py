@@ -54,6 +54,13 @@ class StartifactCLI(ArgumentParserCli):
             help="stage an artifact from a local path (name and version required)",
             metavar="FROM",
         )
+
+        parser.add_argument(
+            "--dry-run",
+            help="dry-run the staging of an artifact from a local path (name and version required)",
+            metavar="FROM",
+        )
+
         parser.add_argument(
             "--version",
             help="show version then exit",
@@ -74,6 +81,7 @@ class StartifactCLI(ArgumentParserCli):
 
         return [
             startifact.tasks.DownloadTask,
+            startifact.tasks.DryRunStageTask,
             startifact.tasks.GetTask,
             startifact.tasks.StageTask,
             startifact.tasks.SetupTask,

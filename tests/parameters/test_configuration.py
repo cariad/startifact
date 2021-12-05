@@ -14,6 +14,7 @@ from startifact.types import Configuration
 def test_make_value(account: Account, session: Mock) -> None:
     param = ConfigurationParameter(
         account=account,
+        dry_run=False,
         session=session,
     )
 
@@ -35,6 +36,7 @@ def test_make_value(account: Account, session: Mock) -> None:
 def test_make_value__access_denied(account: Account, session: Mock) -> None:
     param = ConfigurationParameter(
         account=account,
+        dry_run=False,
         session=session,
     )
 
@@ -48,6 +50,7 @@ def test_make_value__access_denied(account: Account, session: Mock) -> None:
 def test_save_changes__access_denied(account: Account, session: Mock) -> None:
     param = ConfigurationParameter(
         account=account,
+        dry_run=False,
         session=session,
     )
 

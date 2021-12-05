@@ -43,6 +43,18 @@
 
             </li>
             <li>
+                    <a class="class" href="#DryRunStageTask">DryRunStageTask</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#DryRunStageTask.invoke">invoke</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#DryRunStageTask.make_args">make_args</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#GetTask">GetTask</a>
                             <ul class="memberlist">
                         <li>
@@ -81,9 +93,6 @@
                         <li>
                                 <a class="function" href="#StageTask.make_args">make_args</a>
                         </li>
-                        <li>
-                                <a class="function" href="#StageTask.make_metadata">make_metadata</a>
-                        </li>
                 </ul>
 
             </li>
@@ -108,12 +117,14 @@
                         <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">startifact.tasks.download</span> <span class="kn">import</span> <span class="n">DownloadTask</span>
+<span class="kn">from</span> <span class="nn">startifact.tasks.dry_run</span> <span class="kn">import</span> <span class="n">DryRunStageTask</span>
 <span class="kn">from</span> <span class="nn">startifact.tasks.get</span> <span class="kn">import</span> <span class="n">GetTask</span>
 <span class="kn">from</span> <span class="nn">startifact.tasks.setup</span> <span class="kn">import</span> <span class="n">SetupTask</span>
 <span class="kn">from</span> <span class="nn">startifact.tasks.stage</span> <span class="kn">import</span> <span class="n">StageTask</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;DownloadTask&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DryRunStageTask&quot;</span><span class="p">,</span>
     <span class="s2">&quot;GetTask&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SetupTask&quot;</span><span class="p">,</span>
     <span class="s2">&quot;StageTask&quot;</span><span class="p">,</span>
@@ -250,6 +261,176 @@ parsed command line arguments <code><a href="#DownloadTask.args">args</a></code>
                                 <dd id="DownloadTask.__init__" class="function">Task</dd>
                 <dd id="DownloadTask.args" class="variable">args</dd>
                 <dd id="DownloadTask.out" class="variable">out</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="DryRunStageTask">
+                                <div class="attr class">
+        <a class="headerlink" href="#DryRunStageTask">#&nbsp;&nbsp</a>
+
+        
+        <span class="def">class</span>
+        <span class="name">DryRunStageTask</span><wbr>(<span class="base">cline.tasks.task.Task[startifact.tasks.arguments.StageTaskArguments]</span>):
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">DryRunStageTask</span><span class="p">(</span><span class="n">Task</span><span class="p">[</span><span class="n">StageTaskArguments</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Performs a staging dry-run.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
+
+        <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span> <span class="n">Session</span><span class="p">(</span><span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">dry_run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;🔥 Not a dry-run session.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+                <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">AlreadyStagedError</span><span class="p">,</span> <span class="n">NoConfiguration</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🔥 &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Dry-run succeeded. 🎉</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageTaskArguments</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">StageTaskArguments</span><span class="p">(</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;dry_run&quot;</span><span class="p">),</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Performs a staging dry-run.</p>
+</div>
+
+
+                            <div id="DryRunStageTask.invoke" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#DryRunStageTask.invoke">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">invoke</span><span class="signature">(self) -&gt; int</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
+
+        <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span> <span class="n">Session</span><span class="p">(</span><span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">dry_run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;🔥 Not a dry-run session.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+                <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">AlreadyStagedError</span><span class="p">,</span> <span class="n">NoConfiguration</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🔥 &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Dry-run succeeded. 🎉</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Invokes the task.</p>
+
+<p>Reads arguments from <code>self.args</code>. Writes output to <code>self.out</code>.</p>
+
+<p>Returns the shell exit code.</p>
+</div>
+
+
+                            </div>
+                            <div id="DryRunStageTask.make_args" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#DryRunStageTask.make_args">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@classmethod</div>
+
+            <span class="def">def</span>
+            <span class="name">make_args</span><span class="signature">(
+    cls,
+    args: cline.cli_args.CommandLineArguments
+) -&gt; <a href="#arguments.StageTaskArguments">startifact.tasks.arguments.StageTaskArguments</a></span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageTaskArguments</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">StageTaskArguments</span><span class="p">(</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;dry_run&quot;</span><span class="p">),</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Makes and returns strongly-typed arguments for this task based on the
+parsed command line arguments <code><a href="#DryRunStageTask.args">args</a></code>.</p>
+
+<p>Arguments:
+    args: Parsed command line arguments</p>
+
+<p>Raises:
+    CannotMakeArguments: If the given arguments are not relevant to this
+    task</p>
+
+<p>Returns:
+    Task arguments</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>cline.tasks.task.Task</dt>
+                                <dd id="DryRunStageTask.__init__" class="function">Task</dd>
+                <dd id="DryRunStageTask.args" class="variable">args</dd>
+                <dd id="DryRunStageTask.out" class="variable">out</dd>
 
             </div>
                                 </dl>
@@ -451,7 +632,11 @@ parsed command line arguments <code><a href="#GetTask.args">args</a></code>.</p>
 
         <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
         <span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-        <span class="n">config_param</span> <span class="o">=</span> <span class="n">ConfigurationParameter</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="n">config_param</span> <span class="o">=</span> <span class="n">ConfigurationParameter</span><span class="p">(</span>
+            <span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span>
+            <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">SetupTaskArguments</span><span class="p">(</span>
             <span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span>
@@ -593,7 +778,11 @@ parsed command line arguments <code><a href="#GetTask.args">args</a></code>.</p>
 
         <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
         <span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-        <span class="n">config_param</span> <span class="o">=</span> <span class="n">ConfigurationParameter</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="n">config_param</span> <span class="o">=</span> <span class="n">ConfigurationParameter</span><span class="p">(</span>
+            <span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span>
+            <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">SetupTaskArguments</span><span class="p">(</span>
             <span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span>
@@ -638,7 +827,7 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
 
         
         <span class="def">class</span>
-        <span class="name">StageTask</span><wbr>(<span class="base">cline.tasks.task.Task[startifact.tasks.stage.StageTaskArguments]</span>):
+        <span class="name">StageTask</span><wbr>(<span class="base">cline.tasks.task.Task[startifact.tasks.arguments.StageTaskArguments]</span>):
     </div>
 
                 <details>
@@ -681,29 +870,11 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
     <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageTaskArguments</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">StageTaskArguments</span><span class="p">(</span>
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
             <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
             <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
         <span class="p">)</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">make_metadata</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">pairs</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
-            <span class="n">split</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="s1">&#39;Metadata value &quot;</span><span class="si">%s</span><span class="s1">&quot; contains &quot;=&quot;. Will assume this is intentional.&#39;</span><span class="p">,</span>
-                    <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                <span class="p">)</span>
-            <span class="n">metadata</span><span class="p">[</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">metadata</span>
 </pre></div>
 
         </details>
@@ -772,7 +943,7 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
             <span class="name">make_args</span><span class="signature">(
     cls,
     args: cline.cli_args.CommandLineArguments
-) -&gt; <a href="#stage.StageTaskArguments">startifact.tasks.stage.StageTaskArguments</a></span>:
+) -&gt; <a href="#arguments.StageTaskArguments">startifact.tasks.arguments.StageTaskArguments</a></span>:
     </div>
 
                 <details>
@@ -781,7 +952,7 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
     <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageTaskArguments</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">StageTaskArguments</span><span class="p">(</span>
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
             <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
             <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
@@ -804,41 +975,6 @@ parsed command line arguments <code><a href="#StageTask.args">args</a></code>.</
     Task arguments</p>
 </div>
 
-
-                            </div>
-                            <div id="StageTask.make_metadata" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#StageTask.make_metadata">#&nbsp;&nbsp</a>
-
-                <div class="decorator">@classmethod</div>
-
-            <span class="def">def</span>
-            <span class="name">make_metadata</span><span class="signature">(cls, pairs: List[str]) -&gt; Optional[Dict[str, str]]</span>:
-    </div>
-
-                <details>
-            <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">make_metadata</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">pairs</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
-            <span class="n">split</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="s1">&#39;Metadata value &quot;</span><span class="si">%s</span><span class="s1">&quot; contains &quot;=&quot;. Will assume this is intentional.&#39;</span><span class="p">,</span>
-                    <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                <span class="p">)</span>
-            <span class="n">metadata</span><span class="p">[</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">metadata</span>
-</pre></div>
-
-        </details>
-
-    
 
                             </div>
                             <div class="inherited">

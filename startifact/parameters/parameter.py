@@ -27,10 +27,12 @@ class Parameter(ABC, Generic[TParameterValue]):
     def __init__(
         self,
         account: Account,
+        dry_run: bool,
         session: Session,
         value: Optional[TParameterValue] = None,
     ) -> None:
         self._account = account
+        self._dry_run = dry_run
         self._session = session
         self._value = value
 
@@ -103,6 +105,10 @@ class Parameter(ABC, Generic[TParameterValue]):
         """
 
         ssm = self._session.client("ssm")  # pyright: reportUnknownMemberType=false
+
+        if self._dry_run:
+            return
+
         try:
             ssm.put_parameter(
                 Name=self.name,

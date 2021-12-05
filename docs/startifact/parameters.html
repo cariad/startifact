@@ -154,8 +154,14 @@
 <span class="sd">    Systems Manager parameter that holds the bucket name.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="n">dry_run</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="k">def</span> <span class="nf">make_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -178,6 +184,7 @@
         
             <span class="name">BucketParameter</span><span class="signature">(
     account: <a href="account.html#Account">startifact.account.Account</a>,
+    dry_run: bool,
     name: str,
     session: boto3.session.Session
 )</span>
@@ -185,8 +192,14 @@
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="n">dry_run</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
 </pre></div>
 
@@ -455,11 +468,12 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="n">dry_run</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s2">/Latest&quot;</span>
 
     <span class="k">def</span> <span class="nf">make_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -483,6 +497,7 @@ artifact.</p>
         
             <span class="name">LatestVersionParameter</span><span class="signature">(
     account: <a href="account.html#Account">startifact.account.Account</a>,
+    dry_run: bool,
     prefix: str,
     project: str,
     session: boto3.session.Session
@@ -494,11 +509,12 @@ artifact.</p>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">account</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="n">dry_run</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s2">/Latest&quot;</span>
 </pre></div>
 
@@ -575,10 +591,12 @@ artifact.</p>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">account</span><span class="p">:</span> <span class="n">Account</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_account</span> <span class="o">=</span> <span class="n">account</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dry_run</span> <span class="o">=</span> <span class="n">dry_run</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">session</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="n">value</span>
 
@@ -651,6 +669,10 @@ artifact.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">ssm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;ssm&quot;</span><span class="p">)</span>  <span class="c1"># pyright: reportUnknownMemberType=false</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dry_run</span><span class="p">:</span>
+            <span class="k">return</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ssm</span><span class="o">.</span><span class="n">put_parameter</span><span class="p">(</span>
                 <span class="n">Name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -816,6 +838,10 @@ returns an unexpected response.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">ssm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;ssm&quot;</span><span class="p">)</span>  <span class="c1"># pyright: reportUnknownMemberType=false</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dry_run</span><span class="p">:</span>
+            <span class="k">return</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ssm</span><span class="o">.</span><span class="n">put_parameter</span><span class="p">(</span>
                 <span class="n">Name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>

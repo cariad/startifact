@@ -118,6 +118,13 @@
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;stage an artifact from a local path (name and version required)&quot;</span><span class="p">,</span>
             <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--dry-run&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;dry-run the staging of an artifact from a local path (name and version required)&quot;</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show version then exit&quot;</span><span class="p">,</span>
@@ -138,6 +145,7 @@
 
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">DownloadTask</span><span class="p">,</span>
+            <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">DryRunStageTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">GetTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">StageTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">SetupTask</span><span class="p">,</span>
@@ -206,6 +214,13 @@
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;stage an artifact from a local path (name and version required)&quot;</span><span class="p">,</span>
             <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--dry-run&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;dry-run the staging of an artifact from a local path (name and version required)&quot;</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show version then exit&quot;</span><span class="p">,</span>
@@ -226,6 +241,7 @@
 
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">DownloadTask</span><span class="p">,</span>
+            <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">DryRunStageTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">GetTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">StageTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">SetupTask</span><span class="p">,</span>
@@ -296,6 +312,13 @@ command line arguments.</p>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;stage an artifact from a local path (name and version required)&quot;</span><span class="p">,</span>
             <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--dry-run&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;dry-run the staging of an artifact from a local path (name and version required)&quot;</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show version then exit&quot;</span><span class="p">,</span>
@@ -334,6 +357,7 @@ command line arguments.</p>
 
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">DownloadTask</span><span class="p">,</span>
+            <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">DryRunStageTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">GetTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">StageTask</span><span class="p">,</span>
             <span class="n">startifact</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">SetupTask</span><span class="p">,</span>

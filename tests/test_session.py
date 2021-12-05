@@ -47,6 +47,7 @@ def test_bucket(empty_config: Configuration) -> None:
 
     bp_class.assert_called_once_with(
         account=session._cached_account,
+        dry_run=False,
         name="bp_name",
         session=boto_session,
     )
@@ -76,8 +77,9 @@ def test_config(empty_config: Configuration) -> None:
         config = session._configuration
 
     cp_class.assert_called_once_with(
-        session._cached_account,
-        boto_session,
+        account=session._cached_account,
+        dry_run=False,
+        session=boto_session,
     )
 
     assert config is empty_config
@@ -117,6 +119,7 @@ def test_latest(empty_config: Configuration) -> None:
 
     lvp_class.assert_called_once_with(
         account=session._cached_account,
+        dry_run=False,
         prefix="/prefix",
         project="SugarWater",
         session=boto_session,
@@ -139,10 +142,13 @@ def test_session_regions(empty_config: Configuration) -> None:
         SessionUsage.SSM_FOR_BUCKET: "us-east-2",
     }
 
+    assert session.session_regions == session.session_regions
+
 
 def test_stage(empty_config: Configuration) -> None:
     artifact = NewArtifact(
         bucket="",
+        dry_run=False,
         key_prefix="",
         project="SugarWater",
         session=Mock(),
@@ -167,6 +173,7 @@ def test_stage(empty_config: Configuration) -> None:
 
     new_artifact.assert_called_with(
         bucket="ArtifactsBucket",
+        dry_run=False,
         key_prefix="",
         project="SugarWater",
         session=s3_session,
@@ -185,6 +192,7 @@ def test_stage__invalid_name() -> None:
 def test_stage__with_metadata(empty_config: Configuration) -> None:
     artifact = NewArtifact(
         bucket="",
+        dry_run=False,
         key_prefix="",
         project="SugarWater",
         session=Mock(),

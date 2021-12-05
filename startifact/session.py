@@ -22,12 +22,13 @@ class Session:
     A Startifact session.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, dry_run: bool = False) -> None:
         self._cached_account: Optional[Account] = None
         self._cached_bucket_name: Optional[str] = None
         self._cached_configuration: Optional[Configuration] = None
         self._cached_sessions: Dict[SessionUsage, boto3.session.Session] = {}
         self._cached_session_regions: Dict[SessionUsage, str] = {}
+        self._dry_run = dry_run
         self._logger = getLogger("startifact")
 
     @property
@@ -45,14 +46,22 @@ class Session:
     def _configuration(self) -> Configuration:
         if self._cached_configuration is None:
             session = self._get_session(SessionUsage.DEFAULT)
-            param = ConfigurationParameter(self._account, session)
+            param = ConfigurationParameter(
+                account=self._account,
+                dry_run=self._dry_run,
+                session=session,
+            )
             self._cached_configuration = param.value
         return self._cached_configuration
 
     def _get_session(self, usage: SessionUsage) -> boto3.session.Session:
         if usage not in self._cached_sessions:
             self._logger.debug("Creating Boto3 session for %s.", usage)
-            r = self.session_regions.get(usage, None)
+            r = (
+                None
+                if usage is SessionUsage.DEFAULT
+                else self.session_regions.get(usage, None)
+            )
             s = boto3.session.Session(region_name=r) if r else boto3.session.Session()
             self._cached_sessions[usage] = s
         return self._cached_sessions[usage]
@@ -60,6 +69,7 @@ class Session:
     def _latest_param(self, project: str) -> LatestVersionParameter:
         return LatestVersionParameter(
             account=self._account,
+            dry_run=self._dry_run,
             prefix=self._configuration["parameter_name_prefix"],
             project=project,
             session=self._get_session(SessionUsage.SSM_FOR_ARTIFACTS),
@@ -82,6 +92,7 @@ class Session:
 
             param = BucketParameter(
                 account=self._account,
+                dry_run=self._dry_run,
                 name=self._configuration["bucket_param_name"],
                 session=session,
             )
@@ -90,11 +101,16 @@ class Session:
 
         return self._cached_bucket_name
 
+    @property
+    def dry_run(self) -> bool:
+        return self._dry_run
+
     def get(self, project: str, version: str = "latest") -> StagedArtifact:
         """Gets an artifact."""
 
         return StagedArtifact(
             bucket=self.bucket,
+            dry_run=self._dry_run,
             key_prefix=self._configuration["bucket_key_prefix"],
             project=project,
             session=self._get_session(SessionUsage.S3),
@@ -123,6 +139,7 @@ class Session:
         project: str,
         version: str,
         path: Union[Path, str],
+        dry_run: bool = False,
         metadata: Optional[Dict[str, str]] = None,
     ) -> StagedArtifact:
         """
@@ -141,6 +158,7 @@ class Session:
 
         artifact = NewArtifact(
             bucket=self.bucket,
+            dry_run=self._dry_run,
             key_prefix=self._configuration["bucket_key_prefix"],
             project=project,
             session=s3_session,
@@ -161,6 +179,7 @@ class Session:
 
         return StagedArtifact(
             bucket=self.bucket,
+            dry_run=self._dry_run,
             key_prefix=self._configuration["bucket_key_prefix"],
             project=project,
             session=s3_session,

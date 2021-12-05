@@ -13,11 +13,12 @@ class LatestVersionParameter(Parameter[str]):
     def __init__(
         self,
         account: Account,
+        dry_run: bool,
         prefix: str,
         project: str,
         session: Session,
     ) -> None:
-        super().__init__(account, session)
+        super().__init__(account=account, dry_run=dry_run, session=session)
         self._name = f"{prefix}/{project}/Latest"
 
     def make_value(self) -> str:
