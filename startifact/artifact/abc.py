@@ -35,7 +35,7 @@ class ArtifactABC(ABC):
         self._cached_metadata: Optional[Dict[str, str]] = None
         self._key = f"{key_prefix}{fqn}"
         self._logger = getLogger("startifact")
-        self._metadata_key =  self._key + "/metadata"
+        self._metadata_key = self._key + "/metadata"
         self._project = project
         self._session = session
         self._version = version

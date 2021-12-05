@@ -8,7 +8,9 @@ from startifact.artifact.abc import ArtifactABC
 class StagedArtifact(ArtifactABC):
     def _get_metadata(self) -> Dict[str, str]:
         self._logger.debug(
-            "Downloading metadata: s3:/%s/%s", self.bucket, self._metadata_key,
+            "Downloading metadata: s3:/%s/%s",
+            self.bucket,
+            self._metadata_key,
         )
         s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
 

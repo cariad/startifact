@@ -124,7 +124,7 @@ def test_save_metadata() -> None:
         Body=b'{\n  "foo": "bar"\n}',
         Bucket="ArtifactsBucket",
         ContentMD5="lyF5YnqQQ1fG3mw0blDExg==",  # cspell:disable-line
-        Key="prefix/SugarWater@1.2.3@metadata",
+        Key="prefix/SugarWater@1.2.3/metadata",
     )
 
 
