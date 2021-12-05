@@ -102,6 +102,18 @@ def test_exists__true() -> None:
     assert actual
 
 
+def test_fqn() -> None:
+    artifact = NewArtifact(
+        bucket="ArtifactsBucket",
+        dry_run=False,
+        key_prefix="prefix/",
+        project="SugarWater",
+        session=Mock(),
+        version="1.2.3",
+    )
+    assert artifact.fqn == "SugarWater@1.2.3"
+
+
 def test_repr() -> None:
     artifact = make_artifact()
     expect = "NewArtifact(project=SugarWater, version=1.2.3, metadata={})"

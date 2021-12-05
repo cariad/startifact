@@ -36,7 +36,7 @@ def test_invoke() -> None:
         metadata=None,
     )
 
-    assert out.getvalue() == "Dry-run succeeded. 🎉\n"
+    assert out.getvalue() == "Startifact's dry-run succeeded! 🎉\n"
 
     assert exit_code == 0
 
@@ -62,7 +62,7 @@ def test_invoke__exists() -> None:
     assert (
         out.getvalue()
         == """
-🔥 foo 1.2.3 is already staged.
+🔥 Startifact's dry-run failed: foo 1.2.3 is already staged.
 
 """
     )
@@ -82,7 +82,7 @@ def test_invoke__not_dry_run() -> None:
     task = DryRunStageTask(args, out)
 
     exit_code = task.invoke()
-    assert out.getvalue() == "🔥 Not a dry-run session.\n"
+    assert out.getvalue() == "🔥 Startifact was not given a dry-run session.\n"
     assert exit_code == 1
 
 

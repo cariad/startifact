@@ -18,7 +18,7 @@ class DryRunStageTask(Task[StageTaskArguments]):
         session = self.args.session or Session(dry_run=True)
 
         if not session.dry_run:
-            self.out.write("🔥 Not a dry-run session.\n")
+            self.out.write("🔥 Startifact was not given a dry-run session.\n")
             return 1
 
         version = self.args.version
@@ -33,12 +33,12 @@ class DryRunStageTask(Task[StageTaskArguments]):
             )
 
         except (AlreadyStagedError, NoConfiguration) as ex:
-            self.out.write("\n🔥 ")
+            self.out.write("\n🔥 Startifact's dry-run failed: ")
             self.out.write(str(ex))
             self.out.write("\n\n")
             return 1
 
-        self.out.write("Dry-run succeeded. 🎉\n")
+        self.out.write("Startifact's dry-run succeeded! 🎉\n")
         return 0
 
     @classmethod

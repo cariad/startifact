@@ -4,6 +4,7 @@ from pathlib import Path
 from cline import CommandLineArguments
 from mock import Mock
 
+from startifact.artifact import StagedArtifact
 from startifact.exceptions import AlreadyStagedError
 from startifact.tasks.arguments import StageTaskArguments
 from startifact.tasks.stage import StageTask
@@ -12,12 +13,21 @@ from startifact.tasks.stage import StageTask
 def test_invoke() -> None:
     session = Mock()
 
-    stage = Mock()
+    artifact = StagedArtifact(
+        bucket="ArtifactsBucket",
+        dry_run=False,
+        key_prefix="prefix/",
+        project="SugarWater",
+        session=session,
+        version="1.2.3",
+    )
+
+    stage = Mock(return_value=artifact)
     session.stage = stage
 
     args = StageTaskArguments(
         path=Path("foo.zip"),
-        project="foo",
+        project="SugarWater",
         session=session,
         version="1.2.3",
     )
@@ -29,7 +39,7 @@ def test_invoke() -> None:
 
     stage.assert_called_once_with(
         path=Path("foo.zip"),
-        project="foo",
+        project="SugarWater",
         version="1.2.3",
         metadata=None,
     )
@@ -37,13 +47,13 @@ def test_invoke() -> None:
     assert (
         out.getvalue()
         == """
-Successfully staged foo 1.2.3! 🎉
+Startifact successfully staged SugarWater@1.2.3! 🎉
 
 To download this artifact, run one of:
 
-    startifact foo --download <PATH>
-    startifact foo latest --download <PATH>
-    startifact foo 1.2.3 --download <PATH>
+    startifact SugarWater --download <PATH>
+    startifact SugarWater latest --download <PATH>
+    startifact SugarWater 1.2.3 --download <PATH>
 
 """
     )
@@ -72,7 +82,7 @@ def test_invoke__exists() -> None:
     assert (
         out.getvalue()
         == """
-🔥 foo 1.2.3 is already staged.
+🔥 Startifact failed: foo 1.2.3 is already staged.
 
 """
     )

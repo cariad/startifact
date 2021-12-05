@@ -56,6 +56,10 @@
     <li><a href="#downloading-an-artifact-via-python">Downloading an artifact via Python</a></li>
     <li><a href="#reading-and-appending-metadata">Reading and appending metadata</a></li>
   </ul></li>
+  <li><a href="#examples">Examples</a>
+  <ul>
+    <li><a href="#staging-then-deploying-a-lambda-function">Staging then deploying a lambda function</a></li>
+  </ul></li>
   <li><a href="#project">Project</a>
   <ul>
     <li><a href="#contributing">Contributing</a></li>
@@ -322,6 +326,74 @@ startifact    </h1>
 <span class="n">artifact</span><span class="o">.</span><span class="n">save_metadata</span><span class="p">()</span>
 </code></pre></div>
 
+<h2 id="examples">Examples</h2>
+
+<h3 id="staging-then-deploying-a-lambda-function">Staging then deploying a lambda function</h3>
+
+<p>This example assumes you'll be deploying your code via a CloudFormation template like this:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="nt">Parameters</span><span class="p">:</span>
+
+  <span class="nt">BuildBucket</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+  <span class="nt">BuildKey</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+  <span class="nt">BuildHash</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+<span class="nt">Resources</span><span class="p">:</span>
+
+  <span class="nt">Function</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Function</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">Code</span><span class="p">:</span>
+        <span class="nt">S3Bucket</span><span class="p">:</span>
+          <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildBucket</span>
+        <span class="nt">S3Key</span><span class="p">:</span>
+          <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildKey</span>
+
+  <span class="nt">FunctionVersion</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Version</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">CodeSha256</span><span class="p">:</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildHash</span>
+      <span class="nt">FunctionName</span><span class="p">:</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Function</span>
+</code></pre></div>
+
+<p>When you're ready to stage your code:</p>
+
+<ol>
+<li>Package it as a zip.</li>
+<li>Attach the hash as metadata.</li>
+</ol>
+
+<div class="codehilite"><pre><span></span><code><span class="nv">hash</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>openssl dgst -sha256 -binary dist.zip <span class="p">|</span> openssl enc -base64<span class="k">)</span><span class="s2">&quot;</span>
+startifact MyLambdaProject <span class="m">1</span>.0.1 --stage dist.zip --metadata <span class="s2">&quot;hash=</span><span class="si">${</span><span class="nv">hash</span><span class="p">:?</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<p>Now, to populate your CloudFormation template's parameters:</p>
+
+<ol>
+<li>Create a Startifact session.</li>
+<li><code>get()</code> the artifact to deploy.</li>
+<li>Read the artifact's <code>bucket</code>, <code>key</code> and metadata.</li>
+</ol>
+
+<p>In pseudocode:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+<span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MyLambdaProject&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.1&quot;</span><span class="p">)</span>
+
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildBucket&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildKey&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildHash&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;hash&quot;</span><span class="p">])</span>
+</code></pre></div>
+
 <h2 id="project">Project</h2>
 
 <h3 id="contributing">Contributing</h3>
@@ -576,6 +648,73 @@ startifact    </h1>
 
 <span class="sd">artifact[&quot;deployed&quot;] = &quot;true&quot;</span>
 <span class="sd">artifact.save_metadata()</span>
+<span class="sd">```</span>
+
+<span class="sd">## Examples</span>
+
+<span class="sd">### Staging then deploying a lambda function</span>
+
+<span class="sd">This example assumes you&#39;ll be deploying your code via a CloudFormation template like this:</span>
+
+<span class="sd">```yaml</span>
+<span class="sd">Parameters:</span>
+
+<span class="sd">  BuildBucket:</span>
+<span class="sd">    Type: String</span>
+
+<span class="sd">  BuildKey:</span>
+<span class="sd">    Type: String</span>
+
+<span class="sd">  BuildHash:</span>
+<span class="sd">    Type: String</span>
+
+<span class="sd">Resources:</span>
+
+<span class="sd">  Function:</span>
+<span class="sd">    Type: AWS::Lambda::Function</span>
+<span class="sd">    Properties:</span>
+<span class="sd">      Code:</span>
+<span class="sd">        S3Bucket:</span>
+<span class="sd">          Ref: BuildBucket</span>
+<span class="sd">        S3Key:</span>
+<span class="sd">          Ref: BuildKey</span>
+
+<span class="sd">  FunctionVersion:</span>
+<span class="sd">    Type: AWS::Lambda::Version</span>
+<span class="sd">    Properties:</span>
+<span class="sd">      CodeSha256:</span>
+<span class="sd">        Ref: BuildHash</span>
+<span class="sd">      FunctionName:</span>
+<span class="sd">        Ref: Function</span>
+<span class="sd">```</span>
+
+<span class="sd">When you&#39;re ready to stage your code:</span>
+
+<span class="sd">1. Package it as a zip.</span>
+<span class="sd">1. Attach the hash as metadata.</span>
+
+<span class="sd">```bash</span>
+<span class="sd">hash=&quot;$(openssl dgst -sha256 -binary dist.zip | openssl enc -base64)&quot;</span>
+<span class="sd">startifact MyLambdaProject 1.0.1 --stage dist.zip --metadata &quot;hash=${hash:?}&quot;</span>
+<span class="sd">```</span>
+
+<span class="sd">Now, to populate your CloudFormation template&#39;s parameters:</span>
+
+<span class="sd">1. Create a Startifact session.</span>
+<span class="sd">1. `get()` the artifact to deploy.</span>
+<span class="sd">1. Read the artifact&#39;s `bucket`, `key` and metadata.</span>
+
+<span class="sd">In pseudocode:</span>
+
+<span class="sd">```python</span>
+<span class="sd">from startifact import Session</span>
+
+<span class="sd">session = Session()</span>
+<span class="sd">artifact = session.get(&quot;MyLambdaProject&quot;, &quot;1.0.1&quot;)</span>
+
+<span class="sd">params.add(&quot;BuildBucket&quot;, artifact.bucket)</span>
+<span class="sd">params.add(&quot;BuildKey&quot;, artifact.key)</span>
+<span class="sd">params.add(&quot;BuildHash&quot;, artifact[&quot;hash&quot;])</span>
 <span class="sd">```</span>
 
 <span class="sd">## Project</span>
