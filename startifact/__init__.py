@@ -223,6 +223,73 @@ artifact["deployed"] = "true"
 artifact.save_metadata()
 ```
 
+## Examples
+
+### Staging then deploying a lambda function
+
+This example assumes you'll be deploying your code via a CloudFormation template like this:
+
+```yaml
+Parameters:
+
+  BuildBucket:
+    Type: String
+
+  BuildKey:
+    Type: String
+
+  BuildHash:
+    Type: String
+
+Resources:
+
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Ref: BuildBucket
+        S3Key:
+          Ref: BuildKey
+
+  FunctionVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      CodeSha256:
+        Ref: BuildHash
+      FunctionName:
+        Ref: Function
+```
+
+When you're ready to stage your code:
+
+1. Package it as a zip.
+1. Attach the hash as metadata.
+
+```bash
+hash="$(openssl dgst -sha256 -binary dist.zip | openssl enc -base64)"
+startifact MyLambdaProject 1.0.1 --stage dist.zip --metadata "hash=${hash:?}"
+```
+
+Now, to populate your CloudFormation template's parameters:
+
+1. Create a Startifact session.
+1. `get()` the artifact to deploy.
+1. Read the artifact's `bucket`, `key` and metadata.
+
+In pseudocode:
+
+```python
+from startifact import Session
+
+session = Session()
+artifact = session.get("MyLambdaProject", "1.0.1")
+
+params.add("BuildBucket", artifact.bucket)
+params.add("BuildKey", artifact.key)
+params.add("BuildHash", artifact["hash"])
+```
+
 ## Project
 
 ### Contributing

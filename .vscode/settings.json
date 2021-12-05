@@ -3,6 +3,7 @@
     "Ansiscape",
     "autoclass",
     "currentmodule",
+    "dgst",
     "epilog",
     "furo",
     "mypy",
