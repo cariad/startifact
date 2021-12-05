@@ -30,12 +30,12 @@ class ArtifactABC(ABC):
         session: Session,
         version: str,
     ) -> None:
-        fqn = f"{project}@{version}"
 
         self._bucket = bucket
         self._cached_metadata: Optional[Dict[str, str]] = None
         self._dry_run = dry_run
-        self._key = f"{key_prefix}{fqn}"
+        self._fqn = f"{project}@{version}"
+        self._key = f"{key_prefix}{self._fqn}"
         self._key_prefix = key_prefix
         self._logger = getLogger("startifact")
         self._metadata_key = self._key + "/metadata"
@@ -57,6 +57,11 @@ class ArtifactABC(ABC):
     def bucket(self) -> str:
         """Gets the name of the S3 bucket."""
         return self._bucket
+
+    @property
+    def fqn(self) -> str:
+        """Gets the fully-qualified name."""
+        return self._fqn
 
     @property
     def key(self) -> str:

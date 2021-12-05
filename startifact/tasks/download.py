@@ -54,7 +54,7 @@ class DownloadTask(Task[DownloadTaskArguments]):
         artifact.download(path)
         rel_path = path if isinstance(path, Path) else Path(path)
         abs_path = rel_path.resolve().absolute().as_posix()
-        self.out.write(f"Downloaded {project} {artifact.version}: {abs_path}\n")
+        self.out.write(f"Startifact downloaded {artifact.fqn}: {abs_path}\n")
         return 0
 
     @classmethod

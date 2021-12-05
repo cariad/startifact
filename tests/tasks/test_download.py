@@ -40,7 +40,7 @@ def test_invoke() -> None:
 
     download.assert_called_once_with("download.zip")
 
-    assert out.getvalue().startswith("Downloaded SugarWater 1.2.3: ")
+    assert out.getvalue().startswith("Startifact downloaded SugarWater@1.2.3: ")
     assert out.getvalue().endswith("download.zip\n")
     assert exit_code == 0
 

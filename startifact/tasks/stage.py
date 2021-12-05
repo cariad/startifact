@@ -20,7 +20,7 @@ class StageTask(Task[StageTaskArguments]):
         version = self.args.version
 
         try:
-            session.stage(
+            artifact = session.stage(
                 path=self.args.path,
                 project=project,
                 version=version,
@@ -28,13 +28,13 @@ class StageTask(Task[StageTaskArguments]):
             )
 
         except (AlreadyStagedError, NoConfiguration) as ex:
-            self.out.write("\n🔥 ")
+            self.out.write("\n🔥 Startifact failed: ")
             self.out.write(str(ex))
             self.out.write("\n\n")
             return 1
 
         self.out.write("\n")
-        self.out.write(f"Successfully staged {project} {version}! 🎉\n\n")
+        self.out.write(f"Startifact successfully staged {artifact.fqn}! 🎉\n\n")
         self.out.write("To download this artifact, run one of:\n\n")
         self.out.write(f"    startifact {project} --download <PATH>\n")
         self.out.write(f"    startifact {project} latest --download <PATH>\n")
