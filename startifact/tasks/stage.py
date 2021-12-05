@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Union
 
 from cline import CommandLineArguments, Task
 
@@ -11,7 +11,7 @@ from startifact.session import Session
 
 @dataclass
 class StageTaskArguments:
-    path: Path
+    path: Union[Path, str]
     """
     Path to file to upload.
     """
@@ -55,8 +55,12 @@ class StageTask(Task[StageTaskArguments]):
         version = self.args.version
 
         try:
-            artifact = session.artifact(project, version)
-            artifact.stage(self.args.path, metadata=self.args.metadata)
+            session.stage(
+                path=self.args.path,
+                project=project,
+                version=version,
+                metadata=self.args.metadata,
+            )
 
         except (AlreadyStagedError, NoConfiguration) as ex:
             self.out.write("\n🔥 ")
@@ -74,20 +78,28 @@ class StageTask(Task[StageTaskArguments]):
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> StageTaskArguments:
-        logger = getLogger("startifact")
-
-        metadata: Dict[str, str] = {}
-
-        for pair in args.get_list("metadata", []):
-            split = pair.split("=", maxsplit=1)
-            if "=" in split[1]:
-                logger.warning('Value "%s" contains "=". Sure you want this?', split[1])
-            metadata[split[0]] = split[1]
-
         return StageTaskArguments(
             log_level=args.get_string("log_level", "warning").upper(),
-            metadata=metadata,
-            path=Path(args.get_string("stage")),
+            metadata=cls.make_metadata(args.get_list("metadata", [])),
+            path=args.get_string("stage"),
             project=args.get_string("project"),
             version=args.get_string("artifact_version"),
         )
+
+    @classmethod
+    def make_metadata(cls, pairs: List[str]) -> Optional[Dict[str, str]]:
+        if not pairs:
+            return None
+
+        metadata: Dict[str, str] = {}
+
+        for pair in pairs:
+            split = pair.split("=", maxsplit=1)
+            if "=" in split[1]:
+                getLogger("startifact").warning(
+                    'Metadata value "%s" contains "=". Will assume this is intentional.',
+                    split[1],
+                )
+            metadata[split[0]] = split[1]
+
+        return metadata

@@ -1,31 +1,39 @@
 from io import StringIO
 
 from cline import CommandLineArguments
-from mock import Mock
+from mock import patch
+from mock.mock import Mock
 
+from startifact.artifact import StagedArtifact
+from startifact.session import Session
 from startifact.tasks.get import GetTask, GetTaskArguments
 
 
 def test_invoke() -> None:
-    session = Mock()
+    session = Session()
 
-    get_latest_version = Mock(return_value="4.5.6")
-    session.get_latest_version = get_latest_version
+    artifact = StagedArtifact(
+        bucket="",
+        key_prefix="",
+        project="SugarWater",
+        session=Mock(),
+        version="1.2.3",
+    )
 
     args = GetTaskArguments(
         get="version",
-        log_level="WARNING",
-        project="foo",
+        project="SugarWater",
         session=session,
     )
 
     out = StringIO()
     task = GetTask(args, out)
 
-    exit_code = task.invoke()
+    with patch.object(session, "get", return_value=artifact) as get:
+        exit_code = task.invoke()
 
-    get_latest_version.assert_called_once_with("foo")
-    assert out.getvalue() == "4.5.6\n"
+    get.assert_called_once_with("SugarWater", "latest")
+    assert out.getvalue() == "1.2.3\n"
     assert exit_code == 0
 
 

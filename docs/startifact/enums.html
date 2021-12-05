@@ -31,13 +31,19 @@
                     <h2>API Documentation</h2>
                         <ul class="memberlist">
             <li>
-                    <a class="class" href="#Property">Property</a>
+                    <a class="class" href="#SessionUsage">SessionUsage</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="variable" href="#Property.S3_KEY">S3_KEY</a>
+                                <a class="variable" href="#SessionUsage.DEFAULT">DEFAULT</a>
                         </li>
                         <li>
-                                <a class="variable" href="#Property.VERSION">VERSION</a>
+                                <a class="variable" href="#SessionUsage.S3">S3</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SessionUsage.SSM_FOR_ARTIFACTS">SSM_FOR_ARTIFACTS</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SessionUsage.SSM_FOR_BUCKET">SSM_FOR_BUCKET</a>
                         </li>
                 </ul>
 
@@ -62,32 +68,34 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">startifact.enums.property</span> <span class="kn">import</span> <span class="n">Property</span>
+            <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">startifact.enums.session_usage</span> <span class="kn">import</span> <span class="n">SessionUsage</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;Property&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SessionUsage&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 </pre></div>
 
         </details>
 
             </section>
-                <section id="Property">
+                <section id="SessionUsage">
                                 <div class="attr class">
-        <a class="headerlink" href="#Property">#&nbsp;&nbsp</a>
+        <a class="headerlink" href="#SessionUsage">#&nbsp;&nbsp</a>
 
                 <div class="decorator">@unique</div>
 
         <span class="def">class</span>
-        <span class="name">Property</span><wbr>(<span class="base">enum.Enum</span>):
+        <span class="name">SessionUsage</span><wbr>(<span class="base">enum.Enum</span>):
     </div>
 
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="nd">@unique</span>
-<span class="k">class</span> <span class="nc">Property</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">S3_KEY</span> <span class="o">=</span> <span class="s2">&quot;s3.key&quot;</span>
-    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;version&quot;</span>
+<span class="k">class</span> <span class="nc">SessionUsage</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">S3</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SSM_FOR_ARTIFACTS</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SSM_FOR_BUCKET</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
 </pre></div>
 
         </details>
@@ -96,19 +104,37 @@
 </div>
 
 
-                            <div id="Property.S3_KEY" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Property.S3_KEY">#&nbsp;&nbsp</a>
+                            <div id="SessionUsage.DEFAULT" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#SessionUsage.DEFAULT">#&nbsp;&nbsp</a>
 
-        <span class="name">S3_KEY</span><span class="default_value"> = &lt;<a href="#Property.S3_KEY">Property.S3_KEY</a>: &#39;s3.key&#39;&gt;</span>
+        <span class="name">DEFAULT</span><span class="default_value"> = &lt;<a href="#SessionUsage.DEFAULT">SessionUsage.DEFAULT</a>: 1&gt;</span>
     </div>
 
     
 
                             </div>
-                            <div id="Property.VERSION" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Property.VERSION">#&nbsp;&nbsp</a>
+                            <div id="SessionUsage.S3" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#SessionUsage.S3">#&nbsp;&nbsp</a>
 
-        <span class="name">VERSION</span><span class="default_value"> = &lt;<a href="#Property.VERSION">Property.VERSION</a>: &#39;version&#39;&gt;</span>
+        <span class="name">S3</span><span class="default_value"> = &lt;<a href="#SessionUsage.S3">SessionUsage.S3</a>: 2&gt;</span>
+    </div>
+
+    
+
+                            </div>
+                            <div id="SessionUsage.SSM_FOR_ARTIFACTS" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#SessionUsage.SSM_FOR_ARTIFACTS">#&nbsp;&nbsp</a>
+
+        <span class="name">SSM_FOR_ARTIFACTS</span><span class="default_value"> = &lt;<a href="#SessionUsage.SSM_FOR_ARTIFACTS">SessionUsage.SSM_FOR_ARTIFACTS</a>: 3&gt;</span>
+    </div>
+
+    
+
+                            </div>
+                            <div id="SessionUsage.SSM_FOR_BUCKET" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#SessionUsage.SSM_FOR_BUCKET">#&nbsp;&nbsp</a>
+
+        <span class="name">SSM_FOR_BUCKET</span><span class="default_value"> = &lt;<a href="#SessionUsage.SSM_FOR_BUCKET">SessionUsage.SSM_FOR_BUCKET</a>: 4&gt;</span>
     </div>
 
     
@@ -118,8 +144,8 @@
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt>enum.Enum</dt>
-                                <dd id="Property.name" class="variable">name</dd>
-                <dd id="Property.value" class="variable">value</dd>
+                                <dd id="SessionUsage.name" class="variable">name</dd>
+                <dd id="SessionUsage.value" class="variable">value</dd>
 
             </div>
                                 </dl>

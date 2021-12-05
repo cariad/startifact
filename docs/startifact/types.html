@@ -60,18 +60,6 @@
                 </ul>
 
             </li>
-            <li>
-                    <a class="class" href="#Download">Download</a>
-                            <ul class="memberlist">
-                        <li>
-                                <a class="function" href="#Download.__init__">Download</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#Download.version">version</a>
-                        </li>
-                </ul>
-
-            </li>
     </ul>
 
 
@@ -92,8 +80,7 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+            <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypedDict</span>
 
 
 <span class="k">class</span> <span class="nc">Configuration</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
@@ -140,18 +127,6 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Most recent confirmation that the user is ready to start the configuration</span>
 <span class="sd">    script.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-
-<span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Download</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Information about a downloaded artifact.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Gets the explicit version that was downloaded.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </pre></div>
 
@@ -330,59 +305,6 @@ script.</p>
 
             </div>
                                 </dl>
-                            </div>
-                </section>
-                <section id="Download">
-                                <div class="attr class">
-        <a class="headerlink" href="#Download">#&nbsp;&nbsp</a>
-
-                <div class="decorator">@dataclass</div>
-
-        <span class="def">class</span>
-        <span class="name">Download</span>:
-    </div>
-
-                <details>
-            <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Download</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Information about a downloaded artifact.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Gets the explicit version that was downloaded.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>Information about a downloaded artifact.</p>
-</div>
-
-
-                            <div id="Download.__init__" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#Download.__init__">#&nbsp;&nbsp</a>
-
-        
-            <span class="name">Download</span><span class="signature">(version: str)</span>
-    </div>
-
-        
-    
-
-                            </div>
-                            <div id="Download.version" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Download.version">#&nbsp;&nbsp</a>
-
-        <span class="name">version</span><span class="annotation">: str</span>
-    </div>
-
-            <div class="docstring"><p>Gets the explicit version that was downloaded.</p>
-</div>
-
-
                             </div>
                 </section>
     </main>
