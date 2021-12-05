@@ -130,11 +130,8 @@
 
     <span class="k">def</span> <span class="nf">_get_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">SessionUsage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">usage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sessions</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">usage</span> <span class="o">==</span> <span class="n">SessionUsage</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_regions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating Boto3 session for </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_regions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">region_name</span><span class="o">=</span><span class="n">r</span><span class="p">)</span> <span class="k">if</span> <span class="n">r</span> <span class="k">else</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sessions</span><span class="p">[</span><span class="n">usage</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sessions</span><span class="p">[</span><span class="n">usage</span><span class="p">]</span>
@@ -206,7 +203,7 @@
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StagedArtifact</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stages an artifact.</span>
 
@@ -219,11 +216,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
+        <span class="n">s3_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">SessionUsage</span><span class="o">.</span><span class="n">S3</span><span class="p">)</span>
+
         <span class="n">artifact</span> <span class="o">=</span> <span class="n">NewArtifact</span><span class="p">(</span>
             <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
             <span class="n">key_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">[</span><span class="s2">&quot;bucket_key_prefix&quot;</span><span class="p">],</span>
             <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
-            <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">SessionUsage</span><span class="o">.</span><span class="n">S3</span><span class="p">),</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">s3_session</span><span class="p">,</span>
             <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -238,6 +237,14 @@
         <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latest_param</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
         <span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">StagedArtifact</span><span class="p">(</span>
+            <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
+            <span class="n">key_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">[</span><span class="s2">&quot;bucket_key_prefix&quot;</span><span class="p">],</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">s3_session</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -301,11 +308,8 @@
 
     <span class="k">def</span> <span class="nf">_get_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">SessionUsage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">usage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sessions</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">usage</span> <span class="o">==</span> <span class="n">SessionUsage</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_regions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating Boto3 session for </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_regions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">region_name</span><span class="o">=</span><span class="n">r</span><span class="p">)</span> <span class="k">if</span> <span class="n">r</span> <span class="k">else</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sessions</span><span class="p">[</span><span class="n">usage</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sessions</span><span class="p">[</span><span class="n">usage</span><span class="p">]</span>
@@ -377,7 +381,7 @@
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StagedArtifact</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stages an artifact.</span>
 
@@ -390,11 +394,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
+        <span class="n">s3_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">SessionUsage</span><span class="o">.</span><span class="n">S3</span><span class="p">)</span>
+
         <span class="n">artifact</span> <span class="o">=</span> <span class="n">NewArtifact</span><span class="p">(</span>
             <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
             <span class="n">key_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">[</span><span class="s2">&quot;bucket_key_prefix&quot;</span><span class="p">],</span>
             <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
-            <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">SessionUsage</span><span class="o">.</span><span class="n">S3</span><span class="p">),</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">s3_session</span><span class="p">,</span>
             <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -409,6 +415,14 @@
         <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latest_param</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
         <span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">StagedArtifact</span><span class="p">(</span>
+            <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
+            <span class="n">key_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">[</span><span class="s2">&quot;bucket_key_prefix&quot;</span><span class="p">],</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">s3_session</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -545,7 +559,7 @@ configuration is not set.</p>
     version: str,
     path: Union[pathlib.Path, str],
     metadata: Optional[Dict[str, str]] = None
-) -&gt; None</span>:
+) -&gt; <a href="artifact.html#staged.StagedArtifact">startifact.artifact.staged.StagedArtifact</a></span>:
     </div>
 
                 <details>
@@ -556,7 +570,7 @@ configuration is not set.</p>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StagedArtifact</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stages an artifact.</span>
 
@@ -569,11 +583,13 @@ configuration is not set.</p>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
+        <span class="n">s3_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">SessionUsage</span><span class="o">.</span><span class="n">S3</span><span class="p">)</span>
+
         <span class="n">artifact</span> <span class="o">=</span> <span class="n">NewArtifact</span><span class="p">(</span>
             <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
             <span class="n">key_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">[</span><span class="s2">&quot;bucket_key_prefix&quot;</span><span class="p">],</span>
             <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
-            <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">SessionUsage</span><span class="o">.</span><span class="n">S3</span><span class="p">),</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">s3_session</span><span class="p">,</span>
             <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -588,6 +604,14 @@ configuration is not set.</p>
         <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latest_param</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
         <span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">StagedArtifact</span><span class="p">(</span>
+            <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
+            <span class="n">key_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">[</span><span class="s2">&quot;bucket_key_prefix&quot;</span><span class="p">],</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="n">session</span><span class="o">=</span><span class="n">s3_session</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span>
 </pre></div>
 
         </details>

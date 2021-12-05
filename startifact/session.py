@@ -51,11 +51,8 @@ class Session:
 
     def _get_session(self, usage: SessionUsage) -> boto3.session.Session:
         if usage not in self._cached_sessions:
-            if usage == SessionUsage.DEFAULT:
-                r = None
-            else:
-                r = self.session_regions.get(usage, None)
             self._logger.debug("Creating Boto3 session for %s.", usage)
+            r = self.session_regions.get(usage, None)
             s = boto3.session.Session(region_name=r) if r else boto3.session.Session()
             self._cached_sessions[usage] = s
         return self._cached_sessions[usage]

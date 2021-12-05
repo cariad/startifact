@@ -37,19 +37,13 @@
                                 <a class="variable" href="#ArtifactABC.bucket">bucket</a>
                         </li>
                         <li>
-                                <a class="variable" href="#ArtifactABC.key_prefix">key_prefix</a>
+                                <a class="variable" href="#ArtifactABC.key">key</a>
                         </li>
                         <li>
                                 <a class="variable" href="#ArtifactABC.project">project</a>
                         </li>
                         <li>
                                 <a class="variable" href="#ArtifactABC.version">version</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ArtifactABC.key">key</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#ArtifactABC.metadata_key">metadata_key</a>
                         </li>
                         <li>
                                 <a class="function" href="#ArtifactABC.save_metadata">save_metadata</a>
@@ -124,6 +118,17 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ArtifactABC</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Artifact.</span>
+
+<span class="sd">    Get and set metadata by getting and setting keys. For example:</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    artifact[&quot;foo&quot;] = &quot;bar&quot;</span>
+<span class="sd">    foo = artifact[&quot;foo&quot;]</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -132,11 +137,13 @@
         <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span>
+        <span class="n">fqn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_bucket</span> <span class="o">=</span> <span class="n">bucket</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cached_metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_key_prefix</span> <span class="o">=</span> <span class="n">key_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}{</span><span class="n">fqn</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">+</span> <span class="s2">&quot;/metadata&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_project</span> <span class="o">=</span> <span class="n">project</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">session</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">version</span>
@@ -153,28 +160,23 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the name of the S3 bucket.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bucket</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">key_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_prefix</span>
+    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the S3 key.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the name of the project.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the artifact version.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">fqn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">key_prefix</span><span class="si">}{</span><span class="n">fqn</span><span class="si">}</span><span class="s2">&quot;</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">metadata_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;@metadata&quot;</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
@@ -224,14 +226,19 @@
             <span class="n">Body</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
             <span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
             <span class="n">ContentMD5</span><span class="o">=</span><span class="n">get_b64_md5</span><span class="p">(</span><span class="n">body</span><span class="p">),</span>
-            <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_key</span><span class="p">,</span>
+            <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata_key</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
+            <div class="docstring"><p>Artifact.</p>
+
+<p>Get and set metadata by getting and setting keys. For example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bar&quot;</span>
+<span class="n">foo</span> <span class="o">=</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span>
+</code></pre></div>
 </div>
 
 
@@ -241,34 +248,9 @@ inheritance.</p>
         <span class="name">bucket</span><span class="annotation">: str</span>
     </div>
 
-    
+            <div class="docstring"><p>Gets the name of the S3 bucket.</p>
+</div>
 
-                            </div>
-                            <div id="ArtifactABC.key_prefix" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ArtifactABC.key_prefix">#&nbsp;&nbsp</a>
-
-        <span class="name">key_prefix</span><span class="annotation">: str</span>
-    </div>
-
-    
-
-                            </div>
-                            <div id="ArtifactABC.project" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ArtifactABC.project">#&nbsp;&nbsp</a>
-
-        <span class="name">project</span><span class="annotation">: str</span>
-    </div>
-
-    
-
-                            </div>
-                            <div id="ArtifactABC.version" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ArtifactABC.version">#&nbsp;&nbsp</a>
-
-        <span class="name">version</span><span class="annotation">: str</span>
-    </div>
-
-    
 
                             </div>
                             <div id="ArtifactABC.key" class="classattr">
@@ -277,16 +259,31 @@ inheritance.</p>
         <span class="name">key</span><span class="annotation">: str</span>
     </div>
 
-    
+            <div class="docstring"><p>Gets the S3 key.</p>
+</div>
+
 
                             </div>
-                            <div id="ArtifactABC.metadata_key" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#ArtifactABC.metadata_key">#&nbsp;&nbsp</a>
+                            <div id="ArtifactABC.project" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ArtifactABC.project">#&nbsp;&nbsp</a>
 
-        <span class="name">metadata_key</span><span class="annotation">: str</span>
+        <span class="name">project</span><span class="annotation">: str</span>
     </div>
 
-    
+            <div class="docstring"><p>Gets the name of the project.</p>
+</div>
+
+
+                            </div>
+                            <div id="ArtifactABC.version" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#ArtifactABC.version">#&nbsp;&nbsp</a>
+
+        <span class="name">version</span><span class="annotation">: str</span>
+    </div>
+
+            <div class="docstring"><p>Gets the artifact version.</p>
+</div>
+
 
                             </div>
                             <div id="ArtifactABC.save_metadata" class="classattr">
@@ -314,7 +311,7 @@ inheritance.</p>
             <span class="n">Body</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
             <span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
             <span class="n">ContentMD5</span><span class="o">=</span><span class="n">get_b64_md5</span><span class="p">(</span><span class="n">body</span><span class="p">),</span>
-            <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_key</span><span class="p">,</span>
+            <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata_key</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
 
@@ -344,9 +341,7 @@ inheritance.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks if the artifact has been uploaded.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the artifact has already been uploaded.&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking if s3:/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2"> exists...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="n">s3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;s3&quot;</span><span class="p">)</span>  <span class="c1"># pyright: reportUnknownMemberType=false</span>
@@ -360,6 +355,13 @@ inheritance.</p>
             <span class="k">raise</span> <span class="n">ex</span>
 
     <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uploads the artifact file.</span>
+
+<span class="sd">        Raises startifact.exceptions.AlreadyStagedError if this version has</span>
+<span class="sd">        already been uploaded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">AlreadyStagedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
 
@@ -379,8 +381,13 @@ inheritance.</p>
 
         </details>
 
-            <div class="docstring"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
+            <div class="docstring"><p>Artifact.</p>
+
+<p>Get and set metadata by getting and setting keys. For example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bar&quot;</span>
+<span class="n">foo</span> <span class="o">=</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span>
+</code></pre></div>
 </div>
 
 
@@ -390,7 +397,7 @@ inheritance.</p>
         <span class="name">exists</span><span class="annotation">: bool</span>
     </div>
 
-            <div class="docstring"><p>Checks if the artifact has been uploaded.</p>
+            <div class="docstring"><p>Checks if the artifact has already been uploaded.</p>
 </div>
 
 
@@ -406,6 +413,13 @@ inheritance.</p>
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uploads the artifact file.</span>
+
+<span class="sd">        Raises startifact.exceptions.AlreadyStagedError if this version has</span>
+<span class="sd">        already been uploaded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">AlreadyStagedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
 
@@ -425,7 +439,12 @@ inheritance.</p>
 
         </details>
 
-    
+            <div class="docstring"><p>Uploads the artifact file.</p>
+
+<p>Raises <a href="exceptions.html#AlreadyStagedError">startifact.exceptions.AlreadyStagedError</a> if this version has
+already been uploaded.</p>
+</div>
+
 
                             </div>
                             <div class="inherited">
@@ -434,11 +453,9 @@ inheritance.</p>
                                     <div><dt><a href="#ArtifactABC">ArtifactABC</a></dt>
                                 <dd id="NewArtifact.__init__" class="function">ArtifactABC</dd>
                 <dd id="NewArtifact.bucket" class="variable"><a href="#ArtifactABC.bucket">bucket</a></dd>
-                <dd id="NewArtifact.key_prefix" class="variable"><a href="#ArtifactABC.key_prefix">key_prefix</a></dd>
+                <dd id="NewArtifact.key" class="variable"><a href="#ArtifactABC.key">key</a></dd>
                 <dd id="NewArtifact.project" class="variable"><a href="#ArtifactABC.project">project</a></dd>
                 <dd id="NewArtifact.version" class="variable"><a href="#ArtifactABC.version">version</a></dd>
-                <dd id="NewArtifact.key" class="variable"><a href="#ArtifactABC.key">key</a></dd>
-                <dd id="NewArtifact.metadata_key" class="variable"><a href="#ArtifactABC.metadata_key">metadata_key</a></dd>
                 <dd id="NewArtifact.save_metadata" class="function"><a href="#ArtifactABC.save_metadata">save_metadata</a></dd>
 
             </div>
@@ -457,18 +474,19 @@ inheritance.</p>
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">StagedArtifact</span><span class="p">(</span><span class="n">ArtifactABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A staged artifact.&quot;&quot;&quot;</span>
-
     <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;Downloading metadata: s3:/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_key</span>
+            <span class="s2">&quot;Downloading metadata: s3:/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_key</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">s3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;s3&quot;</span><span class="p">)</span>  <span class="c1"># pyright: reportUnknownMemberType=false</span>
+
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">s3</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_key</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">s3</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata_key</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">s3</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">NoSuchKey</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_object: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">load</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s2">&quot;Body&quot;</span><span class="p">]))</span>
 
     <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -482,7 +500,13 @@ inheritance.</p>
 
         </details>
 
-            <div class="docstring"><p>A staged artifact.</p>
+            <div class="docstring"><p>Artifact.</p>
+
+<p>Get and set metadata by getting and setting keys. For example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bar&quot;</span>
+<span class="n">foo</span> <span class="o">=</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span>
+</code></pre></div>
 </div>
 
 
@@ -518,11 +542,9 @@ inheritance.</p>
                                     <div><dt><a href="#ArtifactABC">ArtifactABC</a></dt>
                                 <dd id="StagedArtifact.__init__" class="function">ArtifactABC</dd>
                 <dd id="StagedArtifact.bucket" class="variable"><a href="#ArtifactABC.bucket">bucket</a></dd>
-                <dd id="StagedArtifact.key_prefix" class="variable"><a href="#ArtifactABC.key_prefix">key_prefix</a></dd>
+                <dd id="StagedArtifact.key" class="variable"><a href="#ArtifactABC.key">key</a></dd>
                 <dd id="StagedArtifact.project" class="variable"><a href="#ArtifactABC.project">project</a></dd>
                 <dd id="StagedArtifact.version" class="variable"><a href="#ArtifactABC.version">version</a></dd>
-                <dd id="StagedArtifact.key" class="variable"><a href="#ArtifactABC.key">key</a></dd>
-                <dd id="StagedArtifact.metadata_key" class="variable"><a href="#ArtifactABC.metadata_key">metadata_key</a></dd>
                 <dd id="StagedArtifact.save_metadata" class="function"><a href="#ArtifactABC.save_metadata">save_metadata</a></dd>
 
             </div>

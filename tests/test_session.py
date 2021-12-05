@@ -140,7 +140,7 @@ def test_session_regions(empty_config: Configuration) -> None:
     }
 
 
-def test_stage() -> None:
+def test_stage(empty_config: Configuration) -> None:
     artifact = NewArtifact(
         bucket="",
         key_prefix="",
@@ -153,6 +153,7 @@ def test_stage() -> None:
 
     session = Session()
     session._cached_bucket_name = "ArtifactsBucket"
+    session._cached_configuration = empty_config
     session._cached_sessions[SessionUsage.S3] = s3_session
 
     param_set = Mock()
@@ -181,7 +182,7 @@ def test_stage__invalid_name() -> None:
         Session().stage("Sugar Water", "1.2.3", path="README.md")
 
 
-def test_stage__with_metadata() -> None:
+def test_stage__with_metadata(empty_config: Configuration) -> None:
     artifact = NewArtifact(
         bucket="",
         key_prefix="",
@@ -189,7 +190,10 @@ def test_stage__with_metadata() -> None:
         session=Mock(),
         version="1.2.3",
     )
+
     session = Session()
+    session._cached_bucket_name = "ArtifactsBucket"
+    session._cached_configuration = empty_config
 
     with patch("startifact.session.NewArtifact", return_value=artifact):
         with patch.object(session, "_latest_param"):
