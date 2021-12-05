@@ -14,18 +14,18 @@ class GetTaskArguments:
     """
 
     get: Literal["version"]
+
     """
     Property.
     """
-
-    log_level: str
-    """
-    Log level.
-    """
-
     project: str
     """
     Project.
+    """
+
+    log_level: str = "WARNING"
+    """
+    Log level.
     """
 
     session: Optional[Session] = None
@@ -43,8 +43,8 @@ class GetTask(Task[GetTaskArguments]):
         getLogger("startifact").setLevel(self.args.log_level)
 
         session = self.args.session or Session()
-        version = session.get_latest_version(self.args.project)
-        self.out.write(version)
+        artifact = session.get(self.args.project, "latest")
+        self.out.write(artifact.version)
         self.out.write("\n")
         return 0
 

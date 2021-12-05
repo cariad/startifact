@@ -1,22 +1,20 @@
-from base64 import b64encode
-from hashlib import md5
 from logging import getLogger
 from pathlib import Path
 from re import match
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import boto3.session
 
 from startifact.account import Account
-from startifact.exceptions import ProjectNameError
-from startifact.exceptions.already_staged import AlreadyStagedError
-from startifact.exceptions.no_configuration import NoConfiguration
+from startifact.artifact import NewArtifact, StagedArtifact
+from startifact.enums import SessionUsage
+from startifact.exceptions import NoConfiguration, ProjectNameError
 from startifact.parameters import (
     BucketParameter,
     ConfigurationParameter,
     LatestVersionParameter,
 )
-from startifact.types import Configuration, Download
+from startifact.types import Configuration
 
 
 class Session:
@@ -26,24 +24,10 @@ class Session:
 
     def __init__(self) -> None:
         self._cached_account: Optional[Account] = None
-
-        self._cached_ssm_session_for_artifacts: Optional[boto3.session.Session] = None
-        """
-        Boto3 session for interacting with artifact parameters.
-        """
-
         self._cached_bucket_name: Optional[str] = None
         self._cached_configuration: Optional[Configuration] = None
-
-        self._cached_s3_session: Optional[boto3.session.Session] = None
-
-        self._cached_default_session: Optional[boto3.session.Session] = None
-        """
-        Default Boto3 session.
-        """
-
-        self._cached_ssm_session_for_bucket: Optional[boto3.session.Session] = None
-
+        self._cached_sessions: Dict[SessionUsage, boto3.session.Session] = {}
+        self._cached_session_regions: Dict[SessionUsage, str] = {}
         self._logger = getLogger("startifact")
 
     @property
@@ -53,104 +37,33 @@ class Session:
         """
 
         if self._cached_account is None:
-            self._cached_account = Account(self._session)
+            session = self._get_session(SessionUsage.DEFAULT)
+            self._cached_account = Account(session)
         return self._cached_account
 
     @property
     def _configuration(self) -> Configuration:
         if self._cached_configuration is None:
-            param = ConfigurationParameter(self._account, self._session)
+            session = self._get_session(SessionUsage.DEFAULT)
+            param = ConfigurationParameter(self._account, session)
             self._cached_configuration = param.value
         return self._cached_configuration
 
-    @staticmethod
-    def _get_b64_md5(path: Union[Path, str]) -> str:
-        """
-        Gets the MD5 hash of the file as a base64-encoded string.
-        """
+    def _get_session(self, usage: SessionUsage) -> boto3.session.Session:
+        if usage not in self._cached_sessions:
+            self._logger.debug("Creating Boto3 session for %s.", usage)
+            r = self.session_regions.get(usage, None)
+            s = boto3.session.Session(region_name=r) if r else boto3.session.Session()
+            self._cached_sessions[usage] = s
+        return self._cached_sessions[usage]
 
-        hash = md5()
-        with open(path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash.update(chunk)
-        return b64encode(hash.digest()).decode("utf-8")
-
-    @staticmethod
-    def _get_fully_qualified_name(name: str, version: str) -> str:
-        return f"{name}@{version}"
-
-    def _make_latest_version_parameter(self, project: str) -> LatestVersionParameter:
+    def _latest_param(self, project: str) -> LatestVersionParameter:
         return LatestVersionParameter(
             account=self._account,
             prefix=self._configuration["parameter_name_prefix"],
             project=project,
-            session=self._ssm_session_for_artifacts,
+            session=self._get_session(SessionUsage.SSM_FOR_ARTIFACTS),
         )
-
-    def _make_session(self, region: Optional[str] = None) -> boto3.session.Session:
-        """
-        Creates a new boto3 session.
-        """
-
-        if region is None:
-            return boto3.session.Session()
-        return boto3.session.Session(region_name=region)
-
-    def _resolve_version(self, project: str, version: Optional[str] = None) -> str:
-        """
-        Resolves a potentially descriptive version to an explicit number.
-        """
-
-        if version is not None and version.lower() != "latest":
-            self._logger.debug('Version "%s" is already explicit.', version)
-            return version
-
-        latest = self.get_latest_version(project)
-        self._logger.debug('Resolved version "%s" to "%s".', version, latest)
-        return latest
-
-    @property
-    def _s3_session(self) -> boto3.session.Session:
-        """
-        Gets the Boto3 session for S3 interaction.
-        """
-
-        if self._cached_s3_session is None:
-            region = self._configuration["bucket_region"]
-            self._cached_s3_session = self._make_session(region)
-        return self._cached_s3_session
-
-    @property
-    def _session(self) -> boto3.session.Session:
-        """
-        Gets the default boto3 session.
-        """
-
-        if self._cached_default_session is None:
-            self._cached_default_session = self._make_session()
-        return self._cached_default_session
-
-    @property
-    def _ssm_session_for_artifacts(self) -> boto3.session.Session:
-        """
-        Gets the Boto3 session for interacting with artifact parameters.
-        """
-
-        if self._cached_ssm_session_for_artifacts is None:
-            region = self._configuration["parameter_region"]
-            self._cached_ssm_session_for_artifacts = self._make_session(region)
-        return self._cached_ssm_session_for_artifacts
-
-    @property
-    def _ssm_session_for_bucket(self) -> boto3.session.Session:
-        """
-        Gets the Boto3 session for interacting with bucket parameters.
-        """
-
-        if self._cached_ssm_session_for_bucket is None:
-            region = self._configuration["bucket_param_region"]
-            self._cached_ssm_session_for_bucket = self._make_session(region)
-        return self._cached_ssm_session_for_bucket
 
     @property
     def bucket(self) -> str:
@@ -165,68 +78,53 @@ class Session:
             if not self._configuration["bucket_param_name"]:
                 raise NoConfiguration("bucket_param_name")
 
+            session = self._get_session(SessionUsage.SSM_FOR_BUCKET)
+
             param = BucketParameter(
                 account=self._account,
                 name=self._configuration["bucket_param_name"],
-                session=self._ssm_session_for_bucket,
+                session=session,
             )
+
             self._cached_bucket_name = param.value
 
         return self._cached_bucket_name
 
-    def download(self, project: str, path: Path, version: str) -> Download:
-        """
-        Downloads an artifact.
+    def get(self, project: str, version: str = "latest") -> StagedArtifact:
+        """Gets an artifact."""
 
-        "version" can be an explicit version or "latest" to imply the latest.
-
-        "path" must be the full local path and filename to download to.
-        """
-
-        self._logger.debug("Attempt to download version %s of %s.", version, project)
-        version = self._resolve_version(project, version)
-        s3 = self._s3_session.client("s3")  # pyright: reportUnknownMemberType=false
-        s3.download_file(
-            Bucket=self.bucket,
-            Filename=path.as_posix(),
-            Key=self.get_key(project, version),
+        return StagedArtifact(
+            bucket=self.bucket,
+            key_prefix=self._configuration["bucket_key_prefix"],
+            project=project,
+            session=self._get_session(SessionUsage.S3),
+            version=self.latest(project) if "latest" else version,
         )
-        return Download(version=version)
 
-    def exists(self, project: str, version: str) -> bool:
-        """
-        Checks if an artifact version is already staged.
-        """
+    def latest(self, project: str) -> str:
+        """Gets the latest version number of an artifact."""
 
-        s3 = self._s3_session.client("s3")  # pyright: reportUnknownMemberType=false
-        key = self.get_key(project, version)
+        param = self._latest_param(project)
+        self._logger.debug("%s@latest = %s", project, param.value)
+        return param.value
 
-        try:
-            s3.head_object(Bucket=self.bucket, Key=key)
-            return True
-        except s3.exceptions.ClientError as ex:
-            if ex.response["Error"]["Code"] == "404":
-                return False
-            raise ex
+    @property
+    def session_regions(self) -> Dict[SessionUsage, str]:
+        if not self._cached_session_regions:
+            self._cached_session_regions = {
+                SessionUsage.S3: self._configuration["bucket_region"],
+                SessionUsage.SSM_FOR_ARTIFACTS: self._configuration["parameter_region"],
+                SessionUsage.SSM_FOR_BUCKET: self._configuration["bucket_param_region"],
+            }
+        return self._cached_session_regions
 
-    def get_key(self, project: str, version: str) -> str:
-        """
-        Gets the S3 key for an artifact.
-        """
-
-        # This can be empty. Prefixes are optional.
-        prefix = self._configuration["bucket_key_prefix"]
-        fqn = self._get_fully_qualified_name(project, version)
-        return f"{prefix}{fqn}"
-
-    def get_latest_version(self, project: str) -> str:
-        """
-        Gets the latest version of a project.
-        """
-
-        return self._make_latest_version_parameter(project).get()
-
-    def stage(self, project: str, version: str, path: Path) -> None:
+    def stage(
+        self,
+        project: str,
+        version: str,
+        path: Union[Path, str],
+        metadata: Optional[Dict[str, str]] = None,
+    ) -> StagedArtifact:
         """
         Stages an artifact.
 
@@ -239,26 +137,35 @@ class Session:
 
         self.validate_project_name(project)
 
-        if self.exists(project, version):
-            raise AlreadyStagedError(project, version)
+        s3_session = self._get_session(SessionUsage.S3)
 
-        key = self.get_key(project, version)
+        artifact = NewArtifact(
+            bucket=self.bucket,
+            key_prefix=self._configuration["bucket_key_prefix"],
+            project=project,
+            session=s3_session,
+            version=version,
+        )
 
-        self._logger.debug("Will stage file: %s", path)
-        self._logger.debug("Will stage to bucket: %s", self.bucket)
-        self._logger.debug("Will stage to key: %s", key)
+        artifact.upload(path)
 
-        s3 = self._s3_session.client("s3")  # pyright: reportUnknownMemberType=false
+        if metadata:
+            for key in metadata:
+                self._logger.debug("Setting metadata: %s = %s", key, metadata[key])
+                artifact[key] = metadata[key]
+            artifact.save_metadata()
 
-        with open(path, "rb") as f:
-            s3.put_object(
-                Body=f,
-                Bucket=self.bucket,
-                ContentMD5=self._get_b64_md5(path),
-                Key=key,
-            )
+        param = self._latest_param(project)
 
-        self._make_latest_version_parameter(project).set(version)
+        param.set(version)
+
+        return StagedArtifact(
+            bucket=self.bucket,
+            key_prefix=self._configuration["bucket_key_prefix"],
+            project=project,
+            session=s3_session,
+            version=version,
+        )
 
     @staticmethod
     def validate_project_name(name: str) -> None:

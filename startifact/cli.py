@@ -37,10 +37,18 @@ class StartifactCLI(ArgumentParserCli):
         )
 
         parser.add_argument(
+            "--metadata",
+            help="set metadata when staging",
+            metavar="KEY=VALUE",
+            action="append",
+        )
+
+        parser.add_argument(
             "--setup",
             help="perform initial setup then exit",
             action="store_true",
         )
+
         parser.add_argument(
             "--stage",
             help="stage an artifact from a local path (name and version required)",

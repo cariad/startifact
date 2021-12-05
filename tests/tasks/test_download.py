@@ -1,53 +1,55 @@
 from io import StringIO
-from pathlib import Path
 
 from cline import CommandLineArguments
-from mock import Mock
+from mock import Mock, patch
 
+from startifact.artifact import StagedArtifact
+from startifact.session import Session
 from startifact.tasks.download import DownloadTask, DownloadTaskArguments
-from startifact.types import Download
 
 
 def test_invoke() -> None:
-    session = Mock()
-
-    download = Mock(return_value=Download(version="4.5.6"))
-    session.download = download
-
-    args = DownloadTaskArguments(
-        log_level="WARNING",
-        path=Path("dist.zip"),
-        project="foo",
-        session=session,
-        version="latest",
+    artifact = StagedArtifact(
+        bucket="", key_prefix="", project="SugarWater", session=Mock(), version="1.2.3"
     )
 
     out = StringIO()
-    task = DownloadTask(args, out)
 
-    exit_code = task.invoke()
+    with patch.object(artifact, "download") as download:
 
-    download.assert_called_once_with(
-        path=Path("dist.zip"),
-        project="foo",
-        version="latest",
-    )
+        session = Session()
 
-    assert out.getvalue().startswith("Downloaded foo 4.5.6: ")
-    assert out.getvalue().endswith("dist.zip\n")
+        args = DownloadTaskArguments(
+            path="download.zip",
+            project="SugarWater",
+            session=session,
+            version="1.2.3",
+        )
+
+        task = DownloadTask(args, out)
+
+        with patch.object(session, "get", return_value=artifact) as get:
+            exit_code = task.invoke()
+
+    get.assert_called_once_with("SugarWater", "1.2.3")
+
+    download.assert_called_once_with("download.zip")
+
+    assert out.getvalue().startswith("Downloaded SugarWater 1.2.3: ")
+    assert out.getvalue().endswith("download.zip\n")
     assert exit_code == 0
 
 
 def test_make_args() -> None:
     args = CommandLineArguments(
         {
-            "download": "./dist.zip",
+            "download": "dist.zip",
             "project": "foo",
         }
     )
     assert DownloadTask.make_args(args) == DownloadTaskArguments(
         log_level="WARNING",
-        path=Path("dist.zip"),
+        path="dist.zip",
         project="foo",
         version="latest",
     )

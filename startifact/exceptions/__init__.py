@@ -3,6 +3,7 @@ All the custom exceptions that Startifact can raise.
 """
 
 from startifact.exceptions.already_staged import AlreadyStagedError
+from startifact.exceptions.immutable_metadata import CannotModifyImmutableMetadata
 from startifact.exceptions.no_configuration import NoConfiguration
 from startifact.exceptions.parameter_store import (
     NotAllowedToGetConfiguration,
@@ -16,6 +17,7 @@ from startifact.exceptions.project_name import ProjectNameError
 
 __all__ = [
     "AlreadyStagedError",
+    "CannotModifyImmutableMetadata",
     "NoConfiguration",
     "NotAllowedToGetConfiguration",
     "NotAllowedToGetParameter",

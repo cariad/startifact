@@ -1,8 +1,10 @@
 from io import StringIO
 from pathlib import Path
+from typing import Dict, List, Optional
 
 from cline import CommandLineArguments
 from mock import Mock
+from pytest import mark
 
 from startifact.exceptions import AlreadyStagedError
 from startifact.tasks.stage import StageTask, StageTaskArguments
@@ -15,7 +17,6 @@ def test_invoke() -> None:
     session.stage = stage
 
     args = StageTaskArguments(
-        log_level="WARNING",
         path=Path("foo.zip"),
         project="foo",
         session=session,
@@ -31,6 +32,7 @@ def test_invoke() -> None:
         path=Path("foo.zip"),
         project="foo",
         version="1.2.3",
+        metadata=None,
     )
 
     assert (
@@ -57,7 +59,6 @@ def test_invoke__exists() -> None:
     session.stage = stage
 
     args = StageTaskArguments(
-        log_level="WARNING",
         path=Path("foo.zip"),
         project="foo",
         session=session,
@@ -89,8 +90,45 @@ def test_make_args() -> None:
         }
     )
     assert StageTask.make_args(args) == StageTaskArguments(
-        log_level="WARNING",
-        path=Path("foo.zip"),
+        path="foo.zip",
         project="foo",
         version="1.2.3",
     )
+
+
+def test_make_args__with_metadata() -> None:
+    args = CommandLineArguments(
+        {
+            "artifact_version": "1.2.3",
+            "metadata": ["foo=bar"],
+            "project": "foo",
+            "stage": "foo.zip",
+        }
+    )
+    assert StageTask.make_args(args) == StageTaskArguments(
+        metadata={"foo": "bar"},
+        path="foo.zip",
+        project="foo",
+        version="1.2.3",
+    )
+
+
+@mark.parametrize(
+    "pairs, expect",
+    [
+        (
+            [
+                "alpha=beta",
+                "gamma=delta",
+            ],
+            {
+                "alpha": "beta",
+                "gamma": "delta",
+            },
+        ),
+        (["hash=0="], {"hash": "0="}),
+        ([], None),
+    ],
+)
+def test_make_metadata(pairs: List[str], expect: Optional[Dict[str, str]]) -> None:
+    assert StageTask.make_metadata(pairs) == expect

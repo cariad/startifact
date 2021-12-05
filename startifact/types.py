@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import TypedDict
 
 
@@ -46,16 +45,4 @@ class Configuration(TypedDict):
     """
     Most recent confirmation that the user is ready to start the configuration
     script.
-    """
-
-
-@dataclass
-class Download:
-    """
-    Information about a downloaded artifact.
-    """
-
-    version: str
-    """
-    Gets the explicit version that was downloaded.
     """

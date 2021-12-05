@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from cline import CommandLineArguments, Task
 
@@ -14,12 +14,7 @@ class DownloadTaskArguments:
     Artifact download arguments.
     """
 
-    log_level: str
-    """
-    Log level.
-    """
-
-    path: Path
+    path: Union[Path, str]
     """
     Path to download to.
     """
@@ -32,6 +27,11 @@ class DownloadTaskArguments:
     version: str
     """
     Artifact version.
+    """
+
+    log_level: str = "WARNING"
+    """
+    Log level.
     """
 
     session: Optional[Session] = None
@@ -48,23 +48,20 @@ class DownloadTask(Task[DownloadTaskArguments]):
     def invoke(self) -> int:
         getLogger("startifact").setLevel(self.args.log_level)
         session = self.args.session or Session()
-        download = session.download(
-            path=self.args.path,
-            project=self.args.project,
-            version=self.args.version,
-        )
-        abs_path = self.args.path.resolve().absolute().as_posix()
-        self.out.write(
-            f"Downloaded {self.args.project} {download.version}: {abs_path}\n"
-        )
-
+        project = self.args.project
+        artifact = session.get(project, self.args.version)
+        path = self.args.path
+        artifact.download(path)
+        rel_path = path if isinstance(path, Path) else Path(path)
+        abs_path = rel_path.resolve().absolute().as_posix()
+        self.out.write(f"Downloaded {project} {artifact.version}: {abs_path}\n")
         return 0
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> DownloadTaskArguments:
         return DownloadTaskArguments(
-            path=Path(args.get_string("download")),
+            log_level=args.get_string("log_level", "warning").upper(),
+            path=args.get_string("download"),
             project=args.get_string("project"),
             version=args.get_string("artifact_version", "latest"),
-            log_level=args.get_string("log_level", "warning").upper(),
         )

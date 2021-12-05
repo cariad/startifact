@@ -1,17 +1,22 @@
 """
 **Startifact** is a command line application and Python package for staging and retrieving versioned artifacts in Amazon Web Services.
 
-## Installation
+## Use cases
 
-Startifact requires Python 3.8 or later.
+- Stage your application builds to deploy later.
+- Discover the latest build to add to your release set.
+- Download any build version to deploy.
+- Attach your build's hash as metadata to read and verify later.
 
-Install Startifact via pip:
+## Amazon Web Services
 
-```bash
-pip install startifact
-```
+### How Startifact uses your account
 
-## S3 bucket
+Artifacts and metadata are stored in an S3 bucket that you must deploy yourself.
+
+Your organisation configuration and the latest versions of staged artifacts are recorded in Systems Manager parameters that Startifact manages.
+
+### S3 bucket
 
 Startifact will not deploy an S3 bucket for you. You must deploy and own the security yourself.
 
@@ -41,26 +46,37 @@ Resources:
         Ref: Bucket
 ```
 
-## IAM policies
+### IAM policies
 
 The user performing the one-time organisation setup must be granted:
 
 - `ssm:GetParameter` and `ssm:PutParameter` on the configuration parameter. This is `arn:aws:ssm:{REGION}:{ACCOUNT ID}:parameter/Startifact` by default, but adjust if you are using a different parameter name.
 
-Any users or roles that download artifacts must be granted:
+Any identities that download artifacts must be granted:
 
 - `ssm:GetParameter` on the configuration parameter.
 - `ssm:GetParameter` on the bucket name parameter.
 - `ssm:GetParameter` on every parameter beneath the name prefix (or *all* parameters if you have no name prefix).
 - `s3:GetObject` on every S3 object in the artifacts bucket beneath the key prefix (or *all* objects if you have no key prefix).
+- Optional: `s3:PutObject` on S3 keys ending with `*/metadata` to allow appending metadata to existing artifacts.
 
-Any users or roles that stage artifacts must be granted:
+Any identities that stage artifacts must be granted:
 
 - `ssm:GetParameter` on the configuration parameter.
 - `ssm:GetParameter` on the bucket name parameter.
 - `ssm:PutParameter` on every parameter beneath the name prefix (or *all* parameters if you have no name prefix).
 - `s3:ListBucket` on the artifacts bucket.
 - `s3:PutObject` on every S3 object in the artifacts bucket beneath the key prefix (or *all* objects if you have no key prefix).
+
+## Installation
+
+Startifact requires Python 3.8 or later.
+
+Install Startifact via pip:
+
+```bash
+pip install startifact
+```
 
 ## Organisation configuration
 
@@ -97,21 +113,27 @@ They will be asked to:
 
 ## Command line usage
 
-### Staging an artifact
+### Staging an artifact via the CLI
 
-To stage an artifact, pass the project name, version and `--stage` argument with the path to the artifact:
+To stage an artifact, pass the project name, version and `--stage` argument with the path to the file:
 
 ```text
 startifact SugarWater 1.0.9000 --stage dist.tar.gz
 ```
 
-Where the version number comes from depends on your CI/CD setup. I use Circle CI and I stage artifacts on tags, so I know I can pull the version number from the `CIRCLE_TAG` environment variable:
+Where the version number comes from depends on your CI/CD setup. For example, I use CircleCI and I stage artifacts on tags, so I know I can pull the version number from the `CIRCLE_TAG` environment variable:
 
 ```text
 startifact SugarWater "${CIRCLE_TAG}" --stage dist.tar.gz
 ```
 
-### Getting the latest version number of a project
+To attach metadata to the artifact, include any number of `--metadata` arguments. Each value must be a `key=value` pair. If the value contains multiple `=` characters then a pair will be made by splitting on the first.
+
+```text
+startifact SugarWater 1.0.9000 --stage dist.tar.gz --metadata lang=dotnet --metadata hash=9876=
+```
+
+### Getting the latest artifact version via the CLI
 
 To get the version number of the latest artifact staged for a project, pass the project name and `--get` argument for `version`:
 
@@ -121,37 +143,81 @@ startifact SugarWater --get version
 
 The version number will be emitted to `stdout`.
 
-### Downloading an artifact
+### Downloading an artifact via the CLI
 
 To download an artifact, pass the project name, *optionally* the version number, and the `--download` argument with the path to download to:
 
 ```text
-startifact SugarWater 1.0.0 --download dist.tar.gz
+startifact SugarWater 1.0.9000 --download download.tar.gz
 ```
 
 If the version is omitted or `latest` then the latest artifact will be downloaded, otherwise the literal version will be downloaded.
 
 ## Python usage
 
-Import and create a `Session`.
-
-For example:
+### Staging an artifact via Python
 
 ```python
-from pathlib import Path
 from startifact import Session
 
 session = Session()
-session.stage("SugarWater", "1.0.9000", Path("dist.tar.gz"))
+session.stage("SugarWater", "1.0.9000", path="dist.tar.gz")
+```
+
+Metadata can be attached in the same call:
+
+```python
+from startifact import Session
+
+session = Session()
+session.stage(
+    "SugarWater",
+    "1.0.9000",
+    metadata={
+        "lang": "dotnet",
+        "hash": "9876=",
+    },
+    path="dist.tar.gz",
+)
+```
+
+### Getting the latest artifact version via Python
+
+```python
+from startifact import Session
+
+session = Session()
+artifact = session.get("SugarWater")
+print(artifact.version)
+```
+
+### Downloading an artifact via Python
+
+```python
+from startifact import Session
+
+session = Session()
+artifact = session.get("SugarWater", "1.0.9000)
+artifact.download("download.tar.gz")
+```
+
+### Reading and appending metadata
+
+Metadata can be added to any artifact, but values cannot be removed or modified. History can't be changed.
+
+```python
+from startifact import Session
+
+session = Session()
+artifact = session.get("SugarWater", "1.0.9000)
+
+language = artifact["lang"]
+
+artifact["deployed"] = "true"
+artifact.save_metadata()
 ```
 
 ## Project
-
-### Artifact or Artifact?
-
-"Artifact" is the British English spelling. "Artifact" is the American English spelling.
-
-I tend towards American English in code and my native English in documentation.
 
 ### Contributing
 

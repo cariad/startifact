@@ -44,8 +44,8 @@ setup(
     install_requires=[
         "ansiscape~=1.0",
         "asking~=1.0",
-        "cline~=1.1",
         "boto3~=1.20",
+        "cline~=1.2",
     ],
     license="MIT",
     long_description=long_description,
@@ -53,12 +53,16 @@ setup(
     name="startifact",
     packages=[
         "startifact",
+        "startifact.artifact",
+        "startifact.enums",
         "startifact.exceptions",
         "startifact.parameters",
         "startifact.tasks",
     ],
     package_data={
         "startifact": ["py.typed"],
+        "startifact.artifact": ["py.typed"],
+        "startifact.enums": ["py.typed"],
         "startifact.exceptions": ["py.typed"],
         "startifact.parameters": ["py.typed"],
         "startifact.tasks": ["py.typed"],

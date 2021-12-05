@@ -81,6 +81,9 @@
                         <li>
                                 <a class="function" href="#StageTask.make_args">make_args</a>
                         </li>
+                        <li>
+                                <a class="function" href="#StageTask.make_metadata">make_metadata</a>
+                        </li>
                 </ul>
 
             </li>
@@ -139,25 +142,22 @@
     <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
         <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span> <span class="n">Session</span><span class="p">()</span>
-        <span class="n">download</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
-            <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-            <span class="n">project</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
-            <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">abs_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">download</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">abs_path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-
+        <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span>
+        <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span>
+        <span class="n">artifact</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">rel_path</span> <span class="o">=</span> <span class="n">path</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span> <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">abs_path</span> <span class="o">=</span> <span class="n">rel_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">artifact</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">abs_path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">0</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DownloadTaskArguments</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DownloadTaskArguments</span><span class="p">(</span>
-            <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">)),</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
             <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">),</span>
-            <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
         <span class="p">)</span>
 </pre></div>
 
@@ -180,16 +180,13 @@
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
         <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span> <span class="n">Session</span><span class="p">()</span>
-        <span class="n">download</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
-            <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-            <span class="n">project</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
-            <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">abs_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">download</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">abs_path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-
+        <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span>
+        <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span>
+        <span class="n">artifact</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">rel_path</span> <span class="o">=</span> <span class="n">path</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span> <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">abs_path</span> <span class="o">=</span> <span class="n">rel_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">artifact</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">abs_path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">0</span>
 </pre></div>
 
@@ -221,10 +218,10 @@
             <div class="codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DownloadTaskArguments</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DownloadTaskArguments</span><span class="p">(</span>
-            <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">)),</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
             <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">),</span>
-            <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
         <span class="p">)</span>
 </pre></div>
 
@@ -278,8 +275,8 @@ parsed command line arguments <code><a href="#DownloadTask.args">args</a></code>
         <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
 
         <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span> <span class="n">Session</span><span class="p">()</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get_latest_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">artifact</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">0</span>
 
@@ -314,8 +311,8 @@ parsed command line arguments <code><a href="#DownloadTask.args">args</a></code>
         <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
 
         <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span> <span class="n">Session</span><span class="p">()</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get_latest_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">artifact</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">0</span>
 </pre></div>
@@ -659,7 +656,13 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
         <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+
         <span class="k">except</span> <span class="p">(</span><span class="n">AlreadyStagedError</span><span class="p">,</span> <span class="n">NoConfiguration</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🔥 &quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
@@ -678,10 +681,29 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
     <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageTaskArguments</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">StageTaskArguments</span><span class="p">(</span>
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
-            <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">)),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
             <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
         <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_metadata</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="n">split</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Metadata value &quot;</span><span class="si">%s</span><span class="s1">&quot; contains &quot;=&quot;. Will assume this is intentional.&#39;</span><span class="p">,</span>
+                    <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">metadata</span>
 </pre></div>
 
         </details>
@@ -708,7 +730,13 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
         <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">version</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+
         <span class="k">except</span> <span class="p">(</span><span class="n">AlreadyStagedError</span><span class="p">,</span> <span class="n">NoConfiguration</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🔥 &quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
@@ -753,7 +781,8 @@ parsed command line arguments <code><a href="#SetupTask.args">args</a></code>.</
     <span class="k">def</span> <span class="nf">make_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">CommandLineArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageTaskArguments</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">StageTaskArguments</span><span class="p">(</span>
             <span class="n">log_level</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
-            <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">)),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">make_metadata</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;stage&quot;</span><span class="p">),</span>
             <span class="n">project</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">),</span>
             <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="s2">&quot;artifact_version&quot;</span><span class="p">),</span>
         <span class="p">)</span>
@@ -775,6 +804,41 @@ parsed command line arguments <code><a href="#StageTask.args">args</a></code>.</
     Task arguments</p>
 </div>
 
+
+                            </div>
+                            <div id="StageTask.make_metadata" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#StageTask.make_metadata">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@classmethod</div>
+
+            <span class="def">def</span>
+            <span class="name">make_metadata</span><span class="signature">(cls, pairs: List[str]) -&gt; Optional[Dict[str, str]]</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_metadata</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="n">split</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;startifact&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Metadata value &quot;</span><span class="si">%s</span><span class="s1">&quot; contains &quot;=&quot;. Will assume this is intentional.&#39;</span><span class="p">,</span>
+                    <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">metadata</span>
+</pre></div>
+
+        </details>
+
+    
 
                             </div>
                             <div class="inherited">
