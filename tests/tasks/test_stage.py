@@ -5,9 +5,9 @@ from cline import CommandLineArguments
 from mock import Mock
 
 from startifact.artifact import StagedArtifact
-from startifact.exceptions import AlreadyStagedError
+from startifact.exceptions import CannotStageArtifact
+from startifact.tasks import StageTask
 from startifact.tasks.arguments import StageTaskArguments
-from startifact.tasks.stage import StageTask
 
 
 def test_invoke() -> None:
@@ -47,8 +47,6 @@ def test_invoke() -> None:
     assert (
         out.getvalue()
         == """
-Startifact successfully staged SugarWater@1.2.3! 🎉
-
 To download this artifact, run one of:
 
     startifact SugarWater --download <PATH>
@@ -64,7 +62,7 @@ To download this artifact, run one of:
 def test_invoke__exists() -> None:
     session = Mock()
 
-    stage = Mock(side_effect=AlreadyStagedError("foo", "1.2.3"))
+    stage = Mock(side_effect=CannotStageArtifact("fire"))
     session.stage = stage
 
     args = StageTaskArguments(
@@ -79,14 +77,7 @@ def test_invoke__exists() -> None:
 
     exit_code = task.invoke()
 
-    assert (
-        out.getvalue()
-        == """
-🔥 Startifact failed: foo 1.2.3 is already staged.
-
-"""
-    )
-
+    assert out.getvalue() == "🔥 Startifact failed: fire\n"
     assert exit_code == 1
 
 
@@ -99,7 +90,7 @@ def test_make_args() -> None:
         }
     )
     assert StageTask.make_args(args) == StageTaskArguments(
-        path="foo.zip",
+        path=Path("foo.zip"),
         project="foo",
         version="1.2.3",
     )
@@ -116,7 +107,7 @@ def test_make_args__with_metadata() -> None:
     )
     assert StageTask.make_args(args) == StageTaskArguments(
         metadata={"foo": "bar"},
-        path="foo.zip",
+        path=Path("foo.zip"),
         project="foo",
         version="1.2.3",
     )
