@@ -6,6 +6,7 @@
     "dgst",
     "epilog",
     "furo",
+    "maxdepth",
     "mypy",
     "startifact",
     "toctree",

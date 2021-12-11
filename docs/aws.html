@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazon Web Services &mdash; Startifact  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Organisation configuration" href="organization.html" />
+    <link rel="prev" title="Startifact" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Startifact
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Amazon Web Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-startifact-uses-your-account">How Startifact uses your account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#s3-bucket">S3 bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#iam-policies">IAM policies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Startifact</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Amazon Web Services</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/aws.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="amazon-web-services">
+<h1>Amazon Web Services<a class="headerlink" href="#amazon-web-services" title="Permalink to this headline"></a></h1>
+<section id="how-startifact-uses-your-account">
+<h2>How Startifact uses your account<a class="headerlink" href="#how-startifact-uses-your-account" title="Permalink to this headline"></a></h2>
+<p>Startifact stores artifacts and metadata in an S3 bucket that you must deploy yourself.</p>
+<p>Startifact stores your <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation configuration</span></a> and the version numbers of staged artifacts in Systems Manager parameters that Startifact manages.</p>
+</section>
+<section id="s3-bucket">
+<h2>S3 bucket<a class="headerlink" href="#s3-bucket" title="Permalink to this headline"></a></h2>
+<p>Startifact will not deploy an S3 bucket for you. You must deploy and own the security yourself.</p>
+<p>Startifact requires your bucket’s name to be readable from a Systems Manager parameter. This allows you to deploy a bucket without a hard-coded name that’s still discoverable. <a class="reference external" href="https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/">Why do you care what your S3 buckets are named?</a> explains why Startifact is opinionated.</p>
+<p>Here’s a complete CloudFormation template you can copy and deploy:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifact storage</span>
+<span class="nt">Resources</span><span class="p">:</span>
+  <span class="nt">Bucket</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::S3::Bucket</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">PublicAccessBlockConfiguration</span><span class="p">:</span>
+        <span class="nt">BlockPublicAcls</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+        <span class="nt">BlockPublicPolicy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+        <span class="nt">IgnorePublicAcls</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+        <span class="nt">RestrictPublicBuckets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+
+  <span class="nt">BucketParameter</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::SSM::Parameter</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="c1"># This name can be anything you want:</span>
+      <span class="nt">Name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/artifacts-bucket</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+      <span class="nt">Value</span><span class="p">:</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Bucket</span>
+</pre></div>
+</div>
+</section>
+<section id="iam-policies">
+<h2>IAM policies<a class="headerlink" href="#iam-policies" title="Permalink to this headline"></a></h2>
+<p>The user performing the one-time <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation setup</span></a> must be granted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> and <code class="docutils literal notranslate"><span class="pre">ssm:PutParameter</span></code> on the configuration parameter. This is <code class="docutils literal notranslate"><span class="pre">arn:aws:ssm:{REGION}:{ACCOUNT</span> <span class="pre">ID}:parameter/Startifact</span></code> by default, but adjust if you are using a different parameter name.</p></li>
+</ul>
+<p>Any identities that download artifacts must be granted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the configuration parameter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the bucket name parameter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3:GetObject</span></code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</p></li>
+<li><p>Optional: <code class="docutils literal notranslate"><span class="pre">s3:PutObject</span></code> on S3 keys ending with <code class="docutils literal notranslate"><span class="pre">*/metadata</span></code> to allow appending metadata to existing artifacts.</p></li>
+</ul>
+<p>Any identities that stage artifacts must be granted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the configuration parameter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the bucket name parameter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:PutParameter</span></code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3:ListBucket</span></code> on the artifacts bucket.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3:PutObject</span></code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Startifact" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organization.html" class="btn btn-neutral float-right" title="Organisation configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Cariad Eccleston.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
