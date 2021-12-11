@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples &mdash; Startifact  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Python usage" href="python.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Startifact
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#staging-then-deploying-a-lambda-function">Staging then deploying a lambda function</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Startifact</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h1>
+<section id="staging-then-deploying-a-lambda-function">
+<h2>Staging then deploying a lambda function<a class="headerlink" href="#staging-then-deploying-a-lambda-function" title="Permalink to this headline"></a></h2>
+<p>This example assumes you’ll be deploying your code via a CloudFormation template like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Parameters</span><span class="p">:</span>
+
+<span class="nt">BuildBucket</span><span class="p">:</span>
+   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+<span class="nt">BuildKey</span><span class="p">:</span>
+   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+<span class="nt">BuildHash</span><span class="p">:</span>
+   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+<span class="nt">Resources</span><span class="p">:</span>
+
+<span class="nt">Function</span><span class="p">:</span>
+   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Function</span>
+   <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">Code</span><span class="p">:</span>
+      <span class="nt">S3Bucket</span><span class="p">:</span>
+         <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildBucket</span>
+      <span class="nt">S3Key</span><span class="p">:</span>
+         <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildKey</span>
+
+<span class="nt">FunctionVersion</span><span class="p">:</span>
+   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Version</span>
+   <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">CodeSha256</span><span class="p">:</span>
+      <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildHash</span>
+      <span class="nt">FunctionName</span><span class="p">:</span>
+      <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Function</span>
+</pre></div>
+</div>
+<p>When you’re ready to stage your code:</p>
+<ol class="arabic simple">
+<li><p>Package it as a zip.</p></li>
+<li><p>Attach the hash as metadata.</p></li>
+</ol>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">hash=&quot;$(openssl dgst -sha256 -binary dist.zip | openssl enc -base64)&quot;</span>
+<span class="go">startifact MyLambdaProject 1.0.1 --stage dist.zip --metadata &quot;hash=${hash:?}&quot;</span>
+</pre></div>
+</div>
+<p>Now, to populate your CloudFormation template’s parameters:</p>
+<ol class="arabic simple">
+<li><p>Create a Startifact session.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get()</span></code> the artifact to deploy.</p></li>
+<li><p>Read the artifact’s <code class="docutils literal notranslate"><span class="pre">bucket</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code> and metadata.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+<span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MyLambdaProject&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.1&quot;</span><span class="p">)</span>
+
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildBucket&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildKey&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildHash&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;hash&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="python.html" class="btn btn-neutral float-left" title="Python usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Cariad Eccleston.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

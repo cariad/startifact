@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organisation configuration &mdash; Startifact  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CLI usage" href="cli.html" />
+    <link rel="prev" title="Amazon Web Services" href="aws.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Startifact
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Organisation configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#choosing-where-to-host-the-configuration">Choosing where to host the configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performing-or-updating-the-organisation-setup">Performing or updating the organisation setup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Startifact</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Organisation configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organization.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="organisation-configuration">
+<h1>Organisation configuration<a class="headerlink" href="#organisation-configuration" title="Permalink to this headline"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
+<p>Startifact is designed to be run within organisations with multiple CI/CD pipelines that stage, download or otherwise <em>use</em> versioned artifacts.</p>
+<p>Rather than configure Startifact within each pipeline, Startifact reads from a shared organisation-level configuration in Systems Manager.</p>
+<p>As long as your CI/CD pipelines all authenticate to the same Amazon Web Services account, they will read the same configuration.</p>
+</section>
+<section id="choosing-where-to-host-the-configuration">
+<h2>Choosing where to host the configuration<a class="headerlink" href="#choosing-where-to-host-the-configuration" title="Permalink to this headline"></a></h2>
+<p>By default, Startifact reads and writes configuration to a Systems Manager parameter named <code class="docutils literal notranslate"><span class="pre">/Startifact</span></code> in your default account and region.</p>
+<p>To change that parameter name, set an environment variable named <code class="docutils literal notranslate"><span class="pre">STARTIFACT_PARAMETER</span></code>.</p>
+</section>
+<section id="performing-or-updating-the-organisation-setup">
+<h2>Performing or updating the organisation setup<a class="headerlink" href="#performing-or-updating-the-organisation-setup" title="Permalink to this headline"></a></h2>
+<p>Volunteer a <a class="reference internal" href="aws.html#iam-policies"><span class="std std-ref">privileged</span></a> human being to run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact --setup</span>
+</pre></div>
+</div>
+<p>They will be asked to:</p>
+<ol class="arabic simple">
+<li><p>Confirm the configuration parameter name, region and account.</p></li>
+<li><p>Enter the name of the Systems Manager parameter holding the bucket’s name.</p></li>
+<li><p>Enter the name of the region that hosts the Systems Manager parameter that holds the bucket’s name.</p></li>
+<li><p>Enter the name of the region that hosts the bucket.</p></li>
+<li><p>Optionally enter a bucket key prefix.</p></li>
+<li><p>Enter the name of the region where artifacts should be recorded in Systems Manager.</p></li>
+<li><p>Optionally enter a name prefix for the Systems Manager parameters that record artifact versions. Without a prefix, versions will be recorded as <cite>/{project}/Latest</cite>.</p></li>
+<li><p>Confirm the configuration parameter name, region and account one last time before committing.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="aws.html" class="btn btn-neutral float-left" title="Amazon Web Services" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cli.html" class="btn btn-neutral float-right" title="CLI usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Cariad Eccleston.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

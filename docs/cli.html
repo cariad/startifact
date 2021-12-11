@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLI usage &mdash; Startifact  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python usage" href="python.html" />
+    <link rel="prev" title="Organisation configuration" href="organization.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Startifact
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLI usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#staging-an-artifact-via-the-cli">Staging an artifact via the CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-the-latest-artifact-version-via-the-cli">Getting the latest artifact version via the CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#downloading-an-artifact-via-the-cli">Downloading an artifact via the CLI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Startifact</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>CLI usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cli-usage">
+<h1>CLI usage<a class="headerlink" href="#cli-usage" title="Permalink to this headline"></a></h1>
+<section id="staging-an-artifact-via-the-cli">
+<h2>Staging an artifact via the CLI<a class="headerlink" href="#staging-an-artifact-via-the-cli" title="Permalink to this headline"></a></h2>
+<p>To stage an artifact, pass the project name, version and <code class="docutils literal notranslate"><span class="pre">--stage</span></code> argument with the path to the file:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact SugarWater 1.0.9000 --stage dist.tar.gz</span>
+</pre></div>
+</div>
+<p>Where the version number comes from depends on your CI/CD setup. For example, I use CircleCI and I stage artifacts on tags, so I know I can pull the version number from the <code class="docutils literal notranslate"><span class="pre">CIRCLE_TAG</span></code> environment variable:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact SugarWater &quot;${CIRCLE_TAG}&quot; --stage dist.tar.gz</span>
+</pre></div>
+</div>
+<p>To attach metadata to the artifact, include any number of <code class="docutils literal notranslate"><span class="pre">--metadata</span></code> arguments. Each value must be a <code class="docutils literal notranslate"><span class="pre">key=value</span></code> pair. If the value contains multiple <cite>=</cite> characters then a pair will be made by splitting on the first.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact SugarWater 1.0.9000 --stage dist.tar.gz --metadata lang=dotnet --metadata hash=9876=</span>
+</pre></div>
+</div>
+<p>To perform a dry run, swap <code class="docutils literal notranslate"><span class="pre">--stage</span></code> for <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact SugarWater 1.0.9000 --dry-run dist.tar.gz</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-the-latest-artifact-version-via-the-cli">
+<h2>Getting the latest artifact version via the CLI<a class="headerlink" href="#getting-the-latest-artifact-version-via-the-cli" title="Permalink to this headline"></a></h2>
+<p>To get the version number of the latest artifact staged for a project, pass the project name and <code class="docutils literal notranslate"><span class="pre">--get</span></code> argument for <code class="docutils literal notranslate"><span class="pre">version</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact SugarWater --get version</span>
+</pre></div>
+</div>
+<p>The version number will be emitted to <code class="docutils literal notranslate"><span class="pre">stdout</span></code>.</p>
+</section>
+<section id="downloading-an-artifact-via-the-cli">
+<h2>Downloading an artifact via the CLI<a class="headerlink" href="#downloading-an-artifact-via-the-cli" title="Permalink to this headline"></a></h2>
+<p>To download an artifact, pass the project name, <em>optionally</em> the version number, and the <code class="docutils literal notranslate"><span class="pre">--download</span></code> argument with the path to download to:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact SugarWater 1.0.9000 --download download.tar.gz</span>
+</pre></div>
+</div>
+<p>If the version is omitted or <code class="docutils literal notranslate"><span class="pre">latest</span></code> then the latest artifact will be downloaded, otherwise the literal version will be downloaded.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organization.html" class="btn btn-neutral float-left" title="Organisation configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="python.html" class="btn btn-neutral float-right" title="Python usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Cariad Eccleston.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
