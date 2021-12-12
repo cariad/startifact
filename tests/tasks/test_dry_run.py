@@ -1,88 +1,93 @@
 from io import StringIO
 from pathlib import Path
 
-from cline import CommandLineArguments
-from mock import Mock
+from cline import CommandLineArguments, CannotMakeArguments
+from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.exceptions import AlreadyStagedError
+from startifact.exceptions import CannotStageArtifact
 from startifact.session import Session
 from startifact.tasks import DryRunStageTask
 from startifact.tasks.arguments import StageTaskArguments
-
+from mock import patch
+from pytest import raises
 
 def test_invoke() -> None:
-    session = Mock()
-
-    stage = Mock()
-    session.stage = stage
+    session = Session(read_only=True)
 
     args = StageTaskArguments(
         path=Path("foo.zip"),
-        project="foo",
+        project="SugarWater",
         session=session,
-        version="1.2.3",
+        # pyright: reportUnknownMemberType=false
+        version=VersionInfo(1, 2, 3),
     )
 
     out = StringIO()
     task = DryRunStageTask(args, out)
 
-    exit_code = task.invoke()
+    with patch.object(session, "stage") as stage:
+        exit_code = task.invoke()
 
     stage.assert_called_once_with(
-        dry_run=True,
         path=Path("foo.zip"),
-        project="foo",
-        version="1.2.3",
+        project="SugarWater",
+        version=VersionInfo(1, 2, 3),
         metadata=None,
     )
 
-    assert out.getvalue() == "Startifact's dry-run succeeded! 🎉\n"
-
+    assert out.getvalue() == ""
     assert exit_code == 0
 
 
-def test_invoke__exists() -> None:
-    session = Mock()
+def test_invoke__fail() -> None:
+    session = Session(read_only=True)
 
-    stage = Mock(side_effect=AlreadyStagedError("foo", "1.2.3"))
-    session.stage = stage
+    args = StageTaskArguments(
+        path=Path("foo.zip"),
+        project="SugarWater",
+        session=session,
+        version=VersionInfo.parse("1.2.3"),
+    )
+
+    out = StringIO()
+    task = DryRunStageTask(args, out)
+
+    error = CannotStageArtifact("fire")
+
+    with patch.object(session, "stage", side_effect=error) as stage:
+        exit_code = task.invoke()
+
+    stage.assert_called_once_with(
+        path=Path("foo.zip"),
+        project="SugarWater",
+        version=VersionInfo(1, 2, 3),
+        metadata=None,
+    )
+
+    expect_out = "🔥 Dry-run failed: fire\n"
+
+    assert out.getvalue() == expect_out
+    assert exit_code == 1
+
+
+def test_invoke__not_read_only() -> None:
+    session = Session(read_only=False)
 
     args = StageTaskArguments(
         path=Path("foo.zip"),
         project="foo",
         session=session,
-        version="1.2.3",
+        version=VersionInfo.parse("1.2.3"),
     )
 
     out = StringIO()
     task = DryRunStageTask(args, out)
 
-    exit_code = task.invoke()
+    with patch.object(session, "stage") as stage:
+        exit_code = task.invoke()
 
-    assert (
-        out.getvalue()
-        == """
-🔥 Startifact's dry-run failed: foo 1.2.3 is already staged.
-
-"""
-    )
-
-    assert exit_code == 1
-
-
-def test_invoke__not_dry_run() -> None:
-    args = StageTaskArguments(
-        path=Path("foo.zip"),
-        project="foo",
-        session=Session(),
-        version="1.2.3",
-    )
-
-    out = StringIO()
-    task = DryRunStageTask(args, out)
-
-    exit_code = task.invoke()
-    assert out.getvalue() == "🔥 Startifact was not given a dry-run session.\n"
+    stage.assert_not_called()
+    assert out.getvalue() == "🔥 Startifact was not given a read-only session.\n"
     assert exit_code == 1
 
 
@@ -95,13 +100,29 @@ def test_make_args() -> None:
         }
     )
     assert DryRunStageTask.make_args(args) == StageTaskArguments(
-        path="foo.zip",
+        path=Path("foo.zip"),
         project="foo",
-        version="1.2.3",
+        version=VersionInfo.parse("1.2.3"),
     )
 
 
-def test_make_args__with_metadata() -> None:
+
+def test_make_args__invalid_version() -> None:
+    args = CommandLineArguments(
+        {
+            "artifact_version": "latest",
+            "dry_run": "foo.zip",
+            "project": "foo",
+        }
+    )
+
+    with raises(CannotMakeArguments) as ex:
+        DryRunStageTask.make_args(args)
+
+    assert str(ex.value) == "latest is not valid SemVer string"
+
+
+def test_make_args__metadata() -> None:
     args = CommandLineArguments(
         {
             "artifact_version": "1.2.3",
@@ -112,7 +133,7 @@ def test_make_args__with_metadata() -> None:
     )
     assert DryRunStageTask.make_args(args) == StageTaskArguments(
         metadata={"foo": "bar"},
-        path="foo.zip",
+        path=Path("foo.zip"),
         project="foo",
-        version="1.2.3",
+        version=VersionInfo.parse("1.2.3"),
     )
