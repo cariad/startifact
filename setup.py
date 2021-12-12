@@ -46,6 +46,7 @@ setup(
         "asking~=1.0",
         "boto3~=1.20",
         "cline~=1.2",
+        "semver~=2.13",
     ],
     license="MIT",
     long_description=long_description,
@@ -54,7 +55,6 @@ setup(
     packages=[
         "startifact",
         "startifact.artifact",
-        "startifact.enums",
         "startifact.exceptions",
         "startifact.parameters",
         "startifact.tasks",
@@ -62,7 +62,6 @@ setup(
     package_data={
         "startifact": ["py.typed"],
         "startifact.artifact": ["py.typed"],
-        "startifact.enums": ["py.typed"],
         "startifact.exceptions": ["py.typed"],
         "startifact.parameters": ["py.typed"],
         "startifact.tasks": ["py.typed"],

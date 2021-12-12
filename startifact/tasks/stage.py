@@ -1,7 +1,8 @@
 from logging import getLogger
 from pathlib import Path
 
-from cline import CommandLineArguments, Task
+from cline import CannotMakeArguments, CommandLineArguments, Task
+from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.exceptions import CannotStageArtifact, NoConfiguration
 from startifact.session import Session
@@ -43,10 +44,16 @@ class StageTask(Task[StageTaskArguments]):
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> StageTaskArguments:
+        try:
+            # pyright: reportUnknownMemberType=false
+            version = VersionInfo.parse(args.get_string("artifact_version"))
+        except ValueError as ex:
+            raise CannotMakeArguments(str(ex))
+
         return StageTaskArguments(
             log_level=args.get_string("log_level", "CRITICAL").upper(),
             metadata=make_metadata(args.get_list("metadata", [])),
             path=Path(args.get_string("stage")),
             project=args.get_string("project"),
-            version=args.get_string("artifact_version"),
+            version=version,
         )
