@@ -2,7 +2,6 @@ from io import StringIO
 from logging import getLogger
 
 from mock import patch
-from pytest import fixture
 
 from startifact.configuration import Configuration
 from startifact.configuration_saver import ConfigurationSaver
@@ -10,9 +9,9 @@ from startifact.configuration_saver import ConfigurationSaver
 getLogger("botocore").setLevel("WARNING")
 
 
-def test_enqueue_delete(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_enqueue_delete(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -23,9 +22,9 @@ def test_enqueue_delete(empty_configuration: Configuration, out: StringIO,) -> N
     assert saver.deletes_in_progress == ["us-west-12"]
 
 
-def test_enqueue_save(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_enqueue_save(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -36,9 +35,9 @@ def test_enqueue_save(empty_configuration: Configuration, out: StringIO,) -> Non
     assert saver.saves_in_progress == ["us-west-12"]
 
 
-def test_receive_done__none(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_receive_done__none(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -48,9 +47,9 @@ def test_receive_done__none(empty_configuration: Configuration, out: StringIO,) 
     assert out.getvalue() == ""
 
 
-def test_receive_done__delete(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_receive_done__delete(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -62,9 +61,9 @@ def test_receive_done__delete(empty_configuration: Configuration, out: StringIO,
     assert out.getvalue() == "Configuration deleted from us-west-12 OK! 🧁\n"
 
 
-def test_receive_done__save(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_receive_done__save(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -76,9 +75,9 @@ def test_receive_done__save(empty_configuration: Configuration, out: StringIO,) 
     assert out.getvalue() == "Configuration saved to us-west-12 OK! 🧁\n"
 
 
-def test_receive_done__error(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_receive_done__error(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -92,10 +91,10 @@ def test_receive_done__error(empty_configuration: Configuration, out: StringIO,)
     assert not saver.saves_in_progress
     assert out.getvalue() == "fire\n"
 
-def test_save(empty_configuration: Configuration, out: StringIO,) -> None:
-    empty_configuration["regions"] = "us-east-6"
+def test_save(empty_config: Configuration, out: StringIO) -> None:
+    empty_config["regions"] = "us-east-6"
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
@@ -110,9 +109,9 @@ Configuration deleted from us-east-7 OK! 🧁
     assert out.getvalue() == expect
 
 
-def test_save__no_save_regions(empty_configuration: Configuration, out: StringIO,) -> None:
+def test_save__no_save_regions(empty_config: Configuration, out: StringIO) -> None:
     saver = ConfigurationSaver(
-        configuration=empty_configuration,
+        configuration=empty_config,
         delete_regions=["us-east-7"],
         out=out,
         read_only=True,
