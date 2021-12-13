@@ -32,7 +32,7 @@ class LatestVersionLoader:
         self._original_region_len = len(regions)
         self._out = out
         self._project = project
-        self._project_fmt = yellow(project).encoded if self._color else project
+        self._project_fmt = yellow(project) if self._color else project
         self._regions = regions
 
     def interrogate(self, session: Session) -> Optional[VersionInfo]:
@@ -57,8 +57,8 @@ class LatestVersionLoader:
 
             region = session.region_name
 
-            region_fmt = yellow(region).encoded if self._color else region
-            version_fmt = yellow(param.value).encoded if self._color else param.value
+            region_fmt = yellow(region) if self._color else region
+            version_fmt = yellow(param.value) if self._color else param.value
 
             msg = f"🧁 {region_fmt} claims {self._project_fmt} at {version_fmt}.\n"
             self._out.write(msg)

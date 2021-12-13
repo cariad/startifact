@@ -83,7 +83,7 @@ class ConfigurationSaver:
             self._out.write(result.error)
             self._out.write("\n")
 
-        region_fmt = yellow(region).encoded if should_emit_codes() else region
+        region_fmt = yellow(region) if should_emit_codes() else region
 
         if region in self._deletes_in_progress:
             self._deletes_in_progress.remove(region)

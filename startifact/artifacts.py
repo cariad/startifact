@@ -12,10 +12,5 @@ def make_key(project: str, version: VersionInfo, prefix: Optional[str] = None) -
     return f"{prefix or ''}{fqn}"
 
 
-def make_metadata_key(
-    project: str,
-    version: VersionInfo,
-    prefix: Optional[str] = None,
-) -> str:
-    key = make_key(project, version, prefix=prefix)
+def make_metadata_key(key: str) -> str:
     return f"{key}/metadata"

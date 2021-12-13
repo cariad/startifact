@@ -1,15 +1,16 @@
 from io import StringIO
 from pathlib import Path
 
-from cline import CommandLineArguments, CannotMakeArguments
+from cline import CannotMakeArguments, CommandLineArguments
+from mock import patch
+from pytest import raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.exceptions import CannotStageArtifact
 from startifact.session import Session
 from startifact.tasks import DryRunStageTask
 from startifact.tasks.arguments import StageTaskArguments
-from mock import patch
-from pytest import raises
+
 
 def test_invoke() -> None:
     session = Session(read_only=True)
@@ -104,7 +105,6 @@ def test_make_args() -> None:
         project="foo",
         version=VersionInfo.parse("1.2.3"),
     )
-
 
 
 def test_make_args__invalid_version() -> None:

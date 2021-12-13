@@ -1,11 +1,14 @@
+from io import StringIO
+
+from mock import patch
 from mock.mock import Mock
+from pytest import raises
+
 from startifact.configuration import Configuration
 from startifact.configuration_loader import ConfigurationLoader
-from io import StringIO
-from mock import patch
-from startifact.parameters import ConfigurationParameter
-from pytest import raises
 from startifact.exceptions import NoRegionsAvailable
+from startifact.parameters import ConfigurationParameter
+
 
 def test_operate(empty_config: Configuration, out: StringIO, session: Mock) -> None:
     loader = ConfigurationLoader(out=out, regions=[])
@@ -23,7 +26,7 @@ def test_operate(empty_config: Configuration, out: StringIO, session: Mock) -> N
 
     config_param_cls.assert_called_once_with(read_only=True, session=session)
     assert config is empty_config
-    assert out.getvalue() == '🧁 Configuration loaded from eu-west-2.\n'
+    assert out.getvalue() == "🧁 Configuration loaded from eu-west-2.\n"
 
 
 def test_operate__fail(out: StringIO, session: Mock) -> None:
@@ -43,6 +46,7 @@ def test_operate__fail(out: StringIO, session: Mock) -> None:
     config_param_cls.assert_called_once_with(read_only=True, session=session)
     assert config is None
     assert out.getvalue() == ""
+
 
 def test_loaded__no_regions(out: StringIO) -> None:
     loader = ConfigurationLoader(out=out, regions=[])

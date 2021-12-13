@@ -41,7 +41,8 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Amazon Web Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#how-startifact-uses-your-account">How Startifact uses your account</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#s3-bucket">S3 bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#region-preparation">Region preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#s3-bucket-and-parameter">S3 bucket and parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#iam-policies">IAM policies</a></li>
 </ul>
 </li>
@@ -79,17 +80,25 @@
 <h1>Amazon Web Services<a class="headerlink" href="#amazon-web-services" title="Permalink to this headline"></a></h1>
 <section id="how-startifact-uses-your-account">
 <h2>How Startifact uses your account<a class="headerlink" href="#how-startifact-uses-your-account" title="Permalink to this headline"></a></h2>
-<p>Startifact stores artifacts and metadata in an S3 bucket that you must deploy yourself.</p>
+<p>Startifact stores artifacts and metadata in S3 buckets that you must deploy yourself.</p>
 <p>Startifact stores your <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation configuration</span></a> and the version numbers of staged artifacts in Systems Manager parameters that Startifact manages.</p>
 </section>
-<section id="s3-bucket">
-<h2>S3 bucket<a class="headerlink" href="#s3-bucket" title="Permalink to this headline"></a></h2>
-<p>Startifact will not deploy an S3 bucket for you. You must deploy and own the security yourself.</p>
-<p>Startifact requires your bucket’s name to be readable from a Systems Manager parameter. This allows you to deploy a bucket without a hard-coded name that’s still discoverable. <a class="reference external" href="https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/">Why do you care what your S3 buckets are named?</a> explains why Startifact is opinionated.</p>
+<section id="region-preparation">
+<h2>Region preparation<a class="headerlink" href="#region-preparation" title="Permalink to this headline"></a></h2>
+<p>Startifact hates to keep all of your eggs in one basket. And so, Startifact will balance across as many regions as you like. If a region goes down, Startifact will automatically use another.</p>
+<p>Each region must have:</p>
+<ol class="arabic simple">
+<li><p>An S3 bucket.</p></li>
+<li><p>A Systems Manager parameter where the bucket’s name can be read. <a class="reference external" href="https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/">Why do you care what your S3 buckets are named?</a> explains why Startifact is opinionated on this.</p></li>
+</ol>
+<p>The Systems Manager parameter that holds the bucket’s name must be the same in every region that Startifact will use. If you name it, say, <code class="docutils literal notranslate"><span class="pre">/MyPlatform/Buckets/Staging</span></code> in one region then it <em>must</em> also be named <code class="docutils literal notranslate"><span class="pre">/MyPlatform/Buckets/Staging</span></code> in all other regions.</p>
+</section>
+<section id="s3-bucket-and-parameter">
+<h2>S3 bucket and parameter<a class="headerlink" href="#s3-bucket-and-parameter" title="Permalink to this headline"></a></h2>
 <p>Here’s a complete CloudFormation template you can copy and deploy:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifact storage</span>
 <span class="nt">Resources</span><span class="p">:</span>
-  <span class="nt">Bucket</span><span class="p">:</span>
+  <span class="nt">Artifacts</span><span class="p">:</span>
     <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::S3::Bucket</span>
     <span class="nt">Properties</span><span class="p">:</span>
       <span class="nt">PublicAccessBlockConfiguration</span><span class="p">:</span>
@@ -98,14 +107,15 @@
         <span class="nt">IgnorePublicAcls</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
         <span class="nt">RestrictPublicBuckets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
 
-  <span class="nt">BucketParameter</span><span class="p">:</span>
+  <span class="nt">ArtifactsParameter</span><span class="p">:</span>
     <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::SSM::Parameter</span>
     <span class="nt">Properties</span><span class="p">:</span>
-      <span class="c1"># This name can be anything you want:</span>
-      <span class="nt">Name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/artifacts-bucket</span>
+      <span class="c1"># The parameter can be named anything you want, but</span>
+      <span class="c1"># remember it for the organisation setup script:</span>
+      <span class="nt">Name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/Buckets/Staging</span>
       <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
       <span class="nt">Value</span><span class="p">:</span>
-        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Bucket</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifacts</span>
 </pre></div>
 </div>
 </section>

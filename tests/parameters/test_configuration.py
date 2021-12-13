@@ -56,6 +56,7 @@ def test_delete__read_only(session: Mock) -> None:
     client.assert_called_once_with("ssm")
     delete_parameter.assert_not_called()
 
+
 def test_make_value(session: Mock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("STARTIFACT_REGIONS", "eu-west-6,us-east-7")
 

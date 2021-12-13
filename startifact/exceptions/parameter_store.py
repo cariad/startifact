@@ -3,7 +3,9 @@ class ParameterStoreError(Exception):
     Raised when an interaction with Systems Manager Parameter Store fails.
     """
 
-    pass
+    def __init__(self, name: str, reason: str, region: str) -> None:
+        msg = f"Failed to interact with parameter {name} in {region}: {reason}"
+        super().__init__(msg)
 
 
 class ParameterNotFound(ParameterStoreError):
@@ -11,8 +13,8 @@ class ParameterNotFound(ParameterStoreError):
     Raised when a Systems Manager parameter does not exist.
     """
 
-    def __init__(self, name: str) -> None:
-        super().__init__(f'parameter "{name}" was not found')
+    def __init__(self, name: str, region: str) -> None:
+        super().__init__(name, "not found", region)
 
 
 class NotAllowedToGetParameter(ParameterStoreError):
@@ -21,10 +23,8 @@ class NotAllowedToGetParameter(ParameterStoreError):
     Manager parameter value.
     """
 
-    def __init__(self, arn: str) -> None:
-        super().__init__(
-            f'You do not have permission to get the Systems Manager parameter "{arn}".'
-        )
+    def __init__(self, name: str, region: str) -> None:
+        super().__init__(name, "get denied", region)
 
 
 class NotAllowedToPutParameter(ParameterStoreError):
@@ -33,47 +33,5 @@ class NotAllowedToPutParameter(ParameterStoreError):
     Manager parameter value.
     """
 
-    def __init__(self, arn: str) -> None:
-        super().__init__(
-            f'You do not have permission to put the Systems Manager parameter "{arn}".'
-        )
-
-
-class NotAllowedToGetConfiguration(ParameterStoreError):
-    """
-    Raised when the current identity does not have permission to get the
-    organisation configuration from Systems Manager.
-
-    - prefix: Message to prefix to the error.
-    """
-
-    def __init__(self, prefix: str) -> None:
-        super().__init__(
-            prefix,
-            "\n\nIf your configuration is held in a "
-            + "different parameter then set the environment variable "
-            + "STARTIFACT_PARAMETER to the name of that parameter.\n\nIf the "
-            + "parameter name is correct then ensure your IAM policy grants "
-            + '"ssm:GetParameter" on the parameter.\n\nNote that IAM policy changes '
-            + "can take several minutes to take effect.",
-        )
-
-
-class NotAllowedToPutConfiguration(ParameterStoreError):
-    """
-    Raised when the current identity does not have permission to put the
-    organisation configuration into Systems Manager.
-
-    - prefix: Message to prefix to the error.
-    """
-
-    def __init__(self, prefix: str) -> None:
-        super().__init__(
-            prefix,
-            "\n\nIf your configuration is held in a "
-            + "different parameter then set the environment variable "
-            + "STARTIFACT_PARAMETER to the name of that parameter.\n\nIf the "
-            + "parameter name is correct then ensure your IAM policy grants "
-            + '"ssm:PutParameter" on the parameter.\n\nNote that IAM policy changes '
-            + "can take several minutes to take effect.",
-        )
+    def __init__(self, name: str, region: str) -> None:
+        super().__init__(name, "put denied", region)

@@ -1,8 +1,7 @@
 from botocore.exceptions import ClientError
 from mock import Mock
-from pytest import mark, raises
+from pytest import raises
 
-from startifact.account import Account
 from startifact.exceptions import NotAllowedToGetParameter, ParameterNotFound
 from startifact.exceptions.parameter_store import (
     NotAllowedToPutParameter,
@@ -11,25 +10,7 @@ from startifact.exceptions.parameter_store import (
 from startifact.parameters import LatestVersionParameter
 
 
-@mark.parametrize(
-    "prefix, expect",
-    [
-        ("", "arn:aws:ssm:eu-west-2:000000000000:parameter/foo/Latest"),
-        ("/woo", "arn:aws:ssm:eu-west-2:000000000000:parameter/woo/foo/Latest"),
-    ],
-)
-def test_arn(prefix: str, expect: str, account: Account, session: Mock) -> None:
-    param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
-        prefix=prefix,
-        project="foo",
-        session=session,
-    )
-    assert param.arn == expect
-
-
-def test_get(account: Account, session: Mock) -> None:
+def test_get(session: Mock) -> None:
     get_parameter = Mock(return_value={"Parameter": {"Value": "1.2.3"}})
 
     ssm = Mock()
@@ -39,31 +20,29 @@ def test_get(account: Account, session: Mock) -> None:
     session.client = client
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
     actual = param.get()
 
     client.assert_called_once_with("ssm")
-    get_parameter.assert_called_once_with(Name="/foo/Latest")
+    get_parameter.assert_called_once_with(Name="/foo/latest")
     assert actual == "1.2.3"
 
 
-def test_get__invalid_response(account: Account, session: Mock) -> None:
+def test_get__invalid_response(session: Mock) -> None:
     ssm = Mock()
     ssm.get_parameter = Mock(return_value={})
 
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
@@ -71,7 +50,7 @@ def test_get__invalid_response(account: Account, session: Mock) -> None:
         param.get()
 
 
-def test_get__not_found(account: Account, session: Mock) -> None:
+def test_get__not_found(session: Mock) -> None:
     exceptions = Mock()
     exceptions.ParameterNotFound = Exception
 
@@ -82,10 +61,9 @@ def test_get__not_found(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
@@ -93,7 +71,7 @@ def test_get__not_found(account: Account, session: Mock) -> None:
         param.get()
 
 
-def test_get__not_found__with_default(account: Account, session: Mock) -> None:
+def test_get__not_found__with_default(session: Mock) -> None:
     exceptions = Mock()
     exceptions.ParameterNotFound = Exception
 
@@ -104,17 +82,16 @@ def test_get__not_found__with_default(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
     assert param.get("bar") == "bar"
 
 
-def test_get__access_denied(account: Account, session: Mock) -> None:
+def test_get__access_denied(session: Mock) -> None:
     exceptions = Mock()
     exceptions.ClientError = ClientError
     exceptions.ParameterNotFound = ValueError
@@ -130,10 +107,9 @@ def test_get__access_denied(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
@@ -141,7 +117,7 @@ def test_get__access_denied(account: Account, session: Mock) -> None:
         param.get()
 
 
-def test_get__other_client_error(account: Account, session: Mock) -> None:
+def test_get__other_client_error(session: Mock) -> None:
     exceptions = Mock()
     exceptions.ClientError = ClientError
     exceptions.ParameterNotFound = ValueError
@@ -155,10 +131,9 @@ def test_get__other_client_error(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
@@ -166,12 +141,11 @@ def test_get__other_client_error(account: Account, session: Mock) -> None:
         param.get()
 
 
-def test_make_value(account: Account, session: Mock) -> None:
+def test_make_value(session: Mock) -> None:
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
@@ -182,7 +156,7 @@ def test_make_value(account: Account, session: Mock) -> None:
     get.assert_called_once_with()
 
 
-def test_set__access_denied(account: Account, session: Mock) -> None:
+def test_set__access_denied(session: Mock) -> None:
     exceptions = Mock()
     exceptions.ClientError = ClientError
 
@@ -197,18 +171,17 @@ def test_set__access_denied(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
     with raises(NotAllowedToPutParameter):
-        param.set("bar")
+        param.put("bar")
 
 
-def test_set__dry_run(account: Account, session: Mock) -> None:
+def test_set__read_only(session: Mock) -> None:
     put_parameter = Mock()
 
     ssm = Mock()
@@ -217,18 +190,17 @@ def test_set__dry_run(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=True,
         prefix="",
         project="foo",
+        read_only=True,
         session=session,
     )
 
-    param.set("bar")
+    param.put("bar")
     put_parameter.assert_not_called()
 
 
-def test_set__other_client_error(account: Account, session: Mock) -> None:
+def test_set__other_client_error(session: Mock) -> None:
     exceptions = Mock()
     exceptions.ClientError = ClientError
 
@@ -241,23 +213,21 @@ def test_set__other_client_error(account: Account, session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 
     with raises(ClientError):
-        param.set("bar")
+        param.put("bar")
 
 
-def test_value__makes_one_value(account: Account, session: Mock) -> None:
+def test_value__makes_one_value(session: Mock) -> None:
     param = LatestVersionParameter(
-        account=account,
-        dry_run=False,
         prefix="",
         project="foo",
+        read_only=False,
         session=session,
     )
 

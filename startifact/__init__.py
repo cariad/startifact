@@ -1,6 +1,6 @@
 import importlib.resources as pkg_resources
 
-from startifact.session import Session as StartifactSession
+from startifact.session import Session
 
 with pkg_resources.open_text(__package__, "VERSION") as t:
     __version__ = t.readline().strip()
@@ -8,10 +8,6 @@ with pkg_resources.open_text(__package__, "VERSION") as t:
     Startifact package version.
     """
 
-
-def Session() -> StartifactSession:
-    """
-    Creates and returns a new Startifact session.
-    """
-
-    return StartifactSession()
+__all__ = [
+    "Session",
+]

@@ -8,8 +8,7 @@ from pytest import raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact import Session
-from startifact.artifact.abc import Artifact
-from startifact.artifact.new import Stager
+from startifact.artifact import Artifact
 from startifact.configuration_loader import ConfigurationLoader
 from startifact.exceptions import CannotStageArtifact, NoConfiguration, ProjectNameError
 
@@ -37,7 +36,6 @@ def test_get(configuration_loader: ConfigurationLoader, out: StringIO) -> None:
         regions=["us-east-3"],
     )
 
-    # with patch.object(session, "latest", return_value="1.2.3") as latest:
     artifact = session.get("SugarWater", VersionInfo(1, 2, 3))
 
     expect = Artifact(
@@ -82,24 +80,36 @@ def test_make_stager(configuration_loader: ConfigurationLoader, out: StringIO) -
     )
 
     stager = session.make_stager(
-        path=Path("foo.zip"),
+        path=Path("LICENSE"),
         project="SugarWater",
         version=VersionInfo(1, 2, 3),
     )
 
-    expect = Stager(
-        bucket_name_param="bucket-name-param",
+    assert stager.bucket_name_parameter_name == "bucket-name-param"
+
+
+def test_make_stager__metadata(configuration_loader: ConfigurationLoader, out: StringIO,) -> None:
+
+    configuration_loader.loaded["bucket_key_prefix"] = "bucket-key-prefix"
+    configuration_loader.loaded["bucket_name_param"] = "bucket-name-param"
+    configuration_loader.loaded["parameter_name_prefix"] = "parameter-name-prefix"
+
+    session = Session(
+        configuration_loader=configuration_loader,
         out=out,
-        parameter_name_prefix="parameter-name-prefix",
-        path=Path("foo.zip"),
-        project="SugarWater",
-        read_only=False,
         regions=["us-east-7"],
-        s3_key_prefix="bucket-key-prefix",
+    )
+
+    stager = session.make_stager(
+        metadata={"foo": "bar"},
+        path=Path("LICENSE"),
+        project="SugarWater",
         version=VersionInfo(1, 2, 3),
     )
 
-    assert stager == expect
+    assert stager.metadata == b'{\n  "foo": "bar"\n}'
+    assert stager.metadata_hash == 'lyF5YnqQQ1fG3mw0blDExg=='
+
 
 
 def test_make_stager__no_configuration(
@@ -121,6 +131,8 @@ def test_make_stager__no_configuration(
 
     expect = 'The organisation configuration key "bucket_name_param" is empty. Have you run "startifact --setup"?'
     assert str(ex.value) == expect
+
+
 
 
 def test_regions(monkeypatch: MonkeyPatch) -> None:

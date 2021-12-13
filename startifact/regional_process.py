@@ -18,9 +18,11 @@ class RegionalProcess(Process):
     ) -> None:
 
         super().__init__()
+
         self._queue = queue
         self._read_only = read_only
         self._session = session
+
         getLogger("startifact").debug(
             "Initialised %s(session=%s)",
             self.__class__.__name__,
@@ -39,7 +41,7 @@ class RegionalProcess(Process):
             logger.debug("Starting %s operation…", self.__class__.__name__)
             self.operate()
         except Exception as ex:
-            logger.warning(str(ex))
+            logger.exception(ex)
             error = str(ex) or ex.__class__.__name__
 
         result = RegionalProcessResult(self._session.region_name, error=error)

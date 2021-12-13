@@ -18,6 +18,8 @@ def get_regions() -> List[str]:
 
 
 def make_regions(regions: str) -> List[str]:
+    if not regions:
+        return []
     split_regions = [r.strip() for r in regions.split(",")]
     shuffle(split_regions)
     return split_regions

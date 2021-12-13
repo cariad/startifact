@@ -93,6 +93,15 @@ class Stager:
             version=self._version,
         )
 
+    @property
+    def metadata(self) -> Optional[bytes]:
+        return self._metadata
+
+    @property
+    def metadata_hash(self) -> Optional[str]:
+        return self._metadata_hash
+
+
     def receive_done(self) -> None:
         try:
             result = self._queue.get(block=True, timeout=1)

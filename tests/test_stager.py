@@ -49,8 +49,9 @@ def test_receive_done(
     stager: Stager,
 ) -> None:
 
-    with patch.object(stager, "make_regional_stager", return_value=regional_stager):
-        stager.enqueue(session)
+    with patch("startifact.regional_stager.RegionalStager.assert_not_exists"):
+        with patch.object(stager, "make_regional_stager", return_value=regional_stager):
+            stager.enqueue(session)
 
     stager.receive_done()
     assert not stager.regions_in_progress
@@ -64,9 +65,10 @@ def test_receive_done__error(
     stager: Stager,
 ) -> None:
 
-    with patch.object(stager, "make_regional_stager", return_value=regional_stager):
-        with patch.object(regional_stager, "operate", side_effect=Exception("fire")):
-            stager.enqueue(session)
+    with patch("startifact.regional_stager.RegionalStager.assert_not_exists"):
+        with patch.object(stager, "make_regional_stager", return_value=regional_stager):
+            with patch.object(regional_stager, "operate", side_effect=Exception("fire")):
+                stager.enqueue(session)
 
     stager.receive_done()
     assert not stager.regions_in_progress
@@ -80,8 +82,6 @@ def test_receive_done__none(out: StringIO, stager: Stager) -> None:
 
 
 def test_stage(stager: Stager, out: StringIO) -> None:
-
-
     with patch("startifact.regional_stager.RegionalStager.assert_not_exists"):
         with patch("startifact.parameters.BucketParameter.make_value", return_value="foo"):
             stager.stage()
@@ -92,33 +92,3 @@ def test_stage(stager: Stager, out: StringIO) -> None:
 """
 
     assert out.getvalue() == expect
-
-
-# def test_save(empty_config: Configuration, out: StringIO) -> None:
-#     empty_config["regions"] = "us-east-6"
-#     saver = ConfigurationSaver(
-#         configuration=empty_config,
-#         delete_regions=["us-east-7"],
-#         out=out,
-#         read_only=True,
-#     )
-
-#     saver.save()
-
-#     expect = """Configuration saved to us-east-6 OK! 🧁
-# Configuration deleted from us-east-7 OK! 🧁
-# """
-
-#     assert out.getvalue() == expect
-
-
-# def test_save__no_save_regions(empty_config: Configuration, out: StringIO) -> None:
-#     saver = ConfigurationSaver(
-#         configuration=empty_config,
-#         delete_regions=["us-east-7"],
-#         out=out,
-#         read_only=True,
-#     )
-
-#     saver.save()
-#     assert out.getvalue() == "Configuration deleted from us-east-7 OK! 🧁\n"

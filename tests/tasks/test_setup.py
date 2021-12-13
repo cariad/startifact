@@ -144,6 +144,7 @@ You must set the following environment variable on every machine that uses Start
 """
     )
 
+
 def test_invoke__not_all_ok() -> None:
     directions = Configuration(
         bucket_key_prefix="key/",

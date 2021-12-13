@@ -1,42 +1,21 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
+
+from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.session import Session
 
 
 @dataclass
 class StageTaskArguments:
-    path: Union[Path, str]
-    """
-    Path to file to upload.
-    """
-
+    path: Path
     project: str
-    """
-    Project name.
-    """
-
-    version: str
-    """
-    Version.
-    """
-
-    log_level: str = "WARNING"
-    """
-    Log level.
-    """
-
+    version: VersionInfo
+    log_level: str = "CRITICAL"
     metadata: Optional[Dict[str, str]] = None
-    """
-    Metadata.
-    """
-
     session: Optional[Session] = None
-    """
-    Session.
-    """
 
 
 def make_metadata(pairs: List[str]) -> Optional[Dict[str, str]]:

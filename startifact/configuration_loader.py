@@ -27,14 +27,13 @@ class ConfigurationLoader:
         self._out = out
         self._regions = regions
 
-
     def operate(self, session: Session) -> Optional[Configuration]:
         region = session.region_name
 
         try:
             param = ConfigurationParameter(read_only=True, session=session)
             config = param.value
-            region_fmt = yellow(region).encoded if should_emit_codes() else region
+            region_fmt = yellow(region) if should_emit_codes() else region
             self._out.write(f"🧁 Configuration loaded from {region_fmt}.\n")
             return config
 
@@ -50,8 +49,6 @@ class ConfigurationLoader:
     @property
     def regions(self) -> List[str]:
         return self._regions
-
-
 
     @property
     def loaded(self) -> Configuration:

@@ -1,13 +1,14 @@
 from io import StringIO
 
-from cline import CommandLineArguments, CannotMakeArguments
+from cline import CannotMakeArguments, CommandLineArguments
 from mock import patch
+from pytest import raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.artifact import Artifact
 from startifact.session import Session
 from startifact.tasks.get import GetTask, GetTaskArguments
-from pytest import raises
+
 
 def test_invoke() -> None:
     out = StringIO()
@@ -49,6 +50,7 @@ def test_make_args() -> None:
         project="SugarWater",
         version=VersionInfo(1, 2, 3),
     )
+
 
 def test_make_args__invalid_version() -> None:
     args = CommandLineArguments(

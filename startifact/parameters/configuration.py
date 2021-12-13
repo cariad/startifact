@@ -1,14 +1,10 @@
-from json import dumps, loads
+from json import loads
 from os import environ
+from typing import Optional
 
-from startifact.exceptions import (
-    NotAllowedToGetConfiguration,
-    NotAllowedToGetParameter,
-    NotAllowedToPutConfiguration,
-    NotAllowedToPutParameter,
-)
+from startifact.configuration import Configuration
+from startifact.constants import CONFIG_PARAM_NAME, REGIONS_ENVIRON
 from startifact.parameters.parameter import Parameter
-from startifact.types import Configuration
 
 
 class ConfigurationParameter(Parameter[Configuration]):
@@ -16,50 +12,20 @@ class ConfigurationParameter(Parameter[Configuration]):
     Systems Manager parameter that holds the organisation configuration.
     """
 
-    @classmethod
-    def get_default_name(cls) -> str:
-        """
-        Gets the default name.
-        """
+    def make_value(self, value: Optional[str] = None) -> Configuration:
+        c: Configuration = loads(value or self.get("{}"))
 
-        return "/Startifact"
-
-    def make_value(self) -> Configuration:
-        try:
-            raw = self.get("{}")
-        except NotAllowedToGetParameter as ex:
-            raise NotAllowedToGetConfiguration(str(ex))
-
-        c: Configuration = loads(raw)
-
-        region = self._session.region_name
+        default_regions = environ.get(REGIONS_ENVIRON, self._session.region_name)
 
         # Set default values so we can lean on them later.
         c["bucket_key_prefix"] = c.get("bucket_key_prefix", "")
-        c["bucket_param_name"] = c.get("bucket_param_name", "")
-        c["bucket_param_region"] = c.get("bucket_param_region", region)
-        c["bucket_region"] = c.get("bucket_region", region)
+        c["bucket_name_param"] = c.get("bucket_name_param", "")
         c["parameter_name_prefix"] = c.get("parameter_name_prefix", "")
-        c["parameter_region"] = c.get("parameter_region", region)
+        c["regions"] = c.get("regions", default_regions)
         c["save_ok"] = c.get("save_ok", "")
-        c["start_ok"] = c.get("start_ok", "")
 
         return c
 
     @property
     def name(self) -> str:
-        return environ.get("STARTIFACT_PARAMETER", self.get_default_name())
-
-    def save_changes(self) -> None:
-        """
-        Saves changes to the configuration.
-        """
-
-        # The value dictionary has been passed around by reference so Asking can
-        # update it, so we already have our own reference to it.
-        value = dumps(self._value, indent=2, sort_keys=True)
-
-        try:
-            self.set(value)
-        except NotAllowedToPutParameter as ex:
-            raise NotAllowedToPutConfiguration(str(ex))
+        return environ.get("STARTIFACT_PARAMETER", CONFIG_PARAM_NAME)

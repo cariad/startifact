@@ -28,23 +28,5 @@ def test_make_key(
     assert make_key(project, version, prefix=prefix) == expect
 
 
-@mark.parametrize(
-    "project, version, prefix, expect",
-    [
-        ("SugarWater", VersionInfo(1, 0), None, "SugarWater@1.0.0/metadata"),
-        (
-            "SugarWater",
-            VersionInfo(1, 0),
-            "prefix/",
-            "prefix/SugarWater@1.0.0/metadata",
-        ),
-    ],
-)
-def test_make_metadata_key(
-    project: str,
-    version: VersionInfo,
-    prefix: Optional[str],
-    expect: str,
-) -> None:
-
-    assert make_metadata_key(project, version, prefix=prefix) == expect
+def test_make_metadata_key() -> None:
+    assert make_metadata_key("SugarWater@1.0.0") == "SugarWater@1.0.0/metadata"

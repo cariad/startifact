@@ -91,6 +91,7 @@ def test_receive_done__error(empty_config: Configuration, out: StringIO) -> None
     assert not saver.saves_in_progress
     assert out.getvalue() == "fire\n"
 
+
 def test_save(empty_config: Configuration, out: StringIO) -> None:
     empty_config["regions"] = "us-east-6"
     saver = ConfigurationSaver(

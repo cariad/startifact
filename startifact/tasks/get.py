@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import Optional
 
-from cline import CommandLineArguments, Task, CannotMakeArguments
+from cline import CannotMakeArguments, CommandLineArguments, Task
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.session import Session

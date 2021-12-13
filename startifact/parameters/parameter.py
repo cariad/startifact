@@ -110,7 +110,7 @@ class Parameter(ABC, Generic[TParameterValue]):
             raise ParameterStoreError(self.name, f"response missed {ex}", region)
 
     @abstractmethod
-    def make_value(self) -> TParameterValue:
+    def make_value(self, value: Optional[str] = None) -> TParameterValue:
         """
         Creates and returns the parameter's meaningful value.
         """
@@ -130,6 +130,8 @@ class Parameter(ABC, Generic[TParameterValue]):
         identity is not allowed to update this parameter's value.
         """
 
+        self._value = self.make_value(value)
+
         if self._read_only:
             return
 
@@ -137,8 +139,9 @@ class Parameter(ABC, Generic[TParameterValue]):
         region = self._session.region_name
 
         self._logger.debug(
-            "%s putting %s in %s",
+            "%s putting %s into %s in %s",
             self.__class__.__name__,
+            value,
             self.name,
             region,
         )

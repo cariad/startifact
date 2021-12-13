@@ -4,16 +4,24 @@ Amazon Web Services
 How Startifact uses your account
 --------------------------------
 
-Startifact stores artifacts and metadata in an S3 bucket that you must deploy yourself.
+Startifact stores artifacts and metadata in S3 buckets that you must deploy yourself.
 
 Startifact stores your :ref:`organisation configuration <Organisation configuration>` and the version numbers of staged artifacts in Systems Manager parameters that Startifact manages.
 
-S3 bucket
----------
+Region preparation
+------------------
 
-Startifact will not deploy an S3 bucket for you. You must deploy and own the security yourself.
+Startifact hates to keep all of your eggs in one basket. And so, Startifact will balance across as many regions as you like. If a region goes down, Startifact will automatically use another.
 
-Startifact requires your bucket's name to be readable from a Systems Manager parameter. This allows you to deploy a bucket without a hard-coded name that's still discoverable. `Why do you care what your S3 buckets are named? <https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/>`_ explains why Startifact is opinionated.
+Each region must have:
+
+1. An S3 bucket.
+2. A Systems Manager parameter where the bucket's name can be read. `Why do you care what your S3 buckets are named? <https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/>`_ explains why Startifact is opinionated on this.
+
+The Systems Manager parameter that holds the bucket's name must be the same in every region that Startifact will use. If you name it, say, ``/MyPlatform/Buckets/Staging`` in one region then it *must* also be named ``/MyPlatform/Buckets/Staging`` in all other regions.
+
+S3 bucket and parameter
+-----------------------
 
 Here's a complete CloudFormation template you can copy and deploy:
 
@@ -21,7 +29,7 @@ Here's a complete CloudFormation template you can copy and deploy:
 
   Description: Artifact storage
   Resources:
-    Bucket:
+    Artifacts:
       Type: AWS::S3::Bucket
       Properties:
         PublicAccessBlockConfiguration:
@@ -30,14 +38,15 @@ Here's a complete CloudFormation template you can copy and deploy:
           IgnorePublicAcls: true
           RestrictPublicBuckets: true
 
-    BucketParameter:
+    ArtifactsParameter:
       Type: AWS::SSM::Parameter
       Properties:
-        # This name can be anything you want:
-        Name: /artifacts-bucket
+        # The parameter can be named anything you want, but
+        # remember it for the organisation setup script:
+        Name: /Buckets/Staging
         Type: String
         Value:
-          Ref: Bucket
+          Ref: Artifacts
 
 IAM policies
 ------------

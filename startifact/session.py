@@ -1,3 +1,4 @@
+from json import dumps
 from logging import getLogger
 from pathlib import Path
 from re import match
@@ -6,11 +7,13 @@ from typing import IO, Dict, List, Optional
 
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.artifact.abc import Artifact
-from startifact.artifact.new import Stager
+from startifact.artifact import Artifact
+from startifact.artifacts import make_key
 from startifact.configuration_loader import ConfigurationLoader
 from startifact.exceptions import CannotStageArtifact, NoConfiguration, ProjectNameError
+from startifact.hash import get_b64_md5
 from startifact.regions import get_regions
+from startifact.stager import Stager
 
 
 class Session:
@@ -97,19 +100,30 @@ class Session:
 
         config = self.configuration_loader.loaded
 
+        # We don't check bucket_key_prefix or parameter_name_prefix because
+        # they can be legitimately empty.
         if not config["bucket_name_param"]:
             raise NoConfiguration("bucket_name_param")
 
+        metadata_bytes: Optional[bytes] = None
+        metadata_hash: Optional[str] = None
+
+        if metadata:
+            metadata_bytes = dumps(metadata, indent=2, sort_keys=True).encode("utf-8")
+            metadata_hash = get_b64_md5(metadata_bytes)
+
         return Stager(
-            bucket_name_param=config["bucket_name_param"],
-            metadata=metadata,
+            bucket_name_parameter_name=config["bucket_name_param"],
+            file_hash=get_b64_md5(path),
+            key=make_key(project, version, prefix=config["bucket_key_prefix"]),
+            metadata=metadata_bytes,
+            metadata_hash=metadata_hash,
             out=self._out,
             parameter_name_prefix=config["parameter_name_prefix"],
             path=path,
             project=project,
             read_only=self.read_only,
             regions=self.regions,
-            s3_key_prefix=config["bucket_key_prefix"],
             version=version,
         )
 
@@ -139,17 +153,12 @@ class Session:
         metadata: Optional[Dict[str, str]] = None,
     ) -> None:
         """
-        Stages an artifact.
+        Stages an artifact to as many regions as possible.
 
-        Returns:
-            `True` if the artifact is staged to at least one region. `False` if
-            the artifact could not be staged anywhere.
+        :raises ProjectNameError: if the project name is not acceptable.
 
-        Raises `startifact.exceptions.ProjectNameError` if the project name is
-        not acceptable.
-
-        Raises `startifact.exceptions.AlreadyStagedError` if this version is
-        already staged.
+        :raises CannotStageArtifact: if the artifact could not be staged to any
+        region.
         """
 
         self.validate_project_name(project)

@@ -34,5 +34,5 @@ They will be asked to:
 4. Enter the name of the region that hosts the bucket.
 5. Optionally enter a bucket key prefix.
 6. Enter the name of the region where artifacts should be recorded in Systems Manager.
-7. Optionally enter a name prefix for the Systems Manager parameters that record artifact versions. Without a prefix, versions will be recorded as `/{project}/Latest`.
+7. Optionally enter a name prefix for the Systems Manager parameters that record artifact versions. Without a prefix, versions will be recorded as `/{project}/latest`.
 8. Confirm the configuration parameter name, region and account one last time before committing.
