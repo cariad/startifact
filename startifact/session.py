@@ -9,7 +9,7 @@ from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 from startifact.artifact.abc import Artifact
 from startifact.artifact.new import Stager
 from startifact.configuration_loader import ConfigurationLoader
-from startifact.exceptions import CannotStageArtifact, ProjectNameError
+from startifact.exceptions import CannotStageArtifact, NoConfiguration, ProjectNameError
 from startifact.regions import get_regions
 
 
@@ -71,6 +71,9 @@ class Session:
 
         config = self.configuration_loader.loaded
 
+        if not config["bucket_name_param"]:
+            raise NoConfiguration("bucket_name_param")
+
         return Artifact(
             bucket_name_parameter=config["bucket_name_param"],
             out=self._out,
@@ -93,6 +96,9 @@ class Session:
         """
 
         config = self.configuration_loader.loaded
+
+        if not config["bucket_name_param"]:
+            raise NoConfiguration("bucket_name_param")
 
         return Stager(
             bucket_name_param=config["bucket_name_param"],

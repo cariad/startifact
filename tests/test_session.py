@@ -11,7 +11,7 @@ from startifact import Session
 from startifact.artifact.abc import Artifact
 from startifact.artifact.new import Stager
 from startifact.configuration_loader import ConfigurationLoader
-from startifact.exceptions import CannotStageArtifact, ProjectNameError
+from startifact.exceptions import CannotStageArtifact, NoConfiguration, ProjectNameError
 
 
 def test_configuration_loader(out: StringIO) -> None:
@@ -53,6 +53,23 @@ def test_get(configuration_loader: ConfigurationLoader, out: StringIO) -> None:
     assert artifact == expect
 
 
+def test_get__no_configuration(
+    configuration_loader: ConfigurationLoader,
+    out: StringIO,
+) -> None:
+    session = Session(
+        configuration_loader=configuration_loader,
+        out=out,
+        regions=["us-east-3"],
+    )
+
+    with raises(NoConfiguration) as ex:
+        session.get("SugarWater", VersionInfo(1, 2, 3))
+
+    expect = 'The organisation configuration key "bucket_name_param" is empty. Have you run "startifact --setup"?'
+    assert str(ex.value) == expect
+
+
 def test_make_stager(configuration_loader: ConfigurationLoader, out: StringIO) -> None:
     configuration_loader.loaded["bucket_key_prefix"] = "bucket-key-prefix"
     configuration_loader.loaded["bucket_name_param"] = "bucket-name-param"
@@ -83,6 +100,27 @@ def test_make_stager(configuration_loader: ConfigurationLoader, out: StringIO) -
     )
 
     assert stager == expect
+
+
+def test_make_stager__no_configuration(
+    configuration_loader: ConfigurationLoader,
+    out: StringIO,
+) -> None:
+    session = Session(
+        configuration_loader=configuration_loader,
+        out=out,
+        regions=["us-east-7"],
+    )
+
+    with raises(NoConfiguration) as ex:
+        session.make_stager(
+            path=Path("foo.zip"),
+            project="SugarWater",
+            version=VersionInfo(1, 2, 3),
+        )
+
+    expect = 'The organisation configuration key "bucket_name_param" is empty. Have you run "startifact --setup"?'
+    assert str(ex.value) == expect
 
 
 def test_regions(monkeypatch: MonkeyPatch) -> None:
