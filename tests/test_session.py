@@ -88,7 +88,10 @@ def test_make_stager(configuration_loader: ConfigurationLoader, out: StringIO) -
     assert stager.bucket_name_parameter_name == "bucket-name-param"
 
 
-def test_make_stager__metadata(configuration_loader: ConfigurationLoader, out: StringIO,) -> None:
+def test_make_stager__metadata(
+    configuration_loader: ConfigurationLoader,
+    out: StringIO,
+) -> None:
 
     configuration_loader.loaded["bucket_key_prefix"] = "bucket-key-prefix"
     configuration_loader.loaded["bucket_name_param"] = "bucket-name-param"
@@ -108,8 +111,7 @@ def test_make_stager__metadata(configuration_loader: ConfigurationLoader, out: S
     )
 
     assert stager.metadata == b'{\n  "foo": "bar"\n}'
-    assert stager.metadata_hash == 'lyF5YnqQQ1fG3mw0blDExg=='
-
+    assert stager.metadata_hash == "lyF5YnqQQ1fG3mw0blDExg=="
 
 
 def test_make_stager__no_configuration(
@@ -131,8 +133,6 @@ def test_make_stager__no_configuration(
 
     expect = 'The organisation configuration key "bucket_name_param" is empty. Have you run "startifact --setup"?'
     assert str(ex.value) == expect
-
-
 
 
 def test_regions(monkeypatch: MonkeyPatch) -> None:

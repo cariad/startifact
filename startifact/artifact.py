@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import IO, Any, List, Optional
+from typing import IO, List, Optional
 
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 

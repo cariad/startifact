@@ -116,8 +116,6 @@ def test_assert_not_exists__client_error(
     )
 
 
-
-
 def test_assert_not_exists__exists(
     bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,

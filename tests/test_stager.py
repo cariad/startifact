@@ -67,7 +67,9 @@ def test_receive_done__error(
 
     with patch("startifact.regional_stager.RegionalStager.assert_not_exists"):
         with patch.object(stager, "make_regional_stager", return_value=regional_stager):
-            with patch.object(regional_stager, "operate", side_effect=Exception("fire")):
+            with patch.object(
+                regional_stager, "operate", side_effect=Exception("fire")
+            ):
                 stager.enqueue(session)
 
     stager.receive_done()
@@ -83,7 +85,9 @@ def test_receive_done__none(out: StringIO, stager: Stager) -> None:
 
 def test_stage(stager: Stager, out: StringIO) -> None:
     with patch("startifact.regional_stager.RegionalStager.assert_not_exists"):
-        with patch("startifact.parameters.BucketParameter.make_value", return_value="foo"):
+        with patch(
+            "startifact.parameters.BucketParameter.make_value", return_value="foo"
+        ):
             stager.stage()
 
     expect = """🧁 Staged (not really) to us-central-11.
