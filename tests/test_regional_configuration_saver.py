@@ -12,7 +12,7 @@ def test(session: Mock) -> None:
     session.client = Mock(return_value=ssm)
 
     saver = RegionalConfigurationSaver(
-        configuration="serialized-configuration",
+        configuration="{}",
         queue=Mock(),
         read_only=False,
         session=session,
@@ -24,5 +24,5 @@ def test(session: Mock) -> None:
         Name="/startifact",
         Overwrite=True,
         Type="String",
-        Value="serialized-configuration",
+        Value="{}",
     )
