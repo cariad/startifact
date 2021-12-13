@@ -2,13 +2,12 @@
 All the custom exceptions that Startifact can raise.
 """
 
-from startifact.exceptions.already_staged import AlreadyStagedError
-from startifact.exceptions.immutable_metadata import CannotModifyImmutableMetadata
+from startifact.exceptions.cannot_stage_artifact import CannotStageArtifact
 from startifact.exceptions.no_configuration import NoConfiguration
+from startifact.exceptions.no_regions_available import NoRegionsAvailable
+from startifact.exceptions.no_regions_configured import NoRegionsConfigured
 from startifact.exceptions.parameter_store import (
-    NotAllowedToGetConfiguration,
     NotAllowedToGetParameter,
-    NotAllowedToPutConfiguration,
     NotAllowedToPutParameter,
     ParameterNotFound,
     ParameterStoreError,
@@ -16,12 +15,11 @@ from startifact.exceptions.parameter_store import (
 from startifact.exceptions.project_name import ProjectNameError
 
 __all__ = [
-    "AlreadyStagedError",
-    "CannotModifyImmutableMetadata",
+    "CannotStageArtifact",
     "NoConfiguration",
-    "NotAllowedToGetConfiguration",
+    "NoRegionsAvailable",
+    "NoRegionsConfigured",
     "NotAllowedToGetParameter",
-    "NotAllowedToPutConfiguration",
     "NotAllowedToPutParameter",
     "ParameterNotFound",
     "ParameterStoreError",
