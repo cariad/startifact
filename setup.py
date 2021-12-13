@@ -54,14 +54,12 @@ setup(
     name="startifact",
     packages=[
         "startifact",
-        "startifact.artifact",
         "startifact.exceptions",
         "startifact.parameters",
         "startifact.tasks",
     ],
     package_data={
         "startifact": ["py.typed"],
-        "startifact.artifact": ["py.typed"],
         "startifact.exceptions": ["py.typed"],
         "startifact.parameters": ["py.typed"],
         "startifact.tasks": ["py.typed"],
