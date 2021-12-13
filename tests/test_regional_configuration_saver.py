@@ -1,5 +1,7 @@
-from startifact.regional_configuration_saver import RegionalConfigurationSaver
 from mock import Mock
+
+from startifact.regional_configuration_saver import RegionalConfigurationSaver
+
 
 def test(session: Mock) -> None:
     put_parameter = Mock()

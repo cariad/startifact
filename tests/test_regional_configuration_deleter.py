@@ -1,5 +1,7 @@
-from startifact.regional_configuration_deleter import RegionalConfigurationDeleter
 from mock import Mock
+
+from startifact.regional_configuration_deleter import RegionalConfigurationDeleter
+
 
 def test(session: Mock) -> None:
     delete_parameter = Mock()
