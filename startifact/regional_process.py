@@ -21,6 +21,11 @@ class RegionalProcess(Process):
         self._queue = queue
         self._read_only = read_only
         self._session = session
+        getLogger("startifact").debug(
+            "Initialised %s(session=%s)",
+            self.__class__.__name__,
+            session,
+        )
 
     def operate(self) -> None:
         msg = f"{self.__class__.__name__}.operate() not implemented."
@@ -28,11 +33,13 @@ class RegionalProcess(Process):
 
     def run(self) -> None:
         error: Optional[str] = None
+        logger = getLogger("startifact")
 
         try:
+            logger.debug("Starting %s operation…", self.__class__.__name__)
             self.operate()
         except Exception as ex:
-            getLogger("startifact").warning(str(ex))
+            logger.warning(str(ex))
             error = str(ex) or ex.__class__.__name__
 
         result = RegionalProcessResult(self._session.region_name, error=error)

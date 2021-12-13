@@ -4,8 +4,8 @@ from multiprocessing import Queue
 from boto3.session import Session
 
 from startifact.parameters import ConfigurationParameter
-from startifact.regional_process_result import RegionalProcessResult
 from startifact.regional_process import RegionalProcess
+from startifact.regional_process_result import RegionalProcessResult
 
 
 class RegionalConfigurationSaver(RegionalProcess):
