@@ -82,10 +82,16 @@ class SetupTask(Task[SetupTaskArguments]):
 
         regions = make_regions(config["regions"])
 
+        delete_regions: List[str] = []
+
+        for prev_region in prev_regions:
+            if prev_region not in regions:
+                delete_regions.append(prev_region)
+
         saver = ConfigurationSaver(
-            config=config,
+            configuration=config,
+            delete_regions=delete_regions,
             out=self.out,
-            prev_regions=prev_regions,
             read_only=False,
         )
 
