@@ -1,41 +1,90 @@
+from io import StringIO
+from multiprocessing import Queue
+from pathlib import Path
+
 from mock import Mock
 from pytest import fixture
+from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.account import Account
-from startifact.parameters import ConfigurationParameter
-from startifact.types import Configuration
-
-
-@fixture
-def account(session: Mock) -> Account:
-    return Account(session, account_id="000000000000")
+from startifact.configuration import Configuration
+from startifact.configuration_loader import ConfigurationLoader
+from startifact.parameters import BucketParameter, LatestVersionParameter
+from startifact.regional_process_result import RegionalProcessResult
+from startifact.regional_stager import RegionalStager
 
 
 @fixture
-def config_param(
-    account: Account,
-    empty_config: Configuration,
-    session: Mock,
-) -> ConfigurationParameter:
-    return ConfigurationParameter(
-        account=account,
-        dry_run=False,
+def bucket_name_parameter(session: Mock) -> BucketParameter:
+    return BucketParameter(
+        name="/bucket-name",
         session=session,
-        value=empty_config,
+        value="buck",
+    )
+
+
+@fixture
+def configuration_loader(
+    empty_config: Configuration,
+    out: StringIO,
+) -> ConfigurationLoader:
+
+    return ConfigurationLoader(
+        configuration=empty_config,
+        out=out,
+        regions=["us-central-9"],
     )
 
 
 @fixture
 def empty_config() -> Configuration:
     return Configuration(
-        bucket_param_name="",
-        bucket_param_region="",
-        bucket_region="",
         bucket_key_prefix="",
-        parameter_region="",
+        bucket_name_param="",
         parameter_name_prefix="",
+        regions="",
         save_ok="",
-        start_ok="",
+    )
+
+
+@fixture
+def latest_version_parameter(session: Mock) -> LatestVersionParameter:
+    return LatestVersionParameter(
+        project="SugarWater",
+        read_only=False,
+        session=session,
+    )
+
+
+@fixture
+def out() -> StringIO:
+    return StringIO()
+
+
+@fixture
+def queue() -> "Queue[RegionalProcessResult]":
+    queue: "Queue[RegionalProcessResult]" = Queue(1)
+    return queue
+
+
+@fixture
+def regional_stager(
+    bucket_name_parameter: BucketParameter,
+    latest_version_parameter: LatestVersionParameter,
+    queue: "Queue[RegionalProcessResult]",
+    session: Mock,
+) -> RegionalStager:
+
+    return RegionalStager(
+        bucket_name_parameter=bucket_name_parameter,
+        # exists=False,
+        file_hash="who knows?",
+        key="SugarWater@1.2.3",
+        latest_version_parameter=latest_version_parameter,
+        path=Path("LICENSE"),
+        queue=queue,
+        read_only=True,
+        session=session,
+        version=VersionInfo(1, 2, 3),
     )
 
 

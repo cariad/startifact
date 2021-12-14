@@ -1,95 +1,236 @@
 from io import StringIO
 
 from mock import Mock
+from mock.mock import patch
 
-from startifact.account import Account
-from startifact.parameters.configuration import ConfigurationParameter
+from startifact.configuration import Configuration
 from startifact.tasks.setup import SetupTask, SetupTaskArguments
-from startifact.types import Configuration
 
 
-def test_invoke(
-    account: Account,
-    config_param: ConfigurationParameter,
-    session: Mock,
-) -> None:
+def test_invoke() -> None:
     directions = Configuration(
-        bucket_param_name="/bucket",
-        bucket_param_region="us-east-1",
-        bucket_region="eu-west-2",
         bucket_key_prefix="key/",
-        parameter_region="eu-west-4",
+        bucket_name_param="/bucket",
         parameter_name_prefix="/param/",
+        regions="us-east-8",
         save_ok="y",
-        start_ok="y",
-    )
-
-    args = SetupTaskArguments(
-        account=account,
-        config_param=config_param,
-        directions=directions,
-        session=session,
     )
 
     out = StringIO()
+
+    args = SetupTaskArguments(
+        directions=directions,
+        regions=["us-east-8"],
+    )
+
     task = SetupTask(args, out)
-    exit_code = task.invoke()
 
-    assert config_param.value == Configuration(
-        bucket_param_name="/bucket",
-        bucket_param_region="us-east-1",
-        bucket_region="eu-west-2",
-        bucket_key_prefix="key/",
-        parameter_region="eu-west-4",
-        parameter_name_prefix="/param/",
-        save_ok="y",
-        start_ok="y",
+    save = Mock(return_value=True)
+    saver = Mock()
+    saver.save = save
+
+    loader = Mock()
+    loader.loaded = {
+        "regions": "us-east-8",
+    }
+
+    ns = "startifact.tasks.setup"
+
+    with patch(f"{ns}.ConfigurationLoader", return_value=loader) as loader_cls:
+        with patch(f"{ns}.ConfigurationSaver", return_value=saver) as saver_cls:
+            exit_code = task.invoke()
+
+    loader_cls.assert_called_once_with(
+        out=out,
+        regions=["us-east-8"],
     )
 
+    expect_config = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param/",
+        regions="us-east-8",
+        save_ok="y",
+    )
+
+    saver_cls.assert_called_once_with(
+        configuration=expect_config,
+        delete_regions=[],
+        out=out,
+        read_only=False,
+    )
+
+    save.assert_called_once_with()
     assert exit_code == 0
+    assert (
+        out.getvalue()
+        == """
+
+Successfully saved the configuration to every region.
+
+You must set the following environment variable on every machine that uses Startifact:
+
+    STARTIFACT_REGIONS="us-east-8"
+
+"""
+    )
 
 
-def test_invoke__fail(
-    account: Account,
-    config_param: ConfigurationParameter,
-    empty_config: Configuration,
-    session: Mock,
-) -> None:
-    directions = empty_config.copy()
-    directions["start_ok"] = "n"
-
-    args = SetupTaskArguments(
-        account=account,
-        config_param=config_param,
-        directions=directions,
-        session=session,
+def test_invoke__delete_from_regions() -> None:
+    directions = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param/",
+        regions="us-east-7",
+        save_ok="y",
     )
 
     out = StringIO()
+
+    args = SetupTaskArguments(
+        directions=directions,
+        regions=["us-east-8"],
+    )
+
+    task = SetupTask(args, out)
+
+    save = Mock(return_value=True)
+    saver = Mock()
+    saver.save = save
+
+    loader = Mock()
+    loader.loaded = {
+        "regions": "us-east-8",
+    }
+
+    ns = "startifact.tasks.setup"
+
+    with patch(f"{ns}.ConfigurationLoader", return_value=loader) as loader_cls:
+        with patch(f"{ns}.ConfigurationSaver", return_value=saver) as saver_cls:
+            exit_code = task.invoke()
+
+    loader_cls.assert_called_once_with(
+        out=out,
+        regions=["us-east-8"],
+    )
+
+    expect_config = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param/",
+        regions="us-east-7",
+        save_ok="y",
+    )
+
+    saver_cls.assert_called_once_with(
+        configuration=expect_config,
+        delete_regions=["us-east-8"],
+        out=out,
+        read_only=False,
+    )
+
+    save.assert_called_once_with()
+    assert exit_code == 0
+    assert (
+        out.getvalue()
+        == """
+
+Successfully saved the configuration to every region.
+
+You must set the following environment variable on every machine that uses Startifact:
+
+    STARTIFACT_REGIONS="us-east-7"
+
+"""
+    )
+
+
+def test_invoke__not_all_ok() -> None:
+    directions = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param/",
+        regions="us-east-7",
+        save_ok="y",
+    )
+
+    out = StringIO()
+
+    args = SetupTaskArguments(
+        directions=directions,
+        regions=["us-east-8"],
+    )
+
+    task = SetupTask(args, out)
+
+    save = Mock(return_value=False)
+    saver = Mock()
+    saver.save = save
+
+    loader = Mock()
+    loader.loaded = {
+        "regions": "us-east-8",
+    }
+
+    ns = "startifact.tasks.setup"
+
+    with patch(f"{ns}.ConfigurationLoader", return_value=loader) as loader_cls:
+        with patch(f"{ns}.ConfigurationSaver", return_value=saver) as saver_cls:
+            exit_code = task.invoke()
+
+    loader_cls.assert_called_once_with(
+        out=out,
+        regions=["us-east-8"],
+    )
+
+    expect_config = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param/",
+        regions="us-east-7",
+        save_ok="y",
+    )
+
+    saver_cls.assert_called_once_with(
+        configuration=expect_config,
+        delete_regions=["us-east-8"],
+        out=out,
+        read_only=False,
+    )
+
+    save.assert_called_once_with()
+    assert exit_code == 1
+    assert (
+        out.getvalue()
+        == """
+🔥 Failed to save the configuration to every region.
+🔥 Configuration may be inconsistent between regions.
+"""
+    )
+
+
+def test_invoke__fail() -> None:
+    directions = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param/",
+        regions="us-east-7,eu-west-4",
+        save_ok="n",
+    )
+
+    out = StringIO()
+    args = SetupTaskArguments(directions=directions, regions=["us-east-7", "us-east-8"])
     task = SetupTask(args, out)
 
     assert task.invoke() == 1
+
+    expect = (
+        "🔥 None of the configured regions are available: "
+        + "['us-east-7', 'us-east-8'].\n"
+    )
+    assert out.getvalue() == expect
 
 
 def test_make_script() -> None:
     state = Mock()
     assert SetupTask.make_script(state)
-
-
-def test_make_state(
-    config_param: ConfigurationParameter,
-    empty_config: Configuration,
-) -> None:
-    state = SetupTask.make_state(
-        account="000000000000",
-        config=config_param,
-        region="eu-west-2",
-    )
-
-    assert state.responses is empty_config
-    assert state.references == {
-        "account_fmt": "\x1b[38;5;11m000000000000\x1b[39m",
-        "default_environ_name_fmt": "\x1b[38;5;11mSTARTIFACT_PARAMETER\x1b[39m",
-        "param_fmt": "\x1b[38;5;11m/Startifact\x1b[39m",
-        "region_fmt": "\x1b[38;5;11meu-west-2\x1b[39m",
-    }

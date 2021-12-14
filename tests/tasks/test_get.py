@@ -1,52 +1,67 @@
 from io import StringIO
 
-from cline import CommandLineArguments
+from cline import CannotMakeArguments, CommandLineArguments
 from mock import patch
-from mock.mock import Mock
+from pytest import raises
+from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.artifact import StagedArtifact
+from startifact.artifact import Artifact
 from startifact.session import Session
 from startifact.tasks.get import GetTask, GetTaskArguments
 
 
 def test_invoke() -> None:
+    out = StringIO()
     session = Session()
 
-    artifact = StagedArtifact(
-        bucket="",
-        dry_run=False,
-        key_prefix="",
+    artifact = Artifact(
+        bucket_name_parameter_name="bucket_name_parameter",
+        out=out,
         project="SugarWater",
-        session=Mock(),
-        version="1.2.3",
+        regions=["eu-west-9"],
+        version=VersionInfo(0, 0, 0),
     )
 
     args = GetTaskArguments(
-        get="version",
         project="SugarWater",
         session=session,
     )
 
-    out = StringIO()
     task = GetTask(args, out)
 
     with patch.object(session, "get", return_value=artifact) as get:
         exit_code = task.invoke()
 
-    get.assert_called_once_with("SugarWater", "latest")
-    assert out.getvalue() == "1.2.3\n"
+    get.assert_called_once_with("SugarWater", None)
+    assert out.getvalue() == "0.0.0\n"
     assert exit_code == 0
 
 
 def test_make_args() -> None:
     args = CommandLineArguments(
         {
-            "get": "version",
-            "project": "foo",
+            "artifact_version": "1.2.3",
+            "get": True,
+            "project": "SugarWater",
         }
     )
     assert GetTask.make_args(args) == GetTaskArguments(
-        get="version",
-        log_level="WARNING",
-        project="foo",
+        log_level="CRITICAL",
+        project="SugarWater",
+        version=VersionInfo(1, 2, 3),
     )
+
+
+def test_make_args__invalid_version() -> None:
+    args = CommandLineArguments(
+        {
+            "artifact_version": "latest",
+            "get": True,
+            "project": "SugarWater",
+        }
+    )
+
+    with raises(CannotMakeArguments) as ex:
+        GetTask.make_args(args)
+
+    assert str(ex.value) == "latest is not valid SemVer string"

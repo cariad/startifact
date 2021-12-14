@@ -1,15 +1,18 @@
 from dataclasses import dataclass
-from typing import Optional
+from logging import getLogger
+from typing import List, Optional
 
 from ansiscape import bright_yellow
 from asking import Script, State
 from asking.loaders import YamlResourceLoader
-from boto3.session import Session
 from cline import CommandLineArguments, Task
 
-from startifact.account import Account
-from startifact.parameters import ConfigurationParameter
-from startifact.types import Configuration
+from startifact.configuration import Configuration
+from startifact.configuration_loader import ConfigurationLoader
+from startifact.configuration_saver import ConfigurationSaver
+from startifact.constants import CONFIG_PARAM_NAME
+from startifact.exceptions import NoRegionsAvailable
+from startifact.regions import get_regions, make_regions
 
 
 @dataclass
@@ -18,25 +21,13 @@ class SetupTaskArguments:
     Organisation setup arguments.
     """
 
-    account: Account
-    """
-    Amazon Web Services account.
-    """
-
-    config_param: ConfigurationParameter
-    """
-    Configuration parameter.
-    """
-
-    session: Session
-    """
-    boto3 session.
-    """
-
     directions: Optional[Configuration] = None
     """
     Non-interactive directions. Intended only for testing.
     """
+
+    log_level: str = "CRITICAL"
+    regions: Optional[List[str]] = None
 
 
 class SetupTask(Task[SetupTaskArguments]):
@@ -53,57 +44,81 @@ class SetupTask(Task[SetupTaskArguments]):
 
     @staticmethod
     def make_state(
-        account: str,
-        config: ConfigurationParameter,
-        region: str,
+        config: Configuration,
         directions: Optional[Configuration] = None,
     ) -> State:
         return State(
-            config.value,
+            config,
             directions=directions,
             references={
-                "account_fmt": bright_yellow(account).encoded,
-                "param_fmt": bright_yellow(config.get_default_name()).encoded,
+                "param_fmt": bright_yellow(CONFIG_PARAM_NAME).encoded,
                 "default_environ_name_fmt": bright_yellow(
                     "STARTIFACT_PARAMETER"
                 ).encoded,
-                "region_fmt": bright_yellow(region).encoded,
             },
         )
 
     def invoke(self) -> int:
-        state = self.make_state(
-            account=self.args.account.account_id,
-            directions=self.args.directions,
-            config=self.args.config_param,
-            region=self.args.session.region_name,
+        getLogger("startifact").setLevel(self.args.log_level)
+
+        loader = ConfigurationLoader(
+            out=self.out,
+            regions=self.args.regions or get_regions(),
         )
 
-        script = self.make_script(state)
+        try:
+            state = self.make_state(
+                directions=self.args.directions,
+                config=loader.loaded,
+            )
+        except NoRegionsAvailable as ex:
+            self.out.write(f"🔥 {ex}.\n")
+            return 1
 
-        reason = script.start()
+        prev_regions = self.args.regions or make_regions(loader.loaded["regions"])
+
+        # We only want this empty line before the script. We don't need it
+        # before any errors we might emit earlier.
+        self.out.write("\n")
+        reason = self.make_script(state).start()
 
         if not reason:
             return 1
 
-        self.args.config_param.save_changes()
-        self.out.write("Saved. Setup complete!\n")
+        regions = make_regions(loader.loaded["regions"])
+
+        delete_regions: List[str] = []
+
+        for prev_region in prev_regions:
+            if prev_region not in regions:
+                delete_regions.append(prev_region)
+
+        saver = ConfigurationSaver(
+            configuration=loader.loaded,
+            delete_regions=delete_regions,
+            out=self.out,
+            read_only=False,
+        )
+
+        all_ok = saver.save()
+
+        if not all_ok:
+            self.out.write("🔥 Failed to save the configuration to every region.\n")
+            self.out.write("🔥 Configuration may be inconsistent between regions.\n")
+            return 1
+
+        normalized_regions = ",".join(regions)
+
+        self.out.write("\nSuccessfully saved the configuration to every region.\n\n")
+        self.out.write("You must set the following environment variable on ")
+        self.out.write("every machine that uses Startifact:\n\n")
+        self.out.write(f'    STARTIFACT_REGIONS="{normalized_regions}"\n\n')
         return 0
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> SetupTaskArguments:
         args.assert_true("setup")
 
-        session = Session()
-        account = Account(session=session)
-        config_param = ConfigurationParameter(
-            account=account,
-            dry_run=False,
-            session=session,
-        )
-
         return SetupTaskArguments(
-            account=account,
-            config_param=config_param,
-            session=session,
+            log_level=args.get_string("log_level", "CRITICAL").upper()
         )

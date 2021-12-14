@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
-from cline import CommandLineArguments, Task
+from cline import CannotMakeArguments, CommandLineArguments, Task
+from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.session import Session
 
@@ -14,30 +15,11 @@ class DownloadTaskArguments:
     Artifact download arguments.
     """
 
-    path: Union[Path, str]
-    """
-    Path to download to.
-    """
-
+    path: Path
     project: str
-    """
-    Project.
-    """
-
-    version: str
-    """
-    Artifact version.
-    """
-
-    log_level: str = "WARNING"
-    """
-    Log level.
-    """
-
+    log_level: str = "CRITICAL"
     session: Optional[Session] = None
-    """
-    Session.
-    """
+    version: Union[VersionInfo, Literal["latest"]] = "latest"
 
 
 class DownloadTask(Task[DownloadTaskArguments]):
@@ -48,20 +30,26 @@ class DownloadTask(Task[DownloadTaskArguments]):
     def invoke(self) -> int:
         getLogger("startifact").setLevel(self.args.log_level)
         session = self.args.session or Session()
-        project = self.args.project
-        artifact = session.get(project, self.args.version)
-        path = self.args.path
-        artifact.download(path)
-        rel_path = path if isinstance(path, Path) else Path(path)
-        abs_path = rel_path.resolve().absolute().as_posix()
-        self.out.write(f"Startifact downloaded {artifact.fqn}: {abs_path}\n")
+        version = None if isinstance(self.args.version, str) else self.args.version
+        artifact = session.get(project=self.args.project, version=version)
+        artifact.download(self.args.path)
         return 0
 
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> DownloadTaskArguments:
+        unresolved_version = args.get_string("artifact_version", "latest")
+        version: Optional[VersionInfo] = None
+
+        if unresolved_version != "latest":
+            try:
+                # pyright: reportUnknownMemberType=false
+                version = VersionInfo.parse(unresolved_version)
+            except ValueError as ex:
+                raise CannotMakeArguments(str(ex))
+
         return DownloadTaskArguments(
-            log_level=args.get_string("log_level", "warning").upper(),
-            path=args.get_string("download"),
+            log_level=args.get_string("log_level", "CRITICAL").upper(),
+            path=Path(args.get_string("download")),
             project=args.get_string("project"),
-            version=args.get_string("artifact_version", "latest"),
+            version=version or "latest",
         )

@@ -32,8 +32,8 @@ class StartifactCLI(ArgumentParserCli):
 
         parser.add_argument(
             "--get",
-            help="get a project property",
-            metavar="{version}",
+            help="get artifact information",
+            action="store_true",
         )
 
         parser.add_argument(
@@ -70,7 +70,7 @@ class StartifactCLI(ArgumentParserCli):
             "--log-level",
             help="log level",
             metavar="LEVEL",
-            default="WARNING",
+            default="CRITICAL",
         )
         return parser
 

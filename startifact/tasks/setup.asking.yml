@@ -1,51 +1,32 @@
 start:
   - title: Startifact organisation setup
   - text:
-      Please refer to the documentation at
-      https://cariad.github.io/startifact for guidance.
-  - text:
-      You organisation's configuration will be created as a Systems Manager
-      parameter named {param_fmt} in {region_fmt} of account {account_fmt}.
-  - ask:
-      question: Is this okay?
-      key: start_ok
-      branches:
-        - response: y
-          then:
-            - goto: bucket_param_name
-        - response: n
-          then:
-            - stop: false
+      Refer to the documentation at https://cariad.github.io/startifact for
+      guidance.
+  - goto: regions
 
-bucket_param_name:
+regions:
+  - text:
+      Enter the comma-separated list of regions that Startifact should balance
+      between. For example, "us-east-1,eu-west-2".
+  - ask:
+      question: Regions?
+      key: regions
+      recall: true
+      branches:
+        - response: "^[a-z0-9\\-,\\s]+$"
+          then:
+            - goto: bucket_name_param
+
+bucket_name_param:
   - text:
       Enter the name of the Systems Manager parameter that holds the name of
       your artifacts bucket.
   - text:
-      This parameter must exist already.
+      This parameter must exist already in every region you entered above.
   - ask:
-      question: Bucket parameter?
-      key: bucket_param_name
-      recall: true
-      branches:
-        - response: "^.+$"
-          then:
-            - goto: bucket_param_region
-
-bucket_param_region:
-  - ask:
-      question: Bucket name parameter region?
-      key: bucket_param_region
-      recall: true
-      branches:
-        - response: "^.+$"
-          then:
-            - goto: bucket_region
-
-bucket_region:
-  - ask:
-      question: Bucket region?
-      key: bucket_region
+      question: Parameter name?
+      key: bucket_name_param
       recall: true
       branches:
         - response: "^.+$"
@@ -54,41 +35,30 @@ bucket_region:
 
 bucket_key_prefix:
   - text:
-      A key prefix isn't necessary if Startifact is the only tool that will read
-      and write from the artifacts bucket.
+      A key prefix isn't necessary if Startifact is the only tool that will use the
+      artifacts buckets.
   - text:
       If the bucket needs to be shared with other processes then a unique key
       prefix can prevent Startifact clobbering and being clobbered.
+  - text:
+      If you enter a key prefix then it must contain only alphanumeric, "-", "_" or "."
+      characters, and must end with a "/".
   - ask:
       question: Bucket key prefix?
       key: bucket_key_prefix
       recall: true
       branches:
-        - response: "^.*$"
-          then:
-            - goto: parameter_region
-
-parameter_region:
-  - text:
-      Startifact records the latest version of each artifact as Systems Manager
-      parameters.
-  - text: These parameters can be created in any region.
-  - ask:
-      question: Artifact parameter region?
-      key: parameter_region
-      recall: true
-      branches:
-        - response: "^.+$"
+        - response: "(^$)|(^[a-zA-Z0-9\\-_\\.]*/$)"
           then:
             - goto: parameter_name_prefix
 
 parameter_name_prefix:
   - text:
       By default, the latest version of each artifact will be recorded in
-      Systems Manager as /NAME/Latest.
+      Systems Manager as /NAME/latest.
   - text:
       Any name prefix you specify will be prepended to this name. For example,
-      the prefix "/org" will create parameters named "/org/NAME/Latest".
+      the prefix "/foo" will create parameters named "/foo/NAME/latest".
   - ask:
       question: Artifact parameter name prefix?
       key: parameter_name_prefix
@@ -100,8 +70,11 @@ parameter_name_prefix:
 
 finalise:
   - text:
-      Ready to save your configuration to the {param_fmt} Systems Manager parameter in
-      region {region_fmt} in account {account_fmt}.
+      Startifact is now ready to save your configuration to {param_fmt} Systems
+      Manager parameters in the requested regions of account {account_fmt}.
+  - text:
+      If Startifact is already in use in your organisation then this change will
+      take effect as soon as it is saved.
   - responses: json
   - ask:
       question: Okay to save?

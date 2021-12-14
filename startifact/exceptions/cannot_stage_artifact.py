@@ -1,0 +1,2 @@
+class CannotStageArtifact(Exception):
+    pass

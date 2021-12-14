@@ -38,10 +38,10 @@ Each value must be a `key=value` pair. If the value contains multiple `=` charac
 
 ### Getting the latest version number of a project
 
-To get the version number of the latest artifact staged for a project, pass the project name and `--get` argument for `version`:
+To get the version number of the latest artifact staged for a project, pass the project name and `--get` argument:
 
 ```text
-startifact SugarWater --get version
+startifact SugarWater --get
 ```
 
 The version number will be emitted to `stdout`.
@@ -54,7 +54,7 @@ To download an artifact, pass the project name, *optionally* the version number,
 startifact SugarWater 1.0.0 --download dist.tar.gz
 ```
 
-If the version is omitted or `latest` then the latest artifact will be downloaded, otherwise the literal version will be downloaded.
+If the version is omitted then the latest artifact will be downloaded, otherwise the literal version will be downloaded.
 
 ## Python usage
 
