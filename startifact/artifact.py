@@ -13,42 +13,62 @@ from startifact.latest_version_loader import LatestVersionLoader
 class Artifact:
     def __init__(
         self,
-        bucket_name_parameter: str,
+        bucket_name_parameter_name: str,
         out: IO[str],
         project: str,
         regions: List[str],
+        bucket_key_prefix: Optional[str] = None,
+        latest_version_loader: Optional[LatestVersionLoader] = None,
         parameter_name_prefix: Optional[str] = None,
-        s3_key_prefix: Optional[str] = None,
         version: Optional[VersionInfo] = None,
     ) -> None:
 
-        self._bucket_name_parameter = bucket_name_parameter
-        self._cached_latest_loader: Optional[LatestVersionLoader] = None
+        self._bucket_key_prefix = bucket_key_prefix
+        self._bucket_name_parameter_name = bucket_name_parameter_name
+        self._cached_latest_loader = latest_version_loader
         self._cached_version = version
         self._logger = getLogger("startifact")
         self._out = out
         self._parameter_name_prefix = parameter_name_prefix
         self._project = project
         self._regions = regions
-        self._s3_key_prefix = s3_key_prefix
 
     def download(self, path: Path) -> None:
-        ArtifactDownloader(
-            bucket_name_parameter=self._bucket_name_parameter,
+        """
+        Downloads the artifact to `path`.
+
+        :param path: Path and filename to download to.
+        :type path: pathlib.Path
+        """
+
+        self.downloader(path).download()
+
+    def downloader(self, path: Path) -> ArtifactDownloader:
+        """
+        Creates and returns a :class:`ArtifactDownloader`.
+
+        :param path: Path and filename to download to.
+        :type path: pathlib.Path
+
+        :returns: Artifact downloader.
+        """
+
+        return ArtifactDownloader(
+            bucket_key_prefix=self._bucket_key_prefix,
+            bucket_name_parameter_name=self._bucket_name_parameter_name,
             out=self._out,
             path=path,
             project=self._project,
             regions=self._regions,
-            s3_key_prefix=self._s3_key_prefix,
             version=self.version,
-        ).download()
+        )
 
     @property
     def latest_version_loader(self) -> LatestVersionLoader:
         if self._cached_latest_loader is None:
             self._cached_latest_loader = LatestVersionLoader(
                 out=self._out,
-                name_prefix=self._parameter_name_prefix,
+                parameter_name_prefix=self._parameter_name_prefix,
                 project=self.project,
                 regions=self._regions,
             )

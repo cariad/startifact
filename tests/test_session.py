@@ -39,12 +39,12 @@ def test_get(configuration_loader: ConfigurationLoader, out: StringIO) -> None:
     artifact = session.get("SugarWater", VersionInfo(1, 2, 3))
 
     expect = Artifact(
-        bucket_name_parameter="bucket-name-param",
+        bucket_name_parameter_name="bucket-name-param",
         out=out,
         parameter_name_prefix="parameter-name-prefix",
         project="SugarWater",
         regions=["us-east-3"],
-        s3_key_prefix="bucket-key-prefix",
+        bucket_key_prefix="bucket-key-prefix",
         version=VersionInfo(1, 2, 3),
     )
 

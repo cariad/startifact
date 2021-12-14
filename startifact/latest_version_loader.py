@@ -21,14 +21,14 @@ class LatestVersionLoader:
         out: IO[str],
         project: str,
         regions: List[str],
-        name_prefix: Optional[str] = None,
+        parameter_name_prefix: Optional[str] = None,
         version: Optional[VersionInfo] = None,
     ) -> None:
 
         self._cached_version = version
         self._color = should_emit_codes()
         self._logger = getLogger("startifact")
-        self._name_prefix = name_prefix
+        self._parameter_name_prefix = parameter_name_prefix
         self._original_region_len = len(regions)
         self._out = out
         self._project = project
@@ -49,7 +49,7 @@ class LatestVersionLoader:
 
         try:
             param = LatestVersionParameter(
-                prefix=self._name_prefix,
+                prefix=self._parameter_name_prefix,
                 project=self._project,
                 read_only=True,
                 session=session,
@@ -70,6 +70,22 @@ class LatestVersionLoader:
             msg = f"Failed to read latest version from {session.region_name}: {ex}"
             self._logger.warning(msg)
             return None
+
+    @property
+    def out(self) -> IO[str]:
+        return self._out
+
+    @property
+    def parameter_name_prefix(self) -> Optional[str]:
+        return self._parameter_name_prefix
+
+    @property
+    def project(self) -> str:
+        return self._project
+
+    @property
+    def regions(self) -> List[str]:
+        return self._regions
 
     @property
     def successes_required(self) -> int:

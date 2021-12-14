@@ -15,7 +15,7 @@ def test_invoke() -> None:
     out = StringIO()
 
     artifact = Artifact(
-        bucket_name_parameter="bucket_name_parameter",
+        bucket_name_parameter_name="bucket_name_parameter",
         out=out,
         project="SugarWater",
         regions=["us-west-9"],

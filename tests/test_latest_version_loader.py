@@ -18,7 +18,7 @@ def test_interrogate(session: Mock, out: StringIO) -> None:
     session.client = client
 
     loader = LatestVersionLoader(
-        name_prefix="/prefix",
+        parameter_name_prefix="/prefix",
         out=out,
         project="SugarWater",
         regions=["us-west-9"],
@@ -38,7 +38,7 @@ def test_interrogate__fail(session: Mock, out: StringIO) -> None:
     session.client = client
 
     loader = LatestVersionLoader(
-        name_prefix="/prefix",
+        parameter_name_prefix="/prefix",
         out=out,
         project="SugarWater",
         regions=["us-west-9"],

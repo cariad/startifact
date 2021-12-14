@@ -78,12 +78,12 @@ class Session:
             raise NoConfiguration("bucket_name_param")
 
         return Artifact(
-            bucket_name_parameter=config["bucket_name_param"],
+            bucket_name_parameter_name=config["bucket_name_param"],
             out=self._out,
             parameter_name_prefix=config["parameter_name_prefix"],
             project=project,
             regions=self.regions,
-            s3_key_prefix=config["bucket_key_prefix"],
+            bucket_key_prefix=config["bucket_key_prefix"],
             version=version,
         )
 

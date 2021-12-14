@@ -19,26 +19,32 @@ class ArtifactDownloader:
 
     def __init__(
         self,
-        bucket_name_parameter: str,
+        bucket_name_parameter_name: str,
         out: IO[str],
         path: Path,
         project: str,
         regions: List[str],
         version: VersionInfo,
-        s3_key_prefix: Optional[str] = None,
+        bucket_key_prefix: Optional[str] = None,
     ) -> None:
 
-        self._bucket_name_parameter = bucket_name_parameter
-        self._key = make_key(project, version, prefix=s3_key_prefix)
+        color = should_emit_codes()
+
+        self._bucket_name_parameter_name = bucket_name_parameter_name
+        self._key = make_key(project, version, prefix=bucket_key_prefix)
         self._logger = getLogger("startifact")
         self._out = out
-        self._path = path.as_posix()
-        self._path_fmt = yellow(self._path) if should_emit_codes() else self._path
+        self._path = path
+        self._path_fmt = yellow(path.as_posix()) if color else path.as_posix()
         self._project = project
-        self._project_fmt = yellow(project) if should_emit_codes() else project
+        self._project_fmt = yellow(project) if color else project
         self._regions = regions
         self._version = version
-        self._version_fmt = yellow(str(version)) if should_emit_codes() else version
+        self._version_fmt = yellow(str(version)) if color else version
+
+    @property
+    def bucket_name_parameter_name(self) -> str:
+        return self._bucket_name_parameter_name
 
     def download(self) -> None:
         for region in self._regions:
@@ -48,14 +54,20 @@ class ArtifactDownloader:
         else:
             raise NoRegionsAvailable(self._regions)
 
+    @property
+    def key(self) -> str:
+        return self._key
+
     def operate(
-        self, session: Session, bucket_param: Optional[BucketParameter] = None
+        self,
+        session: Session,
+        bucket_param: Optional[BucketParameter] = None,
     ) -> bool:
         region = session.region_name
 
         try:
             bucket_param = bucket_param or BucketParameter(
-                name=self._bucket_name_parameter,
+                name=self._bucket_name_parameter_name,
                 session=session,
             )
 
@@ -70,7 +82,11 @@ class ArtifactDownloader:
             )
 
             s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
-            s3.download_file(Bucket=bucket, Filename=self._path, Key=self._key)
+            s3.download_file(
+                Bucket=bucket,
+                Filename=self._path.as_posix(),
+                Key=self._key,
+            )
 
             region_fmt = yellow(region) if should_emit_codes() else region
 
@@ -85,3 +101,23 @@ class ArtifactDownloader:
             msg = f"Failed to read download from {region}: {ex}"
             self._logger.warning(msg)
             return False
+
+    @property
+    def out(self) -> IO[str]:
+        return self._out
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def project(self) -> str:
+        return self._project
+
+    @property
+    def regions(self) -> List[str]:
+        return [*self._regions]
+
+    @property
+    def version(self) -> VersionInfo:
+        return self._version
