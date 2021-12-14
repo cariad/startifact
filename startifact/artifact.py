@@ -1,16 +1,24 @@
 from dataclasses import dataclass
 from logging import getLogger
 from pathlib import Path
-from typing import IO, List, Optional
+from typing import IO, Dict, List, Optional
 
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.artifact_downloader import ArtifactDownloader
+from startifact.artifacts import make_key, make_metadata_key
 from startifact.latest_version_loader import LatestVersionLoader
+from startifact.metadata_loader import MetadataLoader
 
 
 @dataclass
 class Artifact:
+    """
+    Read metadata via keys. For example:
+
+        bar = artifact["foo"]
+    """
+
     def __init__(
         self,
         bucket_name_parameter_name: str,
@@ -19,19 +27,47 @@ class Artifact:
         regions: List[str],
         bucket_key_prefix: Optional[str] = None,
         latest_version_loader: Optional[LatestVersionLoader] = None,
+        metadata_loader: Optional[MetadataLoader] = None,
         parameter_name_prefix: Optional[str] = None,
         version: Optional[VersionInfo] = None,
     ) -> None:
 
+        self._cached_key: Optional[str] = None
+        self._cached_metadata_key: Optional[str] = None
+        self._cached_metadata_loader = metadata_loader
         self._bucket_key_prefix = bucket_key_prefix
         self._bucket_name_parameter_name = bucket_name_parameter_name
         self._cached_latest_loader = latest_version_loader
+        self._cached_metadata: Optional[Dict[str, str]] = None
         self._cached_version = version
         self._logger = getLogger("startifact")
         self._out = out
         self._parameter_name_prefix = parameter_name_prefix
         self._project = project
         self._regions = regions
+
+    def __getitem__(self, key: str) -> str:
+        return self.metadata_loader.loaded[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.metadata_loader.loaded
+
+    def __len__(self) -> int:
+        return len(self.metadata_loader.loaded)
+
+    @property
+    def bucket_key_prefix(self) -> Optional[str]:
+        return self._bucket_key_prefix
+
+    @property
+    def key(self) -> str:
+        if not self._cached_key:
+            self._cached_key = make_key(
+                self.project,
+                self.version,
+                prefix=self.bucket_key_prefix,
+            )
+        return self._cached_key
 
     def download(self, path: Path) -> None:
         """
@@ -53,9 +89,14 @@ class Artifact:
         :returns: Artifact downloader.
         """
 
+        # We don't cache the downloader because the user might want to download
+        # the file multiple times and we can't guarantee that the same region
+        # will be available between those calls. The downloader is always
+        # constructed from scratch every time.
+
         return ArtifactDownloader(
-            bucket_key_prefix=self._bucket_key_prefix,
             bucket_name_parameter_name=self._bucket_name_parameter_name,
+            key=self.key,
             out=self._out,
             path=path,
             project=self._project,
@@ -75,6 +116,23 @@ class Artifact:
         return self._cached_latest_loader
 
     @property
+    def metadata_key(self) -> str:
+        if not self._cached_metadata_key:
+            self._cached_metadata_key = make_metadata_key(self.key)
+        return self._cached_metadata_key
+
+    @property
+    def metadata_loader(self) -> MetadataLoader:
+        if self._cached_metadata_loader is None:
+            self._cached_metadata_loader = MetadataLoader(
+                bucket_name_parameter_name=self._bucket_name_parameter_name,
+                key=self.metadata_key,
+                regions=self._regions,
+            )
+
+        return self._cached_metadata_loader
+
+    @property
     def project(self) -> str:
         return self._project
 
@@ -84,64 +142,6 @@ class Artifact:
             self._cached_version = self.latest_version_loader.version
         return self._cached_version
 
-
-# class ArtifactABC(ABC):
-#     """
-#     Artifact.
-
-#     Get and set metadata by getting and setting keys. For example:
-
-#     ```python
-#     artifact["foo"] = "bar"
-#     foo = artifact["foo"]
-#     ```
-#     """
-
-#     def __init__(
-#         self,
-#         bucket: str,
-#         dry_run: bool,
-#         key_prefix: str,
-#         project: str,
-#         session: Session,
-#         version: str,
-#     ) -> None:
-
-#         self._bucket = bucket
-#         self._cached_metadata: Optional[Dict[str, str]] = None
-#         self._dry_run = dry_run
-#         self._fqn = f"{project}@{version}"
-#         self._key = f"{key_prefix}{self._fqn}"
-#         self._key_prefix = key_prefix
-#         self._logger = getLogger("startifact")
-#         self._metadata_key = self._key + "/metadata"
-#         self._project = project
-#         self._session = session
-#         self._version = version
-
-#         self._logger.debug(
-#             "Initialized %s(bucket=%s, key_prefix=%s, project=%s, session=%s, version=%s)",
-#             self.__class__.__name__,
-#             bucket,
-#             key_prefix,
-#             project,
-#             session,
-#             version,
-#         )
-
-#     @abstractmethod
-#     def _get_metadata(self) -> Dict[str, str]:
-#         """Gets this artifact's metadata from the source."""
-
-#     @property
-#     def _metadata(self) -> Dict[str, str]:
-#         if self._cached_metadata is None:
-#             self._logger.debug("Metadata not cached: getting now.")
-#             self._cached_metadata = self._get_metadata()
-#         return self._cached_metadata
-
-#     def __getitem__(self, key: str) -> str:
-#         return self._metadata[key]
 
 #     # def __setitem__(self, key: str, value: str) -> None:
 #     #     if key in self:
@@ -153,11 +153,6 @@ class Artifact:
 #     #         )
 #     #     self._metadata[key] = value
 
-#     def __contains__(self, key: str) -> bool:
-#         return key in self._metadata
-
-#     def __len__(self) -> int:
-#         return len(self._metadata)
 
 #     # def save_metadata(self) -> None:
 #     #     """

@@ -13,6 +13,7 @@ from startifact.parameters import BucketParameter
 def test_download__first_region(out: StringIO) -> None:
     downloader = ArtifactDownloader(
         bucket_name_parameter_name="bucket_name_param",
+        key="SugarWater@1.0.0",
         out=out,
         path=Path("download.zip"),
         project="SugarWater",
@@ -29,6 +30,7 @@ def test_download__first_region(out: StringIO) -> None:
 def test_download__fail_then_ok(out: StringIO) -> None:
     downloader = ArtifactDownloader(
         bucket_name_parameter_name="bucket_name_param",
+        key="SugarWater@1.0.0",
         out=out,
         path=Path("download.zip"),
         project="SugarWater",
@@ -45,6 +47,7 @@ def test_download__fail_then_ok(out: StringIO) -> None:
 def test_download__none(out: StringIO) -> None:
     downloader = ArtifactDownloader(
         bucket_name_parameter_name="bucket_name_param",
+        key="SugarWater@1.0.0",
         out=out,
         path=Path("download.zip"),
         project="SugarWater",
@@ -74,6 +77,7 @@ def test_operate(out: StringIO, session: Mock) -> None:
 
     downloader = ArtifactDownloader(
         bucket_name_parameter_name="bucket_name_param",
+        key="SugarWater@1.0.0",
         out=out,
         path=Path("download.zip"),
         project="SugarWater",
@@ -108,6 +112,7 @@ def test_operate__fail(out: StringIO, session: Mock) -> None:
 
     downloader = ArtifactDownloader(
         bucket_name_parameter_name="bucket_name_param",
+        key="SugarWater@1.0.0",
         out=out,
         path=Path("download.zip"),
         project="SugarWater",

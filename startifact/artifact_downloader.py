@@ -7,7 +7,6 @@ from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.artifacts import make_key
 from startifact.exceptions import NoRegionsAvailable
 from startifact.parameters import BucketParameter
 
@@ -20,18 +19,18 @@ class ArtifactDownloader:
     def __init__(
         self,
         bucket_name_parameter_name: str,
+        key: str,
         out: IO[str],
         path: Path,
         project: str,
         regions: List[str],
         version: VersionInfo,
-        bucket_key_prefix: Optional[str] = None,
     ) -> None:
 
         color = should_emit_codes()
 
         self._bucket_name_parameter_name = bucket_name_parameter_name
-        self._key = make_key(project, version, prefix=bucket_key_prefix)
+        self._key = key
         self._logger = getLogger("startifact")
         self._out = out
         self._path = path
