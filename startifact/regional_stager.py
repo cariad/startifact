@@ -120,7 +120,6 @@ class RegionalStager(RegionalProcess):
 
     def put_object(self) -> None:
         logger = getLogger("startifact")
-        s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
         what = (
             f"{self._path} to {self._bucket_name_parameter.value}/{self._key} "
             + f"in {self._session.region_name}"
@@ -134,7 +133,7 @@ class RegionalStager(RegionalProcess):
 
             logger.debug("Uploading %s…", what)
 
-            s3.put_object(
+            self._session.client("s3").put_object(
                 Body=f,
                 Bucket=self._bucket_name_parameter.value,
                 ContentMD5=self._file_hash,

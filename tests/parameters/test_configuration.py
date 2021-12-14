@@ -42,19 +42,13 @@ def test_delete__parameter_not_found(session: Mock) -> None:
 
 
 def test_delete__read_only(session: Mock) -> None:
-    delete_parameter = Mock()
-
-    ssm = Mock()
-    ssm.delete_parameter = delete_parameter
-
-    client = Mock(return_value=ssm)
+    client = Mock()
     session.client = client
 
     param = ConfigurationParameter(read_only=True, session=session)
     param.delete()
 
-    client.assert_called_once_with("ssm")
-    delete_parameter.assert_not_called()
+    client.assert_not_called()
 
 
 def test_make_value(session: Mock, monkeypatch: MonkeyPatch) -> None:

@@ -40,18 +40,23 @@ class Parameter(ABC, Generic[TParameterValue]):
         Deletes the parameter.
         """
 
+        if self._read_only:
+            self._logger.debug(
+                "%s would delete parameter %s in %s now.",
+                self.__class__.__name__,
+                self.name,
+                self._session.region_name,
+            )
+            return
+
         ssm = self._session.client("ssm")  # pyright: reportUnknownMemberType=false
 
-        region = self._session.region_name
         self._logger.debug(
             "%s deleting %s in %s",
             self.__class__.__name__,
             self.name,
-            region,
+            self._session.region_name,
         )
-
-        if self._read_only:
-            return
 
         try:
             ssm.delete_parameter(Name=self.name)

@@ -86,7 +86,8 @@ def test_receive_done__none(out: StringIO, stager: Stager) -> None:
 def test_stage(stager: Stager, out: StringIO) -> None:
     with patch("startifact.regional_stager.RegionalStager.assert_not_exists"):
         with patch(
-            "startifact.parameters.BucketParameter.make_value", return_value="foo"
+            "startifact.parameters.BucketParameter.make_value",
+            return_value="foo",
         ):
             stager.stage()
 

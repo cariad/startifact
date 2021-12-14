@@ -103,8 +103,8 @@ def test_save(empty_config: Configuration, out: StringIO) -> None:
 
     saver.save()
 
-    expect = """Configuration saved to us-east-6 OK! 🧁
-Configuration deleted from us-east-7 OK! 🧁
+    expect = """Configuration deleted from us-east-7 OK! 🧁
+Configuration saved to us-east-6 OK! 🧁
 """
 
     assert out.getvalue() == expect

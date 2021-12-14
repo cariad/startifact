@@ -219,10 +219,13 @@ def test_invoke__fail() -> None:
     )
 
     out = StringIO()
-    args = SetupTaskArguments(directions=directions)
+    args = SetupTaskArguments(directions=directions, regions=["us-east-7", "us-east-8"])
     task = SetupTask(args, out)
 
     assert task.invoke() == 1
+
+    expect = "🔥 None of the configured regions are available: ['us-east-7', 'us-east-8'].\n"
+    assert out.getvalue() == expect
 
 
 def test_make_script() -> None:

@@ -364,5 +364,5 @@ def test_put_object__read_only(
 
     uploader.put_object()
 
-    client.assert_called_once_with("s3")
+    client.assert_not_called()
     put_object.assert_not_called()

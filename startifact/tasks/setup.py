@@ -11,6 +11,7 @@ from startifact.configuration import Configuration
 from startifact.configuration_loader import ConfigurationLoader
 from startifact.configuration_saver import ConfigurationSaver
 from startifact.constants import CONFIG_PARAM_NAME
+from startifact.exceptions import NoRegionsAvailable
 from startifact.regions import get_regions, make_regions
 
 
@@ -65,22 +66,26 @@ class SetupTask(Task[SetupTaskArguments]):
             regions=self.args.regions or get_regions(),
         )
 
-        config = loader.loaded
+        try:
+            state = self.make_state(
+                directions=self.args.directions,
+                config=loader.loaded,
+            )
+        except NoRegionsAvailable as ex:
+            self.out.write(f"🔥 {ex}.\n")
+            return 1
+
+        prev_regions = self.args.regions or make_regions(loader.loaded["regions"])
+
+        # We only want this empty line before the script. We don't need it
+        # before any errors we might emit earlier.
         self.out.write("\n")
-
-        prev_regions = make_regions(config["regions"])
-
-        state = self.make_state(
-            directions=self.args.directions,
-            config=config,
-        )
-
         reason = self.make_script(state).start()
 
         if not reason:
             return 1
 
-        regions = make_regions(config["regions"])
+        regions = make_regions(loader.loaded["regions"])
 
         delete_regions: List[str] = []
 
@@ -89,7 +94,7 @@ class SetupTask(Task[SetupTaskArguments]):
                 delete_regions.append(prev_region)
 
         saver = ConfigurationSaver(
-            configuration=config,
+            configuration=loader.loaded,
             delete_regions=delete_regions,
             out=self.out,
             read_only=False,
