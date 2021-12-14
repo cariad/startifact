@@ -19,7 +19,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Organisation configuration" href="organization.html" />
-    <link rel="prev" title="Startifact" href="index.html" /> 
+    <link rel="prev" title="Resilience" href="resilience.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,11 +39,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resilience.html">Resilience</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Amazon Web Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#how-startifact-uses-your-account">How Startifact uses your account</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#region-preparation">Region preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#s3-bucket-and-parameter">S3 bucket and parameter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#iam-policies">IAM policies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#your-region-preparation">Your region preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-startifact-creates-in-each-region">What Startifact creates in each region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#regional-iam-policies">Regional IAM policies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cloudformation-template">CloudFormation template</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a></li>
@@ -82,23 +85,89 @@
 <h2>How Startifact uses your account<a class="headerlink" href="#how-startifact-uses-your-account" title="Permalink to this headline"></a></h2>
 <p>Startifact stores artifacts and metadata in S3 buckets that you must deploy yourself.</p>
 <p>Startifact stores your <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation configuration</span></a> and the version numbers of staged artifacts in Systems Manager parameters that Startifact manages.</p>
+<p>Startifact will balance between as many regions as you care to prepare.</p>
 </section>
-<section id="region-preparation">
-<h2>Region preparation<a class="headerlink" href="#region-preparation" title="Permalink to this headline"></a></h2>
-<p>Startifact hates to keep all of your eggs in one basket. And so, Startifact will balance across as many regions as you like. If a region goes down, Startifact will automatically use another.</p>
+<section id="your-region-preparation">
+<h2>Your region preparation<a class="headerlink" href="#your-region-preparation" title="Permalink to this headline"></a></h2>
 <p>Each region must have:</p>
-<ol class="arabic simple">
+<ul class="simple">
 <li><p>An S3 bucket.</p></li>
-<li><p>A Systems Manager parameter where the bucket’s name can be read. <a class="reference external" href="https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/">Why do you care what your S3 buckets are named?</a> explains why Startifact is opinionated on this.</p></li>
-</ol>
-<p>The Systems Manager parameter that holds the bucket’s name must be the same in every region that Startifact will use. If you name it, say, <code class="docutils literal notranslate"><span class="pre">/MyPlatform/Buckets/Staging</span></code> in one region then it <em>must</em> also be named <code class="docutils literal notranslate"><span class="pre">/MyPlatform/Buckets/Staging</span></code> in all other regions.</p>
+<li><p>A Systems Manager parameter that holds the bucket’s name. <a class="reference external" href="https://unbuild.blog/2021/12/why-do-you-care-what-your-s3-buckets-are-named/">Why do you care what your S3 buckets are named?</a> explains why Startifact is opinionated.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This Systems Manager parameter must have the same name in every region. If you name it <code class="docutils literal notranslate"><span class="pre">/buckets/staging</span></code> in one region then it must be named <code class="docutils literal notranslate"><span class="pre">/buckets/staging</span></code> in <em>all</em> regions.</p>
+</div>
 </section>
-<section id="s3-bucket-and-parameter">
-<h2>S3 bucket and parameter<a class="headerlink" href="#s3-bucket-and-parameter" title="Permalink to this headline"></a></h2>
-<p>Here’s a complete CloudFormation template you can copy and deploy:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifact storage</span>
+<section id="what-startifact-creates-in-each-region">
+<h2>What Startifact creates in each region<a class="headerlink" href="#what-startifact-creates-in-each-region" title="Permalink to this headline"></a></h2>
+<p>When you complete the <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation configuration</span></a>, Startifact will create a Systems Manager parameter named <code class="docutils literal notranslate"><span class="pre">/startifact</span></code> to hold your preferences.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You change the name of this parameter by setting the <code class="docutils literal notranslate"><span class="pre">STARTIFACT_PARAMETER</span></code> environment variable.</p>
+<p>Take care, however, that you set that variable on <em>every</em> machine that Startifact runs on.</p>
+</div>
+<p>When you stage an artifact, Startifact will:</p>
+<ul class="simple">
+<li><p>Upload the artifact file and metadata to your S3 bucket.</p></li>
+<li><p>Create or update a Systems Manager parameter per-project to record the latest version.</p></li>
+</ul>
+</section>
+<section id="regional-iam-policies">
+<h2>Regional IAM policies<a class="headerlink" href="#regional-iam-policies" title="Permalink to this headline"></a></h2>
+<p>The user performing the one-time <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation setup</span></a> must be granted <code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> and <code class="docutils literal notranslate"><span class="pre">ssm:PutParameter</span></code> on the configuration parameter.</p>
+<p>Any identities that download artifacts must be granted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on:</p>
+<ul>
+<li><p>The configuration parameter</p></li>
+<li><p>The bucket name parameter</p></li>
+<li><p>Every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3:GetObject</span></code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The parameter name prefix and S3 key prefix are optional and configured during the <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation setup</span></a> process.</p>
+</div>
+<p>Any identities that stage artifacts must be granted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on:</p>
+<ul>
+<li><p>The configuration parameter</p></li>
+<li><p>The bucket name parameter</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ssm:PutParameter</span></code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3:ListBucket</span></code> on the artifacts bucket.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3:PutObject</span></code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</p></li>
+</ul>
+</section>
+<section id="cloudformation-template">
+<h2>CloudFormation template<a class="headerlink" href="#cloudformation-template" title="Permalink to this headline"></a></h2>
+<p>Here’s a complete CloudFormation template you can copy to deploy an S3 bucket, Systems Manager parameter, and managed policies for access:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifact staging</span>
+
+<span class="nt">Parameters</span><span class="p">:</span>
+  <span class="nt">ArtifactParameterNamePrefix</span><span class="p">:</span>
+    <span class="nt">Default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/artifacts</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+  <span class="nt">BucketKeyPrefix</span><span class="p">:</span>
+    <span class="nt">Default</span><span class="p">:</span> <span class="s">&quot;&quot;</span>  <span class="c1"># e.g. &quot;prefix/&quot;</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+  <span class="nt">BucketParameterName</span><span class="p">:</span>
+    <span class="nt">Default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/buckets/staging</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
+  <span class="nt">StartifactConfigurationParameterName</span><span class="p">:</span>
+    <span class="nt">Default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/startifact</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+
 <span class="nt">Resources</span><span class="p">:</span>
-  <span class="nt">Artifacts</span><span class="p">:</span>
+  <span class="nt">Staging</span><span class="p">:</span>
     <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::S3::Bucket</span>
     <span class="nt">Properties</span><span class="p">:</span>
       <span class="nt">PublicAccessBlockConfiguration</span><span class="p">:</span>
@@ -107,40 +176,93 @@
         <span class="nt">IgnorePublicAcls</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
         <span class="nt">RestrictPublicBuckets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
 
-  <span class="nt">ArtifactsParameter</span><span class="p">:</span>
+  <span class="nt">StagingParameter</span><span class="p">:</span>
     <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::SSM::Parameter</span>
     <span class="nt">Properties</span><span class="p">:</span>
-      <span class="c1"># The parameter can be named anything you want, but</span>
-      <span class="c1"># remember it for the organisation setup script:</span>
-      <span class="nt">Name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/Buckets/Staging</span>
+      <span class="nt">Name</span><span class="p">:</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BucketParameterName</span>
       <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
       <span class="nt">Value</span><span class="p">:</span>
-        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Artifacts</span>
+        <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Staging</span>
+
+  <span class="nt">AllowRead</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::IAM::ManagedPolicy</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Read-only access to staged artifacts</span>
+      <span class="nt">PolicyDocument</span><span class="p">:</span>
+        <span class="nt">Version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2012-10-17</span>
+        <span class="nt">Statement</span><span class="p">:</span>
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">s3:GetObject</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to download artifact files and metadata:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:s3:::${Staging}/${BucketKeyPrefix}*</span>
+
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ssm:GetParameter</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to read configuration:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StartifactConfigurationParameterName}</span>
+              <span class="c1"># Allowed to read the name of the bucket:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${BucketParameterName}</span>
+              <span class="c1"># Allowed to read artifact versions:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ArtifactParameterNamePrefix}*</span>
+
+  <span class="nt">AllowWrite</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::IAM::ManagedPolicy</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Write-only access to staged artifacts</span>
+      <span class="nt">PolicyDocument</span><span class="p">:</span>
+        <span class="nt">Version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2012-10-17</span>
+        <span class="nt">Statement</span><span class="p">:</span>
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">s3:ListBucket</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to check if an artifact has already been uploaded:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:s3:::${Staging}</span>
+
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">s3:PutObject</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to upload artifact files and metadata:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:s3:::${Staging}/${BucketKeyPrefix}*</span>
+
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ssm:GetParameter</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to read configuration:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StartifactConfigurationParameterName}</span>
+              <span class="c1"># Allowed to read the name of the bucket:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${BucketParameterName}</span>
+
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ssm:PutParameter</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to write artifact versions:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ArtifactParameterNamePrefix}*</span>
+
+  <span class="nt">AllowConfigure</span><span class="p">:</span>
+    <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::IAM::ManagedPolicy</span>
+    <span class="nt">Properties</span><span class="p">:</span>
+      <span class="nt">Description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Grants permission to configure Startifact</span>
+      <span class="nt">PolicyDocument</span><span class="p">:</span>
+        <span class="nt">Version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2012-10-17</span>
+        <span class="nt">Statement</span><span class="p">:</span>
+          <span class="p p-Indicator">-</span> <span class="nt">Action</span><span class="p">:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ssm:GetParameter</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ssm:PutParameter</span>
+            <span class="nt">Effect</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow</span>
+            <span class="nt">Resource</span><span class="p">:</span>
+              <span class="c1"># Allowed to read and write configuration:</span>
+              <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fn::Sub</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StartifactConfigurationParameterName}</span>
 </pre></div>
 </div>
-</section>
-<section id="iam-policies">
-<h2>IAM policies<a class="headerlink" href="#iam-policies" title="Permalink to this headline"></a></h2>
-<p>The user performing the one-time <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation setup</span></a> must be granted:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> and <code class="docutils literal notranslate"><span class="pre">ssm:PutParameter</span></code> on the configuration parameter. This is <code class="docutils literal notranslate"><span class="pre">arn:aws:ssm:{REGION}:{ACCOUNT</span> <span class="pre">ID}:parameter/Startifact</span></code> by default, but adjust if you are using a different parameter name.</p></li>
-</ul>
-<p>Any identities that download artifacts must be granted:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the configuration parameter.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the bucket name parameter.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">s3:GetObject</span></code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</p></li>
-<li><p>Optional: <code class="docutils literal notranslate"><span class="pre">s3:PutObject</span></code> on S3 keys ending with <code class="docutils literal notranslate"><span class="pre">*/metadata</span></code> to allow appending metadata to existing artifacts.</p></li>
-</ul>
-<p>Any identities that stage artifacts must be granted:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the configuration parameter.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:GetParameter</span></code> on the bucket name parameter.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ssm:PutParameter</span></code> on every parameter beneath the name prefix (or <em>all</em> parameters if you have no name prefix).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">s3:ListBucket</span></code> on the artifacts bucket.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">s3:PutObject</span></code> on every S3 object in the artifacts bucket beneath the key prefix (or <em>all</em> objects if you have no key prefix).</p></li>
-</ul>
 </section>
 </section>
 
@@ -148,7 +270,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Startifact" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="resilience.html" class="btn btn-neutral float-left" title="Resilience" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="organization.html" class="btn btn-neutral float-right" title="Organisation configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

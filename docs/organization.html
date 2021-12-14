@@ -39,6 +39,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resilience.html">Resilience</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Organisation configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
@@ -79,18 +81,18 @@
 <h1>Organisation configuration<a class="headerlink" href="#organisation-configuration" title="Permalink to this headline"></a></h1>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
-<p>Startifact is designed to be run within organisations with multiple CI/CD pipelines that stage, download or otherwise <em>use</em> versioned artifacts.</p>
+<p>Startifact is designed to be run within organisations with multiple CI/CD pipelines.</p>
 <p>Rather than configure Startifact within each pipeline, Startifact reads from a shared organisation-level configuration in Systems Manager.</p>
 <p>As long as your CI/CD pipelines all authenticate to the same Amazon Web Services account, they will read the same configuration.</p>
 </section>
 <section id="choosing-where-to-host-the-configuration">
 <h2>Choosing where to host the configuration<a class="headerlink" href="#choosing-where-to-host-the-configuration" title="Permalink to this headline"></a></h2>
-<p>By default, Startifact reads and writes configuration to a Systems Manager parameter named <code class="docutils literal notranslate"><span class="pre">/Startifact</span></code> in your default account and region.</p>
-<p>To change that parameter name, set an environment variable named <code class="docutils literal notranslate"><span class="pre">STARTIFACT_PARAMETER</span></code>.</p>
+<p>By default, Startifact reads and writes configuration to a Systems Manager parameter named <code class="docutils literal notranslate"><span class="pre">/startifact</span></code>.</p>
+<p>To change that parameter name, set an environment variable named <code class="docutils literal notranslate"><span class="pre">STARTIFACT_PARAMETER</span></code>. Take care, however, that you set that variable on <em>every</em> machine that Startifact runs on.</p>
 </section>
 <section id="performing-or-updating-the-organisation-setup">
 <h2>Performing or updating the organisation setup<a class="headerlink" href="#performing-or-updating-the-organisation-setup" title="Permalink to this headline"></a></h2>
-<p>Volunteer a <a class="reference internal" href="aws.html#iam-policies"><span class="std std-ref">privileged</span></a> human being to run:</p>
+<p>Volunteer a <a class="reference internal" href="aws.html#regional-iam-policies"><span class="std std-ref">privileged</span></a> human being to run:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact --setup</span>
 </pre></div>
 </div>

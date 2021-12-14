@@ -3,23 +3,41 @@ Startifact
 
 **Startifact** is a command line application and Python package for staging and retrieving versioned artifacts in Amazon Web Services.
 
+Features
+--------
+
+* Configuration is held in Amazon Web Services Systems Manager. Startifact operates consistently across all your CI/CD jobs by default.
+
+* Optional metadata can be attached to artifacts at the point of staging then interrogated later.
+
+* Configuration, artifacts and metadata are stored across as many regions as you care to provide. Startifact is :ref:`resilient to outages <Resilience>`.
+
+Terms
+-----
+
+Say you have a CI/CD build job for a software component named "SugarWater". This build job produces:
+
+* A "dist.tar.gz" file
+
+* A hash of "dist.tar.gz"
+
+* A semantic version number
+
+In Startifact:
+
+* "SugarWater" is a **project**.
+
+* The "dist.tar.gz" file and the semantic version together are an **artifact**.
+
+* The hash is recorded as **metadata**
+
 Getting started
 ---------------
 
 1. Prepare your :ref:`Amazon Web Services` account.
 2. :ref:`Install <Installation>` Startifact.
 3. Deploy your :ref:`organisation configuration <Organisation configuration>`.
-
-Installation
-------------
-
-Startifact requires Python 3.8 or later.
-
-Install Startifact via pip:
-
-.. code-block:: console
-
-   pip install startifact
+4. Start :ref:`staging your artifacts <CLI usage>`.
 
 Licence
 -------
@@ -53,9 +71,11 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    self
+   installation
+   resilience
    aws
    organization
    cli

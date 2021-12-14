@@ -4,7 +4,7 @@ Organisation configuration
 Introduction
 ------------
 
-Startifact is designed to be run within organisations with multiple CI/CD pipelines that stage, download or otherwise *use* versioned artifacts.
+Startifact is designed to be run within organisations with multiple CI/CD pipelines.
 
 Rather than configure Startifact within each pipeline, Startifact reads from a shared organisation-level configuration in Systems Manager.
 
@@ -13,14 +13,14 @@ As long as your CI/CD pipelines all authenticate to the same Amazon Web Services
 Choosing where to host the configuration
 ----------------------------------------
 
-By default, Startifact reads and writes configuration to a Systems Manager parameter named ``/Startifact`` in your default account and region.
+By default, Startifact reads and writes configuration to a Systems Manager parameter named ``/startifact``.
 
-To change that parameter name, set an environment variable named ``STARTIFACT_PARAMETER``.
+To change that parameter name, set an environment variable named ``STARTIFACT_PARAMETER``. Take care, however, that you set that variable on *every* machine that Startifact runs on.
 
 Performing or updating the organisation setup
 ---------------------------------------------
 
-Volunteer a :ref:`privileged <IAM policies>` human being to run:
+Volunteer a :ref:`privileged <Regional IAM policies>` human being to run:
 
 .. code-block:: console
 
