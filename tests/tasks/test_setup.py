@@ -224,7 +224,10 @@ def test_invoke__fail() -> None:
 
     assert task.invoke() == 1
 
-    expect = "🔥 None of the configured regions are available: ['us-east-7', 'us-east-8'].\n"
+    expect = (
+        "🔥 None of the configured regions are available: "
+        + "['us-east-7', 'us-east-8'].\n"
+    )
     assert out.getvalue() == expect
 
 
