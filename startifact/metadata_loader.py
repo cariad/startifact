@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, cast
 
 from boto3.session import Session
 
+from startifact.bucket_names import BucketNames
 from startifact.exceptions import NoRegionsAvailable
-from startifact.parameters import BucketParameter
 
 
 class MetadataLoader:
@@ -15,14 +15,14 @@ class MetadataLoader:
 
     def __init__(
         self,
-        bucket_name_parameter_name: str,
+        bucket_names: BucketNames,
         key: str,
         regions: List[str],
         metadata: Optional[Dict[str, str]] = None,
     ) -> None:
 
         self._any_regions_claim_no_metadata = False
-        self._bucket_name_parameter_name = bucket_name_parameter_name
+        self._bucket_names = bucket_names
         self._cached_metadata = metadata
         self._key = key
         self._logger = getLogger("startifact")
@@ -32,18 +32,9 @@ class MetadataLoader:
     def any_regions_claim_no_metadata(self) -> bool:
         return self._any_regions_claim_no_metadata
 
-    @property
-    def bucket_name_parameter_name(self) -> str:
-        return self._bucket_name_parameter_name
-
-    def operate(
-        self,
-        session: Session,
-        bucket_name_parameter: BucketParameter,
-    ) -> Optional[Dict[str, str]]:
-
+    def operate(self, session: Session) -> Optional[Dict[str, str]]:
         try:
-            bucket = bucket_name_parameter.value
+            bucket = self._bucket_names.get(session)
 
             self._logger.debug(
                 "Downloading metadata from %s/%s in %s.",
@@ -75,19 +66,8 @@ class MetadataLoader:
 
         for region in self._regions:
             self._logger.debug("Attempting download from %s…", region)
-
             session = Session(region_name=region)
-
-            bucket_name_parameter = BucketParameter(
-                name=self._bucket_name_parameter_name,
-                session=session,
-            )
-
-            self._cached_metadata = self.operate(
-                bucket_name_parameter=bucket_name_parameter,
-                session=session,
-            )
-
+            self._cached_metadata = self.operate(session)
             if self._cached_metadata is not None:
                 return self._cached_metadata
 
@@ -106,7 +86,3 @@ class MetadataLoader:
     @property
     def key(self) -> str:
         return self._key
-
-    @property
-    def regions(self) -> List[str]:
-        return [*self._regions]
