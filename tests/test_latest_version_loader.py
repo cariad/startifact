@@ -25,7 +25,7 @@ def test_interrogate(session: Mock, out: StringIO) -> None:
     )
 
     assert loader.interrogate(session) == VersionInfo(1, 2, 3)
-    assert out.getvalue() == "🧁 eu-west-2 claims SugarWater at 1.2.3.\n"
+    assert out.getvalue() == "🧁 eu-west-10 claims SugarWater at 1.2.3.\n"
 
 
 def test_interrogate__fail(session: Mock, out: StringIO) -> None:
