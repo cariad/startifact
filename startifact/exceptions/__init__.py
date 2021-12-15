@@ -1,7 +1,7 @@
 """
 All the custom exceptions that Startifact can raise.
 """
-
+from startifact.exceptions.cannot_discover_existence import CannotDiscoverExistence
 from startifact.exceptions.cannot_stage_artifact import CannotStageArtifact
 from startifact.exceptions.no_configuration import NoConfiguration
 from startifact.exceptions.no_regions_available import NoRegionsAvailable
@@ -15,6 +15,7 @@ from startifact.exceptions.parameter_store import (
 from startifact.exceptions.project_name import ProjectNameError
 
 __all__ = [
+    "CannotDiscoverExistence",
     "CannotStageArtifact",
     "NoConfiguration",
     "NoRegionsAvailable",
