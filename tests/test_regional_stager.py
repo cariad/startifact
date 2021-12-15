@@ -1,174 +1,46 @@
 from multiprocessing import Queue
 from pathlib import Path
 
-from botocore.exceptions import ClientError
 from mock import ANY, Mock, patch
 from pytest import raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.parameters.bucket import BucketParameter
 from startifact.parameters.latest_version import LatestVersionParameter
 from startifact.regional_process_result import RegionalProcessResult
 from startifact.regional_stager import RegionalStager
 
 
-def test_assert_not_exists(
-    bucket_name_parameter: BucketParameter,
-    latest_version_parameter: LatestVersionParameter,
+def test_assert_not_exists__false(
+    regional_stager: RegionalStager,
     session: Mock,
 ) -> None:
-    exceptions = Mock()
-    exceptions.ClientError = ClientError
 
-    head_object = Mock(
-        side_effect=ClientError(
-            {
-                "Error": {
-                    "Code": "404",
-                },
-            },
-            "head_object",
-        )
-    )
+    with patch("startifact.regional_stager.exists", return_value=False) as e:
+        regional_stager.assert_not_exists()
 
-    s3 = Mock()
-    s3.exceptions = exceptions
-    s3.head_object = head_object
-
-    client = Mock(return_value=s3)
-    session.client = client
-
-    queue: "Queue[RegionalProcessResult]" = Queue(1)
-
-    uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
-        file_hash="file_hash",
-        key="SugarWater@1.2.3",
-        latest_version_parameter=latest_version_parameter,
-        metadata=b"metadata",
-        metadata_hash="metadata_hash",
-        path=Path("LICENSE"),
-        queue=queue,
-        read_only=False,
-        session=session,
-        version=VersionInfo(1, 2, 3),
-    )
-
-    uploader.assert_not_exists()
-
-    client.assert_called_once_with("s3")
-    head_object.assert_called_once_with(
-        Bucket="buck",
-        Key="SugarWater@1.2.3",
-    )
-
-    assert True
+    e.assert_called_once_with("bucket-10", "SugarWater@1.2.3", session)
 
 
-def test_assert_not_exists__client_error(
-    bucket_name_parameter: BucketParameter,
-    latest_version_parameter: LatestVersionParameter,
-    queue: "Queue[RegionalProcessResult]",
+def test_assert_not_exists__true(
+    regional_stager: RegionalStager,
     session: Mock,
 ) -> None:
-    exceptions = Mock()
-    exceptions.ClientError = ClientError
 
-    head_object = Mock(
-        side_effect=ClientError(
-            {
-                "Error": {
-                    "Code": "403",
-                },
-            },
-            "head_object",
-        )
-    )
+    with patch("startifact.regional_stager.exists", return_value=True) as e:
+        with raises(Exception) as ex:
+            regional_stager.assert_not_exists()
 
-    s3 = Mock()
-    s3.exceptions = exceptions
-    s3.head_object = head_object
-
-    client = Mock(return_value=s3)
-    session.client = client
-
-    uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
-        file_hash="file_hash",
-        key="SugarWater@1.2.3",
-        latest_version_parameter=latest_version_parameter,
-        metadata=b"metadata",
-        metadata_hash="metadata_hash",
-        path=Path("LICENSE"),
-        queue=queue,
-        read_only=False,
-        session=session,
-        version=VersionInfo(1, 2, 3),
-    )
-
-    with raises(ClientError):
-        uploader.assert_not_exists()
-
-    client.assert_called_once_with("s3")
-    head_object.assert_called_once_with(
-        Bucket="buck",
-        Key="SugarWater@1.2.3",
-    )
-
-
-def test_assert_not_exists__exists(
-    bucket_name_parameter: BucketParameter,
-    latest_version_parameter: LatestVersionParameter,
-    queue: "Queue[RegionalProcessResult]",
-    session: Mock,
-) -> None:
-    exceptions = Mock()
-    exceptions.ClientError = ClientError
-
-    head_object = Mock()
-
-    s3 = Mock()
-    s3.exceptions = exceptions
-    s3.head_object = head_object
-
-    client = Mock(return_value=s3)
-    session.client = client
-
-    uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
-        file_hash="file_hash",
-        key="SugarWater@1.2.3",
-        latest_version_parameter=latest_version_parameter,
-        metadata=b"metadata",
-        metadata_hash="metadata_hash",
-        path=Path("LICENSE"),
-        queue=queue,
-        read_only=False,
-        session=session,
-        version=VersionInfo(1, 2, 3),
-    )
-
-    with raises(Exception) as ex:
-        uploader.assert_not_exists()
-
-    expect = "SugarWater@1.2.3 already exists in buck in eu-west-2"
-    assert str(ex.value) == expect
-
-    client.assert_called_once_with("s3")
-    head_object.assert_called_once_with(
-        Bucket="buck",
-        Key="SugarWater@1.2.3",
-    )
+    e.assert_called_once_with("bucket-10", "SugarWater@1.2.3", session)
+    assert str(ex.value) == "SugarWater@1.2.3 exists in bucket-10 in eu-west-10"
 
 
 def test_operate(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
 ) -> None:
     uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
+        bucket="buck",
         file_hash="file_hash",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,
@@ -191,7 +63,6 @@ def test_operate(
 
 
 def test_put_metadata(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
@@ -205,7 +76,7 @@ def test_put_metadata(
     session.client = client
 
     uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
+        bucket="buck",
         file_hash="file_hash",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,
@@ -230,7 +101,6 @@ def test_put_metadata(
 
 
 def test_put_metadata__no_metadata(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
@@ -244,7 +114,7 @@ def test_put_metadata__no_metadata(
     session.client = client
 
     uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
+        bucket="buck",
         file_hash="file_hash",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,
@@ -262,7 +132,6 @@ def test_put_metadata__no_metadata(
 
 
 def test_put_metadata__read_only(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
@@ -276,7 +145,7 @@ def test_put_metadata__read_only(
     session.client = client
 
     uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
+        bucket="buck",
         file_hash="file_hash",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,
@@ -296,7 +165,6 @@ def test_put_metadata__read_only(
 
 
 def test_put_object(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
@@ -310,7 +178,7 @@ def test_put_object(
     session.client = client
 
     uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
+        bucket="buck",
         file_hash="file_hash",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,
@@ -335,7 +203,6 @@ def test_put_object(
 
 
 def test_put_object__read_only(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
@@ -349,7 +216,7 @@ def test_put_object__read_only(
     session.client = client
 
     uploader = RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
+        bucket="buck",
         file_hash="file_hash",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,

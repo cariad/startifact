@@ -7,23 +7,20 @@ from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.artifacts import make_metadata_key
-from startifact.parameters import BucketParameter, LatestVersionParameter
+from startifact.parameters import LatestVersionParameter
 from startifact.regional_process import RegionalProcess
 from startifact.regional_process_result import RegionalProcessResult
+from startifact.s3 import exists
 
 
 class RegionalStager(RegionalProcess):
     """
-
-    :param bucket_name_parameter:
-        Systems Manager parameter that holds the name of the artifacts bucket.
-
-    :type bucket_name_parameter: :class:`startifact.parameters.BucketParameter`
+    :param bucket: Name of the artifacts bucket in this region.
     """
 
     def __init__(
         self,
-        bucket_name_parameter: BucketParameter,
+        bucket: str,
         file_hash: str,
         key: str,
         latest_version_parameter: LatestVersionParameter,
@@ -42,7 +39,7 @@ class RegionalStager(RegionalProcess):
             session=session,
         )
 
-        self._bucket_name_parameter = bucket_name_parameter
+        self._bucket = bucket
         self._file_hash = file_hash
         self._key = key
         self._latest_version_parameter = latest_version_parameter
@@ -57,40 +54,21 @@ class RegionalStager(RegionalProcess):
         Checks if the artifact has already been uploaded to this region.
         """
 
-        logger = getLogger("startifact")
-        logger.debug(
-            "Checking if %s/%s exists in %s...",
-            self._bucket_name_parameter.value,
-            self._key,
-            self._session.region_name,
-        )
-
-        s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
-
-        try:
-            s3.head_object(
-                Bucket=self._bucket_name_parameter.value,
-                Key=self._key,
-            )
-
-            raise Exception(
-                f"{self._key} already exists in "
-                + f"{self._bucket_name_parameter.value} in "
-                + self._session.region_name
-            )
-
-        except s3.exceptions.ClientError as ex:
-            if ex.response["Error"]["Code"] == "404":
-                return
-            raise ex
+        if exists(self._bucket, self._key, self._session):
+            region = self._session.region_name
+            raise Exception(f"{self._key} exists in {self._bucket} in {region}")
 
     @property
-    def bucket_name_parameter(self) -> BucketParameter:
-        return self._bucket_name_parameter
+    def bucket(self) -> str:
+        return self._bucket
 
     @property
     def file_hash(self) -> str:
         return self._file_hash
+
+    @property
+    def key(self) -> str:
+        return self._key
 
     def operate(self) -> None:
         self.assert_not_exists()
@@ -113,7 +91,7 @@ class RegionalStager(RegionalProcess):
 
         s3.put_object(
             Body=self._metadata,
-            Bucket=self._bucket_name_parameter.value,
+            Bucket=self._bucket,
             ContentMD5=self._metadata_hash,
             Key=self._metadata_key,
         )
@@ -121,7 +99,7 @@ class RegionalStager(RegionalProcess):
     def put_object(self) -> None:
         logger = getLogger("startifact")
         what = (
-            f"{self._path} to {self._bucket_name_parameter.value}/{self._key} "
+            f"{self._path} to s3:/{self._bucket}/{self._key} "
             + f"in {self._session.region_name}"
         )
 
@@ -135,7 +113,7 @@ class RegionalStager(RegionalProcess):
 
             self._session.client("s3").put_object(
                 Body=f,
-                Bucket=self._bucket_name_parameter.value,
+                Bucket=self._bucket,
                 ContentMD5=self._file_hash,
                 Key=self._key,
             )
