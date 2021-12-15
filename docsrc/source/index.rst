@@ -79,5 +79,5 @@ Contents
    aws
    organization
    cli
-   python
-   example
+   python/index
+   use-cases

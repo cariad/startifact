@@ -1,10 +1,10 @@
-Examples
-========
+Use cases
+=========
 
 Staging then deploying a lambda function
 ----------------------------------------
 
-This example assumes you'll be deploying your code via a CloudFormation template like this:
+This example assumes you deploy your code via a CloudFormation template like this:
 
 .. code-block:: yaml
 
@@ -45,8 +45,8 @@ When you're ready to stage your code:
 
 .. code-block:: console
 
-   hash="$(openssl dgst -sha256 -binary dist.zip | openssl enc -base64)"
-   startifact MyLambdaProject 1.0.1 --stage dist.zip --metadata "hash=${hash:?}"
+   $ hash="$(openssl dgst -sha256 -binary dist.zip | openssl enc -base64)"
+   $ startifact MyLambdaProject 1.0.1 --stage dist.zip --metadata "hash=${hash:?}"
 
 Now, to populate your CloudFormation template's parameters:
 
