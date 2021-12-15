@@ -6,35 +6,42 @@ from mock import patch
 from pytest import raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.artifact import Artifact
-from startifact.session import Session
+from startifact import Artifact, BucketNames, Session
+from startifact.artifact_downloader import ArtifactDownloader
 from startifact.tasks.download import DownloadTask, DownloadTaskArguments
 
 
-def test_invoke() -> None:
-    out = StringIO()
+def test_invoke(bucket_names: BucketNames, out: StringIO) -> None:
+    artifact_downloader = ArtifactDownloader(
+        bucket_names=bucket_names,
+        key="",
+        out=out,
+        project="",
+        regions=[],
+        version=VersionInfo(1, 2, 3),
+    )
+
+    session = Session()
 
     artifact = Artifact(
-        bucket_name_parameter_name="bucket_name_parameter",
+        artifact_downloader=artifact_downloader,
+        bucket_names=bucket_names,
         out=out,
         project="SugarWater",
         regions=["us-west-9"],
     )
 
-    with patch.object(artifact, "download") as download:
+    args = DownloadTaskArguments(
+        path=Path("download.zip"),
+        project="SugarWater",
+        session=session,
+        version=VersionInfo(1, 2, 3),
+    )
 
-        session = Session()
+    task = DownloadTask(args, out)
 
-        args = DownloadTaskArguments(
-            path=Path("download.zip"),
-            project="SugarWater",
-            session=session,
-            version=VersionInfo(1, 2, 3),
-        )
-
-        task = DownloadTask(args, out)
-
-        with patch.object(session, "get", return_value=artifact) as get:
+    with patch.object(session, "get", return_value=artifact) as get:
+        with patch.object(artifact_downloader, "download") as download:
             exit_code = task.invoke()
 
     get.assert_called_once_with(
