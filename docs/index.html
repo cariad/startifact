@@ -18,7 +18,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Amazon Web Services" href="aws.html" /> 
+    <link rel="next" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,11 +38,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resilience.html">Resilience</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python/index.html">Python usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use-cases.html">Use cases</a></li>
 </ul>
 
         </div>
@@ -72,21 +74,37 @@
   <section id="startifact">
 <h1>Startifact<a class="headerlink" href="#startifact" title="Permalink to this headline"></a></h1>
 <p><strong>Startifact</strong> is a command line application and Python package for staging and retrieving versioned artifacts in Amazon Web Services.</p>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Configuration is held in Amazon Web Services Systems Manager. Startifact operates consistently across all your CI/CD jobs by default.</p></li>
+<li><p>Optional metadata can be attached to artifacts at the point of staging then interrogated later.</p></li>
+<li><p>Configuration, artifacts and metadata are stored across as many regions as you care to provide. Startifact is <a class="reference internal" href="resilience.html#resilience"><span class="std std-ref">resilient to outages</span></a>.</p></li>
+</ul>
+</section>
+<section id="terms">
+<h2>Terms<a class="headerlink" href="#terms" title="Permalink to this headline"></a></h2>
+<p>Say you have a CI/CD build job for a software component named “SugarWater”. This build job produces:</p>
+<ul class="simple">
+<li><p>A “dist.tar.gz” file</p></li>
+<li><p>A hash of “dist.tar.gz”</p></li>
+<li><p>A semantic version number</p></li>
+</ul>
+<p>In Startifact:</p>
+<ul class="simple">
+<li><p>“SugarWater” is a <strong>project</strong>.</p></li>
+<li><p>The “dist.tar.gz” file and the semantic version together are an <strong>artifact</strong>.</p></li>
+<li><p>The hash is recorded as <strong>metadata</strong></p></li>
+</ul>
+</section>
 <section id="getting-started">
 <h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h2>
 <ol class="arabic simple">
 <li><p>Prepare your <a class="reference internal" href="aws.html#amazon-web-services"><span class="std std-ref">Amazon Web Services</span></a> account.</p></li>
-<li><p><a class="reference internal" href="#installation"><span class="std std-ref">Install</span></a> Startifact.</p></li>
+<li><p><a class="reference internal" href="installation.html#installation"><span class="std std-ref">Install</span></a> Startifact.</p></li>
 <li><p>Deploy your <a class="reference internal" href="organization.html#organisation-configuration"><span class="std std-ref">organisation configuration</span></a>.</p></li>
+<li><p>Start <a class="reference internal" href="cli.html#cli-usage"><span class="std std-ref">staging your artifacts</span></a>.</p></li>
 </ol>
-</section>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
-<p>Startifact requires Python 3.8 or later.</p>
-<p>Install Startifact via pip:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install startifact</span>
-</pre></div>
-</div>
 </section>
 <section id="licence">
 <h2>Licence<a class="headerlink" href="#licence" title="Permalink to this headline"></a></h2>
@@ -116,11 +134,53 @@
 <div class="toctree-wrapper compound">
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Startifact</a></li>
-<li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
-<li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing">Installing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#your-amazon-web-services-account">Your Amazon Web Services account</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="resilience.html">Resilience</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resilience.html#resilient-configuration">Resilient configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resilience.html#resilient-uploads">Resilient uploads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resilience.html#resilient-version-interrogations">Resilient version interrogations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resilience.html#resilient-downloads">Resilient downloads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resilience.html#resilient-metadata">Resilient metadata</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="aws.html#how-startifact-uses-your-account">How Startifact uses your account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aws.html#your-region-preparation">Your region preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aws.html#what-startifact-creates-in-each-region">What Startifact creates in each region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aws.html#regional-iam-policies">Regional IAM policies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aws.html#cloudformation-template">CloudFormation template</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Organisation configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#choosing-where-to-host-the-configuration">Choosing where to host the configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#performing-or-updating-the-organisation-setup">Performing or updating the organisation setup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#staging-an-artifact-via-the-cli">Staging an artifact via the CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#getting-artifact-information-via-the-cli">Getting artifact information via the CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#downloading-an-artifact-via-the-cli">Downloading an artifact via the CLI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python/index.html">Python usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python/index.html#sessions">Sessions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python/index.html#staging-an-artifact-via-python">Staging an artifact via Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python/index.html#getting-the-latest-artifact-version-via-python">Getting the latest artifact version via Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python/index.html#downloading-an-artifact-via-python">Downloading an artifact via Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python/index.html#reading-metadata">Reading metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python/index.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="use-cases.html">Use cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="use-cases.html#staging-then-deploying-a-lambda-function">Staging then deploying a lambda function</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
@@ -130,7 +190,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="aws.html" class="btn btn-neutral float-right" title="Amazon Web Services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

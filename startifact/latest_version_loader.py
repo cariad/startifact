@@ -72,22 +72,6 @@ class LatestVersionLoader:
             return None
 
     @property
-    def out(self) -> IO[str]:
-        return self._out
-
-    @property
-    def parameter_name_prefix(self) -> Optional[str]:
-        return self._parameter_name_prefix
-
-    @property
-    def project(self) -> str:
-        return self._project
-
-    @property
-    def regions(self) -> List[str]:
-        return self._regions
-
-    @property
     def successes_required(self) -> int:
         return ceil(self._original_region_len / 2)
 

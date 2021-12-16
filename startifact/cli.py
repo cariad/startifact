@@ -31,7 +31,7 @@ class StartifactCLI(ArgumentParserCli):
         )
 
         parser.add_argument(
-            "--get",
+            "--info",
             help="get artifact information",
             action="store_true",
         )
@@ -82,7 +82,7 @@ class StartifactCLI(ArgumentParserCli):
         return [
             startifact.tasks.DownloadTask,
             startifact.tasks.DryRunStageTask,
-            startifact.tasks.GetTask,
+            startifact.tasks.InfoTask,
             startifact.tasks.StageTask,
             startifact.tasks.SetupTask,
         ]

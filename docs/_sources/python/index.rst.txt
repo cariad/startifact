@@ -1,23 +1,42 @@
 Python usage
 ============
 
+Sessions
+--------
+
+The :class:`startifact.Session` class is the entry point to using Startifact in a Python script.
+
+Each session maintains its own cache and should be reused as much as possible.
+
+Each session can also be limited to a subset or a single region if required.
+
 Staging an artifact via Python
 ------------------------------
 
 .. code-block:: python
 
+    from pathlib import Path
+    from semver import VersionInfo
     from startifact import Session
 
     session = Session()
-    session.stage("SugarWater", "1.0.9000", path="dist.tar.gz")
+
+    session.stage(
+        "SugarWater",
+        VersionInfo(1, 0, 9000),
+        path=Path("dist.tar.gz"),
+    )
 
 Metadata can be attached in the same call:
 
 .. code-block:: python
 
+    from pathlib import Path
+    from semver import VersionInfo
     from startifact import Session
 
     session = Session()
+
     session.stage(
         "SugarWater",
         "1.0.9000",
@@ -25,7 +44,7 @@ Metadata can be attached in the same call:
             "lang": "dotnet",
             "hash": "9876=",
         },
-        path="dist.tar.gz",
+        path=Path("dist.tar.gz"),
     )
 
 Getting the latest artifact version via Python
@@ -36,7 +55,9 @@ Getting the latest artifact version via Python
     from startifact import Session
 
     session = Session()
+
     artifact = session.get("SugarWater")
+
     print(artifact.version)
 
 Downloading an artifact via Python
@@ -47,22 +68,33 @@ Downloading an artifact via Python
     from startifact import Session
 
     session = Session()
+
     artifact = session.get("SugarWater", "1.0.9000")
-    artifact.download("download.tar.gz")
 
-Reading and appending metadata
-------------------------------
+    artifact.downloader.download("download.tar.gz")
 
-Metadata can be added to any artifact, but values cannot be removed or modified. History can't be changed.
+Reading metadata
+----------------
 
 .. code-block:: python
 
-   from startifact import Session
+    from startifact import Session
 
-   session = Session()
-   artifact = session.get("SugarWater", "1.0.9000")
+    session = Session()
 
-   language = artifact["lang"]
+    artifact = session.get("SugarWater", "1.0.9000")
 
-   artifact["deployed"] = "true"
-   artifact.save_metadata()
+    language = artifact["lang"]
+
+    print(language)
+
+
+Classes
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   session
+   artifact
+   configuration_loader

@@ -32,7 +32,7 @@ class DownloadTask(Task[DownloadTaskArguments]):
         session = self.args.session or Session()
         version = None if isinstance(self.args.version, str) else self.args.version
         artifact = session.get(project=self.args.project, version=version)
-        artifact.download(self.args.path)
+        artifact.downloader.download(self.args.path)
         return 0
 
     @classmethod

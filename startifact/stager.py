@@ -9,7 +9,7 @@ from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.parameters.bucket import BucketParameter
+from startifact.bucket_names import BucketNames
 from startifact.parameters.latest_version import LatestVersionParameter
 from startifact.regional_process_result import RegionalProcessResult
 from startifact.regional_stager import RegionalStager
@@ -22,7 +22,7 @@ class Stager:
 
     def __init__(
         self,
-        bucket_name_parameter_name: str,
+        bucket_names: BucketNames,
         file_hash: str,
         key: str,
         out: IO[str],
@@ -36,8 +36,9 @@ class Stager:
         parameter_name_prefix: Optional[str] = None,
         queue: Optional["Queue[RegionalProcessResult]"] = None,
     ) -> None:
+
         self._all_ok = True
-        self._bucket_name_parameter_name = bucket_name_parameter_name
+        self._bucket_names = bucket_names
         self._file_hash = file_hash
         self._key = key
         self._logger = getLogger("startifact")
@@ -56,10 +57,6 @@ class Stager:
         self._version = version
         self._regions_in_progress: List[str] = []
 
-    @property
-    def bucket_name_parameter_name(self) -> str:
-        return self._bucket_name_parameter_name
-
     def enqueue(self, session: Session) -> None:
         self._regions_in_progress.append(session.region_name)
         regional = self.make_regional_stager(session)
@@ -67,11 +64,6 @@ class Stager:
         regional.start()
 
     def make_regional_stager(self, session: Session) -> RegionalStager:
-        bucket_name_parameter = BucketParameter(
-            name=self._bucket_name_parameter_name,
-            session=session,
-        )
-
         latest_version_parameter = LatestVersionParameter(
             prefix=self._parameter_name_prefix,
             project=self._project,
@@ -80,12 +72,12 @@ class Stager:
         )
 
         return RegionalStager(
-            bucket_name_parameter=bucket_name_parameter,
+            bucket=self._bucket_names.get(session),
             file_hash=self._file_hash,
             key=self._key,
             latest_version_parameter=latest_version_parameter,
-            metadata=self._metadata,
-            metadata_hash=self._metadata_hash,
+            metadata=self.metadata,
+            metadata_hash=self.metadata_hash,
             path=self._path,
             queue=self._queue,
             read_only=self._read_only,
@@ -146,7 +138,7 @@ class Stager:
             if self._queue.full() or not self._regions:
                 continue
 
-            region = self._regions.pop()
+            region = self._regions.pop(0)
             session = Session(region_name=region)
             self.enqueue(session)
 

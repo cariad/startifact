@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artifact class &mdash; Startifact  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ConfigurationLoader class" href="configuration_loader.html" />
+    <link rel="prev" title="Session class" href="session.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Startifact
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../resilience.html">Resilience</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aws.html">Amazon Web Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../organization.html">Organisation configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Python usage</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#sessions">Sessions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#staging-an-artifact-via-python">Staging an artifact via Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#getting-the-latest-artifact-version-via-python">Getting the latest artifact version via Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#downloading-an-artifact-via-python">Downloading an artifact via Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#reading-metadata">Reading metadata</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#classes">Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="session.html"><code class="docutils literal notranslate"><span class="pre">Session</span></code> class</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">Artifact</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_loader.html"><code class="docutils literal notranslate"><span class="pre">ConfigurationLoader</span></code> class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../use-cases.html">Use cases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Startifact</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Python usage</a> &raquo;</li>
+      <li><code class="docutils literal notranslate"><span class="pre">Artifact</span></code> class</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/python/artifact.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="artifact-class">
+<h1><code class="docutils literal notranslate"><span class="pre">Artifact</span></code> class<a class="headerlink" href="#artifact-class" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="startifact.Artifact">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">startifact.</span></span><span class="sig-name descname"><span class="pre">Artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bucket_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">startifact.bucket_names.BucketNames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IO</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artifact_downloader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">startifact.artifact_downloader.ArtifactDownloader</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bucket_key_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latest_version_loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">startifact.latest_version_loader.LatestVersionLoader</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">startifact.metadata_loader.MetadataLoader</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_name_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">semver.VersionInfo</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startifact.Artifact" title="Permalink to this definition"></a></dt>
+<dd><p>A staged artifact.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Don’t create instances of this class directly! To get a staged artifact,
+see <a class="reference internal" href="session.html#startifact.Session.get" title="startifact.Session.get"><code class="xref py py-func docutils literal notranslate"><span class="pre">startifact.Session.get()</span></code></a>.</p>
+</div>
+<p>Note that metadata can be read via keys. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+<span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SugarWater&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;hash&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bucket_names</strong> – Bucket names.</p></li>
+<li><p><strong>out</strong> – Output writer.</p></li>
+<li><p><strong>project</strong> – Project.</p></li>
+<li><p><strong>regions</strong> – Amazon Web Services regions to operate in.</p></li>
+<li><p><strong>artifact_downloader</strong> – Optional <code class="xref py py-class docutils literal notranslate"><span class="pre">ArtifactDownloader</span></code>. Defaults to creating a new
+downloader.</p></li>
+<li><p><strong>bucket_key_prefix</strong> – Optional bucket key prefix.</p></li>
+<li><p><strong>latest_version_loader</strong> – Optional <code class="xref py py-class docutils literal notranslate"><span class="pre">LatestVersionLoader</span></code>. Defaults to creating a new
+loader.</p></li>
+<li><p><strong>metadata_loader</strong> – Optional <code class="xref py py-class docutils literal notranslate"><span class="pre">MetadataLoader</span></code>. Defaults to creating a new loader.</p></li>
+<li><p><strong>parameter_name_prefix</strong> – Optional Systems Manager parameter name prefix.</p></li>
+<li><p><strong>version</strong> – Optional version. Defaults to discovering the latest version.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="startifact.Artifact.downloader">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">downloader</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">startifact.artifact_downloader.ArtifactDownloader</span></em><a class="headerlink" href="#startifact.Artifact.downloader" title="Permalink to this definition"></a></dt>
+<dd><p>Creates and returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">ArtifactDownloader</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="startifact.Artifact.key">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#startifact.Artifact.key" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the S3 key of the artifact object.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="startifact.Artifact.metadata_key">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metadata_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#startifact.Artifact.metadata_key" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the S3 key of the artifact metadata.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="session.html" class="btn btn-neutral float-left" title="Session class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration_loader.html" class="btn btn-neutral float-right" title="ConfigurationLoader class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Cariad Eccleston.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,121 +1,136 @@
 from logging import getLogger
 from pathlib import Path
-from typing import IO, List, Optional
+from typing import IO, List, Optional, Tuple, Union
 
 from ansiscape import yellow
 from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.exceptions import NoRegionsAvailable
-from startifact.parameters import BucketParameter
+from startifact.bucket_names import BucketNames
+from startifact.exceptions import CannotDiscoverExistence, NoRegionsAvailable
+from startifact.s3 import exists
 
 
 class ArtifactDownloader:
     """
-    Downloads an artifact from any available region.
+    Discovers artifacts across regions and allows them to be downloaded.
     """
 
     def __init__(
         self,
-        bucket_name_parameter_name: str,
+        bucket_names: BucketNames,
         key: str,
         out: IO[str],
-        path: Path,
         project: str,
         regions: List[str],
         version: VersionInfo,
     ) -> None:
 
-        color = should_emit_codes()
-
-        self._bucket_name_parameter_name = bucket_name_parameter_name
+        self._bucket_names = bucket_names
+        self._cached_bucket: Optional[str] = None
+        self._cached_region: Optional[str] = None
         self._key = key
         self._logger = getLogger("startifact")
         self._out = out
-        self._path = path
-        self._path_fmt = yellow(path.as_posix()) if color else path.as_posix()
         self._project = project
-        self._project_fmt = yellow(project) if color else project
         self._regions = regions
         self._version = version
-        self._version_fmt = yellow(str(version)) if color else version
 
     @property
-    def bucket_name_parameter_name(self) -> str:
-        return self._bucket_name_parameter_name
+    def bucket(self) -> str:
+        """
+        Gets the name of a bucket from which the artifact can be downloaded.
+        """
 
-    def download(self) -> None:
+        return self.discover()[0]
+
+    def discover(self) -> Tuple[str, str]:
+        """
+        Discovers any available region from which the artifact can be
+        downloaded.
+
+        :returns: Tuple describing the bucket and region.
+        """
+
+        if self._cached_bucket and self._cached_region:
+            return self._cached_bucket, self._cached_region
+
         for region in self._regions:
-            self._logger.debug("Attempting downloadfrom %s…", region)
-            if self.operate(Session(region_name=region)):
-                return
-        else:
-            raise NoRegionsAvailable(self._regions)
+            session = Session(region_name=region)
+            bucket = self._bucket_names.get(session)
+
+            try:
+                if exists(bucket, self._key, session):
+                    self._cached_bucket = bucket
+                    self._cached_region = region
+                    return self._cached_bucket, self._cached_region
+
+            except CannotDiscoverExistence:
+                pass
+
+        raise NoRegionsAvailable(self._regions)
+
+    def download(
+        self, path: Union[Path, str], session: Optional[Session] = None
+    ) -> None:
+        """
+        Downloads the artifact.
+
+        :param path: Path and filename to download to.
+        """
+
+        if isinstance(path, Path):
+            path = path.as_posix()
+
+        try:
+            self._logger.debug(
+                "Downloading %s/%s in %s to %s",
+                self.bucket,
+                self.key,
+                self.region,
+                path,
+            )
+
+            session = session or Session(region_name=self.region)
+
+            s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
+            s3.download_file(Bucket=self.bucket, Filename=path, Key=self.key)
+
+            region = yellow(self.region) if should_emit_codes() else self.region
+            path_fmt = yellow(path) if should_emit_codes() else path
+            project = yellow(self.project) if should_emit_codes() else self.project
+            version = yellow(str(self.version)) if should_emit_codes() else self.version
+
+            msg = f"🧁 Downloaded {project} {version} from {region} to {path_fmt}.\n"
+            self._out.write(msg)
+
+        except Exception:
+            self._logger.exception(
+                "Failed to download s:/%s/%s from %s to %s.",
+                self.bucket,
+                self.key,
+                self.region,
+                path,
+            )
+
+            raise
+
+    @property
+    def region(self) -> str:
+        """
+        Gets an Amazon Web Services region from which the artifact can be downloaded.
+        """
+
+        return self.discover()[1]
 
     @property
     def key(self) -> str:
         return self._key
 
-    def operate(
-        self,
-        session: Session,
-        bucket_param: Optional[BucketParameter] = None,
-    ) -> bool:
-        region = session.region_name
-
-        try:
-            bucket_param = bucket_param or BucketParameter(
-                name=self._bucket_name_parameter_name,
-                session=session,
-            )
-
-            bucket = bucket_param.value
-
-            self._logger.debug(
-                "Downloading %s/%s in %s to %s",
-                bucket,
-                self._key,
-                region,
-                self._path,
-            )
-
-            s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
-            s3.download_file(
-                Bucket=bucket,
-                Filename=self._path.as_posix(),
-                Key=self._key,
-            )
-
-            region_fmt = yellow(region) if should_emit_codes() else region
-
-            self._out.write(
-                f"🧁 Downloaded {self._project_fmt} v{self._version_fmt} from "
-                + f"{region_fmt} to {self._path_fmt}.\n"
-            )
-
-            return True
-
-        except Exception as ex:
-            msg = f"Failed to read download from {region}: {ex}"
-            self._logger.warning(msg)
-            return False
-
-    @property
-    def out(self) -> IO[str]:
-        return self._out
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
     @property
     def project(self) -> str:
         return self._project
-
-    @property
-    def regions(self) -> List[str]:
-        return [*self._regions]
 
     @property
     def version(self) -> VersionInfo:

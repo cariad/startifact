@@ -1,72 +1,107 @@
 from io import StringIO
 from pathlib import Path
+from typing import Union
 
-from mock import Mock, patch
-from pytest import raises
+from mock import ANY, call, patch
+from mock.mock import Mock
+from pytest import fixture, mark, raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
-from startifact.artifact_downloader import ArtifactDownloader
-from startifact.exceptions import NoRegionsAvailable
-from startifact.parameters import BucketParameter
+from startifact import ArtifactDownloader, BucketNames
+from startifact.exceptions import CannotDiscoverExistence, NoRegionsAvailable
 
 
-def test_download__first_region(out: StringIO) -> None:
-    downloader = ArtifactDownloader(
-        bucket_name_parameter_name="bucket_name_param",
+@fixture
+def artifact_downloader(bucket_names: BucketNames, out: StringIO) -> ArtifactDownloader:
+    return ArtifactDownloader(
+        bucket_names=bucket_names,
         key="SugarWater@1.0.0",
         out=out,
-        path=Path("download.zip"),
         project="SugarWater",
-        regions=["us-east-11", "us-east-12"],
+        regions=["eu-west-10", "eu-west-11"],
         version=VersionInfo(1, 0),
     )
 
-    with patch.object(downloader, "operate", return_value=True) as operate:
-        downloader.download()
 
-    assert operate.call_count == 1
+def test_discover__cache(artifact_downloader: ArtifactDownloader) -> None:
+    with patch("startifact.artifact_downloader.exists", return_value=True) as exists:
+        bucket1, region1 = artifact_downloader.discover()
+        bucket2, region2 = artifact_downloader.discover()
+
+    assert exists.call_count == 1
+    assert bucket1 is bucket2
+    assert region1 is region2
 
 
-def test_download__fail_then_ok(out: StringIO) -> None:
-    downloader = ArtifactDownloader(
-        bucket_name_parameter_name="bucket_name_param",
-        key="SugarWater@1.0.0",
-        out=out,
-        path=Path("download.zip"),
-        project="SugarWater",
-        regions=["us-east-11", "us-east-12"],
-        version=VersionInfo(1, 0),
+def test_discover__fail_then_ok(artifact_downloader: ArtifactDownloader) -> None:
+    effect = [False, True]
+
+    with patch("startifact.artifact_downloader.exists", side_effect=effect) as exists:
+        bucket, region = artifact_downloader.discover()
+
+    assert exists.call_count == 2
+    exists.assert_has_calls(
+        [
+            call("bucket-10", "SugarWater@1.0.0", ANY),
+            call("bucket-11", "SugarWater@1.0.0", ANY),
+        ]
     )
 
-    with patch.object(downloader, "operate", side_effect=[False, True]) as operate:
-        downloader.download()
-
-    assert operate.call_count == 2
+    assert bucket == "bucket-11"
+    assert region == "eu-west-11"
 
 
-def test_download__none(out: StringIO) -> None:
-    downloader = ArtifactDownloader(
-        bucket_name_parameter_name="bucket_name_param",
-        key="SugarWater@1.0.0",
-        out=out,
-        path=Path("download.zip"),
-        project="SugarWater",
-        regions=["us-east-11", "us-east-12"],
-        version=VersionInfo(1, 0),
-    )
+def test_download__none(artifact_downloader: ArtifactDownloader) -> None:
+    effect = [False, False]
 
-    with patch.object(downloader, "operate", side_effect=[False, False]) as operate:
+    with patch("startifact.artifact_downloader.exists", side_effect=effect) as exists:
         with raises(NoRegionsAvailable) as ex:
-            downloader.download()
+            artifact_downloader.discover()
 
-    assert operate.call_count == 2
+    assert exists.call_count == 2
+
     expect = (
-        "None of the configured regions are available: ['us-east-11', 'us-east-12']"
+        "None of the configured regions are available: "
+        + "['eu-west-10', 'eu-west-11']"
     )
+
     assert str(ex.value) == expect
 
 
-def test_operate(out: StringIO, session: Mock) -> None:
+def test_download__regions_down(artifact_downloader: ArtifactDownloader) -> None:
+    effect = CannotDiscoverExistence(bucket="", key="", region="", msg="")
+
+    with patch("startifact.artifact_downloader.exists", side_effect=effect) as exists:
+        with raises(NoRegionsAvailable) as ex:
+            artifact_downloader.discover()
+
+    assert exists.call_count == 2
+
+    expect = (
+        "None of the configured regions are available: "
+        + "['eu-west-10', 'eu-west-11']"
+    )
+
+    assert str(ex.value) == expect
+
+
+def test_bucket(artifact_downloader: ArtifactDownloader) -> None:
+    with patch("startifact.artifact_downloader.exists", return_value=True):
+        assert artifact_downloader.bucket == "bucket-10"
+
+
+def test_region(artifact_downloader: ArtifactDownloader) -> None:
+    with patch("startifact.artifact_downloader.exists", return_value=True):
+        assert artifact_downloader.region == "eu-west-10"
+
+
+@mark.parametrize("path", [Path("download.zip"), "download.zip"])
+def test_download(
+    artifact_downloader: ArtifactDownloader,
+    path: Union[Path, str],
+    session: Mock,
+) -> None:
+
     download_file = Mock()
 
     s3 = Mock()
@@ -75,33 +110,22 @@ def test_operate(out: StringIO, session: Mock) -> None:
     client = Mock(return_value=s3)
     session.client = client
 
-    downloader = ArtifactDownloader(
-        bucket_name_parameter_name="bucket_name_param",
-        key="SugarWater@1.0.0",
-        out=out,
-        path=Path("download.zip"),
-        project="SugarWater",
-        regions=["us-east-11"],
-        version=VersionInfo(1, 0),
-    )
-
-    bucket_param = BucketParameter(name="", session=session, value="buck")
-
-    ok = downloader.operate(session, bucket_param=bucket_param)
+    with patch("startifact.artifact_downloader.exists", return_value=True):
+        artifact_downloader.download(path, session=session)
 
     client.assert_called_once_with("s3")
     download_file.assert_called_once_with(
-        Bucket="buck",
+        Bucket="bucket-10",
         Filename="download.zip",
         Key="SugarWater@1.0.0",
     )
 
-    expect = "🧁 Downloaded SugarWater v1.0.0 from eu-west-2 to download.zip.\n"
-    assert out.getvalue() == expect
-    assert ok
 
+def test_download__fail(
+    artifact_downloader: ArtifactDownloader,
+    session: Mock,
+) -> None:
 
-def test_operate__fail(out: StringIO, session: Mock) -> None:
     download_file = Mock(side_effect=Exception("fire"))
 
     s3 = Mock()
@@ -110,26 +134,13 @@ def test_operate__fail(out: StringIO, session: Mock) -> None:
     client = Mock(return_value=s3)
     session.client = client
 
-    downloader = ArtifactDownloader(
-        bucket_name_parameter_name="bucket_name_param",
-        key="SugarWater@1.0.0",
-        out=out,
-        path=Path("download.zip"),
-        project="SugarWater",
-        regions=["us-east-11"],
-        version=VersionInfo(1, 0),
-    )
-
-    bucket_param = BucketParameter(name="", session=session, value="buck")
-
-    ok = downloader.operate(session, bucket_param=bucket_param)
+    with patch("startifact.artifact_downloader.exists", return_value=True):
+        with raises(Exception):
+            artifact_downloader.download("download.zip", session=session)
 
     client.assert_called_once_with("s3")
     download_file.assert_called_once_with(
-        Bucket="buck",
+        Bucket="bucket-10",
         Filename="download.zip",
         Key="SugarWater@1.0.0",
     )
-
-    assert out.getvalue() == ""
-    assert not ok

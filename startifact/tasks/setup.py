@@ -26,6 +26,7 @@ class SetupTaskArguments:
     Non-interactive directions. Intended only for testing.
     """
 
+    configuration_loader: Optional[ConfigurationLoader] = None
     log_level: str = "CRITICAL"
     regions: Optional[List[str]] = None
 
@@ -59,12 +60,17 @@ class SetupTask(Task[SetupTaskArguments]):
         )
 
     def invoke(self) -> int:
-        getLogger("startifact").setLevel(self.args.log_level)
+        logger = getLogger("startifact")
+        logger.setLevel(self.args.log_level)
 
-        loader = ConfigurationLoader(
+        logger.debug("Starting setup invocation.")
+
+        loader = self.args.configuration_loader or ConfigurationLoader(
             out=self.out,
             regions=self.args.regions or get_regions(),
         )
+
+        logger.debug("Configuration loader = %s", loader)
 
         try:
             state = self.make_state(

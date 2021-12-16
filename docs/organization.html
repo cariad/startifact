@@ -39,6 +39,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Startifact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resilience.html">Resilience</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aws.html">Amazon Web Services</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Organisation configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
@@ -47,8 +49,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python.html">Python usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python/index.html">Python usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use-cases.html">Use cases</a></li>
 </ul>
 
         </div>
@@ -79,31 +81,28 @@
 <h1>Organisation configuration<a class="headerlink" href="#organisation-configuration" title="Permalink to this headline"></a></h1>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
-<p>Startifact is designed to be run within organisations with multiple CI/CD pipelines that stage, download or otherwise <em>use</em> versioned artifacts.</p>
+<p>Startifact is designed to be run within organisations with multiple CI/CD pipelines.</p>
 <p>Rather than configure Startifact within each pipeline, Startifact reads from a shared organisation-level configuration in Systems Manager.</p>
 <p>As long as your CI/CD pipelines all authenticate to the same Amazon Web Services account, they will read the same configuration.</p>
 </section>
 <section id="choosing-where-to-host-the-configuration">
 <h2>Choosing where to host the configuration<a class="headerlink" href="#choosing-where-to-host-the-configuration" title="Permalink to this headline"></a></h2>
-<p>By default, Startifact reads and writes configuration to a Systems Manager parameter named <code class="docutils literal notranslate"><span class="pre">/Startifact</span></code> in your default account and region.</p>
-<p>To change that parameter name, set an environment variable named <code class="docutils literal notranslate"><span class="pre">STARTIFACT_PARAMETER</span></code>.</p>
+<p>By default, Startifact reads and writes configuration to a Systems Manager parameter named <code class="docutils literal notranslate"><span class="pre">/startifact</span></code>.</p>
+<p>To change that parameter name, set an environment variable named <code class="docutils literal notranslate"><span class="pre">STARTIFACT_PARAMETER</span></code>. Take care, however, that you set that variable on <em>every</em> machine that Startifact runs on.</p>
 </section>
 <section id="performing-or-updating-the-organisation-setup">
 <h2>Performing or updating the organisation setup<a class="headerlink" href="#performing-or-updating-the-organisation-setup" title="Permalink to this headline"></a></h2>
-<p>Volunteer a <a class="reference internal" href="aws.html#iam-policies"><span class="std std-ref">privileged</span></a> human being to run:</p>
+<p>Volunteer a <a class="reference internal" href="aws.html#regional-iam-policies"><span class="std std-ref">privileged</span></a> human being to run:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">startifact --setup</span>
 </pre></div>
 </div>
 <p>They will be asked to:</p>
 <ol class="arabic simple">
-<li><p>Confirm the configuration parameter name, region and account.</p></li>
-<li><p>Enter the name of the Systems Manager parameter holding the bucket’s name.</p></li>
-<li><p>Enter the name of the region that hosts the Systems Manager parameter that holds the bucket’s name.</p></li>
-<li><p>Enter the name of the region that hosts the bucket.</p></li>
-<li><p>Optionally enter a bucket key prefix.</p></li>
-<li><p>Enter the name of the region where artifacts should be recorded in Systems Manager.</p></li>
-<li><p>Optionally enter a name prefix for the Systems Manager parameters that record artifact versions. Without a prefix, versions will be recorded as <cite>/{project}/latest</cite>.</p></li>
-<li><p>Confirm the configuration parameter name, region and account one last time before committing.</p></li>
+<li><p>Enter the <strong>comma-separated list of regions</strong> that have <a class="reference internal" href="aws.html#amazon-web-services"><span class="std std-ref">been prepared</span></a>. For example, <code class="docutils literal notranslate"><span class="pre">us-west-2,us-east-1,eu-west-1</span></code>.</p></li>
+<li><p>Enter the <strong>name of the Systems Manager parameter that holds the artifact bucket’s name</strong>.</p></li>
+<li><p><strong>Optionally enter a key prefix for the artifacts bucket.</strong> If a prefix is set, it must contain only alphanumeric, <code class="docutils literal notranslate"><span class="pre">-</span></code>, <code class="docutils literal notranslate"><span class="pre">_</span></code> or <code class="docutils literal notranslate"><span class="pre">.</span></code> characters, and must end with a <code class="docutils literal notranslate"><span class="pre">/</span></code>. For example, <code class="docutils literal notranslate"><span class="pre">my-platform/</span></code>.</p></li>
+<li><p><strong>Optionally enter a name prefix for the projects recorded in Systems Manager Parameter Store.</strong> If a prefix is set, it must start with a <code class="docutils literal notranslate"><span class="pre">/</span></code> and not end with a <code class="docutils literal notranslate"><span class="pre">/</span></code>. For example, <code class="docutils literal notranslate"><span class="pre">/my-platform</span></code>.</p></li>
+<li><p><strong>Confirm the values before committing.</strong></p></li>
 </ol>
 </section>
 </section>

@@ -22,7 +22,7 @@ def test_run(session: Mock) -> None:
     result = queue.get(block=True, timeout=1)
 
     assert result.error is None
-    assert result.region == "eu-west-2"
+    assert result.region == "eu-west-10"
 
 
 def test_run__fail(session: Mock) -> None:
@@ -38,4 +38,4 @@ def test_run__fail(session: Mock) -> None:
     result = queue.get(block=True, timeout=1)
 
     assert result.error == "RegionalProcess.operate() not implemented."
-    assert result.region == "eu-west-2"
+    assert result.region == "eu-west-10"
