@@ -4,71 +4,19 @@
 
 **Startifact** is a command line application and Python package for staging and retrieving versioned artifacts in Amazon Web Services.
 
-Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact/).
+- Configuration is held in Amazon Web Services Systems Manager. Startifact operates consistently across all your CI/CD jobs by default.
+- Optional metadata can be attached to artifacts at the point of staging then interrogated later.
+- Configuration, artifacts and metadata are stored across as many regions as you care to provide. Startifact is resilient to outages.
 
-## Installation
+**Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact/).**
 
-```bash
-pip install startifact
-```
-
-## Configuration
-
-Startifact uses a single shared configuration across all of your CI/CD pipelines.
-
-Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact/).
-
-## Usage
-
-### Staging an artifact
-
-To stage an artifact, pass the project name, version and `--stage` argument with the path to the artifact:
-
-```text
-startifact SugarWater 1.0.9000 --stage dist.tar.gz
-```
-
-Attach metadata by adding any number of `--metadata` arguments:
-
-```text
-startifact SugarWater 1.0.9000 --stage dist.tar.gz --metadata lang=dotnet --metadata hash=9876=
-```
-
-Each value must be a `key=value` pair. If the value contains multiple `=` characters then a pair will be made by splitting on the first.
-
-### Getting the latest version number of a project
-
-To get the version number of the latest artifact staged for a project, pass the project name and `--get` argument:
-
-```text
-startifact SugarWater --get
-```
-
-The version number will be emitted to `stdout`.
-
-### Downloading an artifact
-
-To download an artifact, pass the project name, *optionally* the version number, and the `--download` argument with the path to download to:
-
-```text
-startifact SugarWater 1.0.0 --download dist.tar.gz
-```
-
-If the version is omitted then the latest artifact will be downloaded, otherwise the literal version will be downloaded.
-
-## Python usage
-
-Full documentation is online at [cariad.github.io/startifact](https://cariad.github.io/startifact/).
-
-## Project
-
-### Licence
+## Licence
 
 Startifact is released at [github.com/cariad/startifact](https://github.com/cariad/startifact) under the MIT Licence.
 
 See [LICENSE](https://github.com/cariad/startifact/blob/main/LICENSE) for more information.
 
-### Author
+## Author
 
 Hello! 👋 I'm **Cariad Eccleston** and I'm a freelance DevOps and backend engineer. My contact details are available on my personal wiki at [cariad.earth](https://cariad.earth).
 

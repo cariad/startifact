@@ -45,13 +45,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../organization.html">Organisation configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Python usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#staging-an-artifact-via-python">Staging an artifact via Python</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#sessions">Sessions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#staging-an-artifact-via-python">Staging an artifact via Python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-the-latest-artifact-version-via-python">Getting the latest artifact version via Python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downloading-an-artifact-via-python">Downloading an artifact via Python</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-and-appending-metadata">Reading and appending metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-metadata">Reading metadata</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="session.html"><code class="docutils literal notranslate"><span class="pre">Session</span></code> class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="artifact.html"><code class="docutils literal notranslate"><span class="pre">Artifact</span></code> class</a></li>
@@ -89,16 +87,34 @@
              
   <section id="python-usage">
 <h1>Python usage<a class="headerlink" href="#python-usage" title="Permalink to this headline"></a></h1>
+<section id="sessions">
+<h2>Sessions<a class="headerlink" href="#sessions" title="Permalink to this headline"></a></h2>
 <p>The <a class="reference internal" href="session.html#startifact.Session" title="startifact.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">startifact.Session</span></code></a> class is the entry point to using Startifact in a Python script.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
+<p>Each session maintains its own cache and should be reused as much as possible.</p>
+<p>Each session can also be limited to a subset or a single region if required.</p>
+</section>
 <section id="staging-an-artifact-via-python">
-<h3>Staging an artifact via Python<a class="headerlink" href="#staging-an-artifact-via-python" title="Permalink to this headline"></a></h3>
-<p>Create a <a class="reference internal" href="session.html#startifact.Session" title="startifact.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">startifact.Session</span></code></a> then call <a class="reference internal" href="session.html#startifact.Session.stage" title="startifact.Session.stage"><code class="xref py py-func docutils literal notranslate"><span class="pre">startifact.Session.stage()</span></code></a>:</p>
-<p>Metadata can be attached in the same call:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+<h2>Staging an artifact via Python<a class="headerlink" href="#staging-an-artifact-via-python" title="Permalink to this headline"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">semver</span> <span class="kn">import</span> <span class="n">VersionInfo</span>
+<span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+    <span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span>
+    <span class="n">VersionInfo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">9000</span><span class="p">),</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;dist.tar.gz&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Metadata can be attached in the same call:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">semver</span> <span class="kn">import</span> <span class="n">VersionInfo</span>
+<span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
 <span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
     <span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span>
     <span class="s2">&quot;1.0.9000&quot;</span><span class="p">,</span>
@@ -106,18 +122,19 @@
         <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;dotnet&quot;</span><span class="p">,</span>
         <span class="s2">&quot;hash&quot;</span><span class="p">:</span> <span class="s2">&quot;9876=&quot;</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;dist.tar.gz&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;dist.tar.gz&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-</section>
 </section>
 <section id="getting-the-latest-artifact-version-via-python">
 <h2>Getting the latest artifact version via Python<a class="headerlink" href="#getting-the-latest-artifact-version-via-python" title="Permalink to this headline"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
 <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SugarWater&quot;</span><span class="p">)</span>
+
 <span class="nb">print</span><span class="p">(</span><span class="n">artifact</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -127,23 +144,24 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
 <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.9000&quot;</span><span class="p">)</span>
-<span class="n">artifact</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;download.tar.gz&quot;</span><span class="p">)</span>
+
+<span class="n">artifact</span><span class="o">.</span><span class="n">downloader</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;download.tar.gz&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="reading-and-appending-metadata">
-<h2>Reading and appending metadata<a class="headerlink" href="#reading-and-appending-metadata" title="Permalink to this headline"></a></h2>
-<p>Metadata can be added to any artifact, but values cannot be removed or modified. History can’t be changed.</p>
+<section id="reading-metadata">
+<h2>Reading metadata<a class="headerlink" href="#reading-metadata" title="Permalink to this headline"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
 <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.9000&quot;</span><span class="p">)</span>
 
 <span class="n">language</span> <span class="o">=</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;lang&quot;</span><span class="p">]</span>
 
-<span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;deployed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
-<span class="n">artifact</span><span class="o">.</span><span class="n">save_metadata</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">language</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

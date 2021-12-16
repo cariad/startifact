@@ -24,8 +24,6 @@ class Artifact:
 
     .. code-block:: python
 
-        from pathlib import Path
-        from semver import VersionInfo
         from startifact import Session
 
         session = Session()

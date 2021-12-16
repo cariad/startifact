@@ -80,34 +80,32 @@
 <h2>Staging then deploying a lambda function<a class="headerlink" href="#staging-then-deploying-a-lambda-function" title="Permalink to this headline"></a></h2>
 <p>This example assumes you deploy your code via a CloudFormation template like this:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Parameters</span><span class="p">:</span>
+   <span class="nt">BuildBucket</span><span class="p">:</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
 
-<span class="nt">BuildBucket</span><span class="p">:</span>
-   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+   <span class="nt">BuildKey</span><span class="p">:</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
 
-<span class="nt">BuildKey</span><span class="p">:</span>
-   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
-
-<span class="nt">BuildHash</span><span class="p">:</span>
-   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
+   <span class="nt">BuildHash</span><span class="p">:</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">String</span>
 
 <span class="nt">Resources</span><span class="p">:</span>
+   <span class="nt">Function</span><span class="p">:</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Function</span>
+      <span class="nt">Properties</span><span class="p">:</span>
+         <span class="nt">Code</span><span class="p">:</span>
+            <span class="nt">S3Bucket</span><span class="p">:</span>
+               <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildBucket</span>
+            <span class="nt">S3Key</span><span class="p">:</span>
+               <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildKey</span>
 
-<span class="nt">Function</span><span class="p">:</span>
-   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Function</span>
-   <span class="nt">Properties</span><span class="p">:</span>
-      <span class="nt">Code</span><span class="p">:</span>
-      <span class="nt">S3Bucket</span><span class="p">:</span>
-         <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildBucket</span>
-      <span class="nt">S3Key</span><span class="p">:</span>
-         <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildKey</span>
-
-<span class="nt">FunctionVersion</span><span class="p">:</span>
-   <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Version</span>
-   <span class="nt">Properties</span><span class="p">:</span>
-      <span class="nt">CodeSha256</span><span class="p">:</span>
-      <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildHash</span>
-      <span class="nt">FunctionName</span><span class="p">:</span>
-      <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Function</span>
+   <span class="nt">FunctionVersion</span><span class="p">:</span>
+      <span class="nt">Type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Version</span>
+      <span class="nt">Properties</span><span class="p">:</span>
+         <span class="nt">CodeSha256</span><span class="p">:</span>
+            <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BuildHash</span>
+         <span class="nt">FunctionName</span><span class="p">:</span>
+            <span class="nt">Ref</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Function</span>
 </pre></div>
 </div>
 <p>When you’re ready to stage your code:</p>
@@ -121,17 +119,18 @@
 </div>
 <p>Now, to populate your CloudFormation template’s parameters:</p>
 <ol class="arabic simple">
-<li><p>Create a Startifact session.</p></li>
+<li><p>Create a Startifact session. Since Lambda requires the function and its code to reside in the same region, you can restrict the session to your deployment region by passing it as <code class="docutils literal notranslate"><span class="pre">regions=[&quot;&lt;region&gt;&quot;]</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">get()</span></code> the artifact to deploy.</p></li>
-<li><p>Read the artifact’s <code class="docutils literal notranslate"><span class="pre">bucket</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code> and metadata.</p></li>
+<li><p>Read the artifact’s <code class="docutils literal notranslate"><span class="pre">bucket</span></code> and <code class="docutils literal notranslate"><span class="pre">key</span></code> via its <code class="docutils literal notranslate"><span class="pre">downloader</span></code>.</p></li>
+<li><p>Read the artifact’s hash from its metadata.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
-<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">regions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;us-east-1&quot;</span><span class="p">])</span>
 <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MyLambdaProject&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.1&quot;</span><span class="p">)</span>
 
-<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildBucket&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
-<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildKey&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildBucket&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">downloader</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildKey&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="o">.</span><span class="n">downloader</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
 <span class="n">params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;BuildHash&quot;</span><span class="p">,</span> <span class="n">artifact</span><span class="p">[</span><span class="s2">&quot;hash&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
