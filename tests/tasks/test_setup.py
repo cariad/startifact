@@ -1,17 +1,21 @@
 from io import StringIO
+from logging import getLogger
 
 from mock import Mock
 from mock.mock import patch
 
+from startifact import ConfigurationLoader
 from startifact.configuration import Configuration
 from startifact.tasks.setup import SetupTask, SetupTaskArguments
+
+getLogger("startifact").setLevel("DEBUG")
 
 
 def test_invoke() -> None:
     directions = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-8",
         save_ok="y",
     )
@@ -48,7 +52,7 @@ def test_invoke() -> None:
     expect_config = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-8",
         save_ok="y",
     )
@@ -80,7 +84,7 @@ def test_invoke__delete_from_regions() -> None:
     directions = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-7",
         save_ok="y",
     )
@@ -117,7 +121,7 @@ def test_invoke__delete_from_regions() -> None:
     expect_config = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-7",
         save_ok="y",
     )
@@ -149,7 +153,7 @@ def test_invoke__not_all_ok() -> None:
     directions = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-7",
         save_ok="y",
     )
@@ -186,7 +190,7 @@ def test_invoke__not_all_ok() -> None:
     expect_config = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-7",
         save_ok="y",
     )
@@ -209,26 +213,50 @@ def test_invoke__not_all_ok() -> None:
     )
 
 
-def test_invoke__fail() -> None:
+def test_invoke__no_regions_available() -> None:
     directions = Configuration(
         bucket_key_prefix="key/",
         bucket_name_param="/bucket",
-        parameter_name_prefix="/param/",
+        parameter_name_prefix="/param",
         regions="us-east-7,eu-west-4",
         save_ok="n",
     )
 
     out = StringIO()
-    args = SetupTaskArguments(directions=directions, regions=["us-east-7", "us-east-8"])
+    args = SetupTaskArguments(directions=directions, regions=["us-east-71"])
     task = SetupTask(args, out)
 
     assert task.invoke() == 1
 
-    expect = (
-        "🔥 None of the configured regions are available: "
-        + "['us-east-7', 'us-east-8'].\n"
-    )
+    expect = "🔥 None of the configured regions are available: ['us-east-71'].\n"
     assert out.getvalue() == expect
+
+
+def test_invoke__no_save(empty_config: Configuration, out: StringIO) -> None:
+    directions = Configuration(
+        bucket_key_prefix="key/",
+        bucket_name_param="/bucket",
+        parameter_name_prefix="/param",
+        regions="us-east-7,eu-west-4",
+        save_ok="n",
+    )
+
+    configuration_loader = ConfigurationLoader(
+        out=out,
+        regions=[],
+        configuration=empty_config,
+    )
+
+    args = SetupTaskArguments(
+        configuration_loader=configuration_loader,
+        directions=directions,
+        regions=["us-east-7", "us-east-8"],
+    )
+
+    task = SetupTask(args, out)
+
+    assert task.invoke() == 1
+    assert out.getvalue() == "\n"
 
 
 def test_make_script() -> None:

@@ -5,17 +5,19 @@ from pathlib import Path
 from mock import Mock, patch
 from pytest import fixture
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
-from startifact import BucketNames
 
+from startifact import BucketNames
 from startifact.regional_process_result import RegionalProcessResult
-from startifact.regional_stager import (
-    RegionalStager
-)
+from startifact.regional_stager import RegionalStager
 from startifact.stager import Stager
 
 
 @fixture
-def stager(bucket_names: BucketNames, out: StringIO, queue: "Queue[RegionalProcessResult]") -> Stager:
+def stager(
+    bucket_names: BucketNames,
+    out: StringIO,
+    queue: "Queue[RegionalProcessResult]",
+) -> Stager:
     return Stager(
         bucket_names=bucket_names,
         file_hash="who knows?",
@@ -25,7 +27,7 @@ def stager(bucket_names: BucketNames, out: StringIO, queue: "Queue[RegionalProce
         project="SugarWater",
         queue=queue,
         read_only=True,
-        regions=["eu-west-10","eu-west-11", "eu-west-12"],
+        regions=["eu-west-10", "eu-west-11", "eu-west-12"],
         version=VersionInfo(1, 2, 3),
     )
 

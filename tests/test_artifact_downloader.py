@@ -1,16 +1,14 @@
 from io import StringIO
+from pathlib import Path
 from typing import Union
 
 from mock import ANY, call, patch
 from mock.mock import Mock
-
-from pathlib import Path
-from pytest import fixture, raises, mark
+from pytest import fixture, mark, raises
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact import ArtifactDownloader, BucketNames
 from startifact.exceptions import CannotDiscoverExistence, NoRegionsAvailable
-
 
 
 @fixture

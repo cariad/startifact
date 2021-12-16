@@ -9,10 +9,11 @@ from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
+from startifact.bucket_names import BucketNames
 from startifact.parameters.latest_version import LatestVersionParameter
 from startifact.regional_process_result import RegionalProcessResult
 from startifact.regional_stager import RegionalStager
-from startifact.bucket_names import BucketNames
+
 
 class Stager:
     """

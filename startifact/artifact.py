@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from logging import getLogger
-from pathlib import Path
 from typing import IO, Dict, List, Optional
 
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.artifact_downloader import ArtifactDownloader
 from startifact.artifacts import make_key, make_metadata_key
+from startifact.bucket_names import BucketNames
 from startifact.latest_version_loader import LatestVersionLoader
 from startifact.metadata_loader import MetadataLoader
 
@@ -14,17 +14,51 @@ from startifact.metadata_loader import MetadataLoader
 @dataclass
 class Artifact:
     """
-    Read metadata via keys. For example:
+    A staged artifact.
 
-        bar = artifact["foo"]
+    .. warning::
+        Don't create instances of this class directly! To get a staged artifact,
+        see :py:func:`startifact.Session.get`.
+
+    Note that metadata can be read via keys. For example:
+
+    .. code-block:: python
+
+        from pathlib import Path
+        from semver import VersionInfo
+        from startifact import Session
+
+        session = Session()
+        artifact = session.get("SugarWater")
+
+        print(artifact["hash"])
+
+    :param bucket_names: Bucket names.
+    :param out: Output writer.
+    :param project: Project.
+    :param regions: Amazon Web Services regions to operate in.
+    :param artifact_downloader:
+        Optional :class:`ArtifactDownloader`. Defaults to creating a new
+        downloader.
+    :param bucket_key_prefix: Optional bucket key prefix.
+    :param latest_version_loader:
+        Optional :class:`LatestVersionLoader`. Defaults to creating a new
+        loader.
+    :param metadata_loader:
+        Optional :class:`MetadataLoader`. Defaults to creating a new loader.
+    :param parameter_name_prefix:
+        Optional Systems Manager parameter name prefix.
+    :param version:
+        Optional version. Defaults to discovering the latest version.
     """
 
     def __init__(
         self,
-        bucket_name_parameter_name: str,
+        bucket_names: BucketNames,
         out: IO[str],
         project: str,
         regions: List[str],
+        artifact_downloader: Optional[ArtifactDownloader] = None,
         bucket_key_prefix: Optional[str] = None,
         latest_version_loader: Optional[LatestVersionLoader] = None,
         metadata_loader: Optional[MetadataLoader] = None,
@@ -32,11 +66,12 @@ class Artifact:
         version: Optional[VersionInfo] = None,
     ) -> None:
 
+        self._cached_artifact_downloader = artifact_downloader
         self._cached_key: Optional[str] = None
         self._cached_metadata_key: Optional[str] = None
         self._cached_metadata_loader = metadata_loader
         self._bucket_key_prefix = bucket_key_prefix
-        self._bucket_name_parameter_name = bucket_name_parameter_name
+        self._bucket_names = bucket_names
         self._cached_latest_loader = latest_version_loader
         self._cached_metadata: Optional[Dict[str, str]] = None
         self._cached_version = version
@@ -46,63 +81,46 @@ class Artifact:
         self._project = project
         self._regions = regions
 
-    def __getitem__(self, key: str) -> str:
-        return self.metadata_loader.loaded[key]
-
     def __contains__(self, key: str) -> bool:
         return key in self.metadata_loader.loaded
+
+    def __getitem__(self, key: str) -> str:
+        return self.metadata_loader.loaded[key]
 
     def __len__(self) -> int:
         return len(self.metadata_loader.loaded)
 
     @property
-    def bucket_key_prefix(self) -> Optional[str]:
-        return self._bucket_key_prefix
+    def downloader(self) -> ArtifactDownloader:
+        """
+        Creates and returns a :class:`ArtifactDownloader`.
+        """
+
+        if not self._cached_artifact_downloader:
+            self._cached_artifact_downloader = ArtifactDownloader(
+                bucket_names=self._bucket_names,
+                key=self.key,
+                out=self._out,
+                project=self._project,
+                regions=self._regions,
+                version=self.version,
+            )
+
+        return self._cached_artifact_downloader
 
     @property
     def key(self) -> str:
+        """
+        Gets the S3 key of the artifact object.
+        """
+
         if not self._cached_key:
             self._cached_key = make_key(
-                self.project,
+                self._project,
                 self.version,
-                prefix=self.bucket_key_prefix,
+                prefix=self._bucket_key_prefix,
             )
         return self._cached_key
-
-    def download(self, path: Path) -> None:
-        """
-        Downloads the artifact to `path`.
-
-        :param path: Path and filename to download to.
-        :type path: pathlib.Path
-        """
-
-        self.downloader(path).download()
-
-    def downloader(self, path: Path) -> ArtifactDownloader:
-        """
-        Creates and returns a :class:`ArtifactDownloader`.
-
-        :param path: Path and filename to download to.
-        :type path: pathlib.Path
-
-        :returns: Artifact downloader.
-        """
-
-        # We don't cache the downloader because the user might want to download
-        # the file multiple times and we can't guarantee that the same region
-        # will be available between those calls. The downloader is always
-        # constructed from scratch every time.
-
-        return ArtifactDownloader(
-            bucket_name_parameter_name=self._bucket_name_parameter_name,
-            key=self.key,
-            out=self._out,
-            path=path,
-            project=self._project,
-            regions=self._regions,
-            version=self.version,
-        )
 
     @property
     def latest_version_loader(self) -> LatestVersionLoader:
@@ -110,13 +128,17 @@ class Artifact:
             self._cached_latest_loader = LatestVersionLoader(
                 out=self._out,
                 parameter_name_prefix=self._parameter_name_prefix,
-                project=self.project,
+                project=self._project,
                 regions=self._regions,
             )
         return self._cached_latest_loader
 
     @property
     def metadata_key(self) -> str:
+        """
+        Gets the S3 key of the artifact metadata.
+        """
+
         if not self._cached_metadata_key:
             self._cached_metadata_key = make_metadata_key(self.key)
         return self._cached_metadata_key
@@ -125,7 +147,7 @@ class Artifact:
     def metadata_loader(self) -> MetadataLoader:
         if self._cached_metadata_loader is None:
             self._cached_metadata_loader = MetadataLoader(
-                bucket_name_parameter_name=self._bucket_name_parameter_name,
+                bucket_names=self._bucket_names,
                 key=self.metadata_key,
                 regions=self._regions,
             )
@@ -133,44 +155,7 @@ class Artifact:
         return self._cached_metadata_loader
 
     @property
-    def project(self) -> str:
-        return self._project
-
-    @property
     def version(self) -> VersionInfo:
         if self._cached_version is None:
             self._cached_version = self.latest_version_loader.version
         return self._cached_version
-
-
-#     # def __setitem__(self, key: str, value: str) -> None:
-#     #     if key in self:
-#     #         raise CannotModifyImmutableMetadata(
-#     #             metadata_key=key,
-#     #             metadata_value=value,
-#     #             project=self.project,
-#     #             version=self.version,
-#     #         )
-#     #     self._metadata[key] = value
-
-
-#     # def save_metadata(self) -> None:
-#     #     """
-#     #     Saves the metadata.
-#     #     """
-
-#     #     if len(self) == 0:
-#     #         return
-
-#     #     s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
-#     #     body = dumps(self._metadata, indent=2, sort_keys=True).encode("utf-8")
-
-#     #     if self._dry_run:
-#     #         return
-
-#     #     s3.put_object(
-#     #         Body=body,
-#     #         Bucket=self.bucket,
-#     #         ContentMD5=get_b64_md5(body),
-#     #         Key=self._metadata_key,
-#     #     )

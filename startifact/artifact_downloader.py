@@ -128,11 +128,9 @@ class ArtifactDownloader:
     def key(self) -> str:
         return self._key
 
-
     @property
     def project(self) -> str:
         return self._project
-
 
     @property
     def version(self) -> VersionInfo:

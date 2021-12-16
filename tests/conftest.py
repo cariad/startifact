@@ -6,6 +6,7 @@ from mock import Mock
 from pytest import fixture
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
+from startifact import BucketNames
 from startifact.configuration import Configuration
 from startifact.configuration_loader import ConfigurationLoader
 from startifact.parameters import BucketParameter, LatestVersionParameter
@@ -20,6 +21,15 @@ def bucket_name_parameter(session: Mock) -> BucketParameter:
         session=session,
         value="buck",
     )
+
+
+@fixture
+def bucket_names() -> BucketNames:
+    names = BucketNames("/buckets/staging")
+    names.add("eu-west-10", "bucket-10")
+    names.add("eu-west-11", "bucket-11")
+    names.add("eu-west-12", "bucket-12")
+    return names
 
 
 @fixture
@@ -68,15 +78,13 @@ def queue() -> "Queue[RegionalProcessResult]":
 
 @fixture
 def regional_stager(
-    bucket_name_parameter: BucketParameter,
     latest_version_parameter: LatestVersionParameter,
     queue: "Queue[RegionalProcessResult]",
     session: Mock,
 ) -> RegionalStager:
 
     return RegionalStager(
-        bucket_name_parameter=bucket_name_parameter,
-        # exists=False,
+        bucket="bucket-10",
         file_hash="who knows?",
         key="SugarWater@1.2.3",
         latest_version_parameter=latest_version_parameter,
@@ -91,5 +99,5 @@ def regional_stager(
 @fixture
 def session() -> Mock:
     session = Mock()
-    session.region_name = "eu-west-2"
+    session.region_name = "eu-west-10"
     return session
