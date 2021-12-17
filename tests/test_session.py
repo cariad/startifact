@@ -142,6 +142,53 @@ def test_stage__fail(configuration_loader: ConfigurationLoader, out: StringIO) -
     assert str(ex.value) == "Could not stage to any regions."
 
 
+def test_stage__filename(
+    bucket_names: BucketNames,
+    configuration_loader: ConfigurationLoader,
+    out: StringIO,
+) -> None:
+    configuration_loader.loaded["bucket_key_prefix"] = "bucket-key-prefix"
+    configuration_loader.loaded["bucket_name_param"] = "bucket-name-param"
+    configuration_loader.loaded["parameter_name_prefix"] = "parameter-name-prefix"
+
+    session = Session(
+        bucket_names=bucket_names,
+        configuration_loader=configuration_loader,
+        out=out,
+        regions=["us-east-7"],
+    )
+
+    stager = Mock()
+
+    stage = Mock(return_value=True)
+    stager.stage = stage
+
+    with patch("startifact.session.Stager", return_value=stager) as stager_cls:
+        session.stage(
+            "SugarWater",
+            VersionInfo(1, 2, 3),
+            Path("LICENSE"),
+            save_filename=True,
+        )
+
+    stager_cls.assert_called_once_with(
+        bucket_names=bucket_names,
+        file_hash="6xhIwkLW8kCvybESBUX1iA==",  # cspell:disable-line
+        key="bucket-key-prefixSugarWater@1.2.3",
+        metadata=b'{\n  "startifact:filename": "LICENSE"\n}',
+        metadata_hash="VRixfq0fOJlMwTVSuJBGiA==",  # cspell:disable-line
+        out=out,
+        parameter_name_prefix="parameter-name-prefix",
+        path=Path("LICENSE"),
+        project="SugarWater",
+        read_only=False,
+        regions=["us-east-7"],
+        version=VersionInfo(1, 2, 3),
+    )
+
+    stage.assert_called_once_with()
+
+
 def test_stage__invalid_name() -> None:
     session = Session()
 

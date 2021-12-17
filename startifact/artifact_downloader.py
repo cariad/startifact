@@ -1,6 +1,6 @@
 from logging import getLogger
 from pathlib import Path
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO, List, Optional, Tuple
 
 from ansiscape import yellow
 from ansiscape.checks import should_emit_codes
@@ -10,6 +10,7 @@ from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 from startifact.bucket_names import BucketNames
 from startifact.constants import DELIVERED_EMOJI
 from startifact.exceptions import CannotDiscoverExistence, NoRegionsAvailable
+from startifact.metadata_loader import MetadataLoader
 from startifact.s3 import exists
 
 
@@ -22,6 +23,7 @@ class ArtifactDownloader:
         self,
         bucket_names: BucketNames,
         key: str,
+        metadata_loader: MetadataLoader,
         out: IO[str],
         project: str,
         regions: List[str],
@@ -33,6 +35,7 @@ class ArtifactDownloader:
         self._cached_region: Optional[str] = None
         self._key = key
         self._logger = getLogger("startifact")
+        self._metadata_loader = metadata_loader
         self._out = out
         self._project = project
         self._regions = regions
@@ -74,34 +77,39 @@ class ArtifactDownloader:
 
     def download(
         self,
-        path: Union[Path, str],
+        path: Path,
+        load_filename: bool = False,
         session: Optional[Session] = None,
     ) -> None:
         """
         Downloads the artifact.
 
         :param path: Path and filename to download to.
+        :param load_filename: Restore the artifact's original filename.
         """
 
-        if isinstance(path, Path):
-            path = path.as_posix()
-
         try:
+            if load_filename:
+                filename = self._metadata_loader.loaded["startifact:filename"]
+                path = path / filename
+
+            posix = path.as_posix()
+
             self._logger.debug(
                 "Downloading %s/%s in %s to %s",
                 self.bucket,
                 self.key,
                 self.region,
-                path,
+                posix,
             )
 
             session = session or Session(region_name=self.region)
 
             s3 = session.client("s3")  # pyright: reportUnknownMemberType=false
-            s3.download_file(Bucket=self.bucket, Filename=path, Key=self.key)
+            s3.download_file(Bucket=self.bucket, Filename=posix, Key=self.key)
 
             region = yellow(self.region) if should_emit_codes() else self.region
-            path_fmt = yellow(path) if should_emit_codes() else path
+            path_fmt = yellow(posix) if should_emit_codes() else posix
             project = yellow(self.project) if should_emit_codes() else self.project
             version = yellow(str(self.version)) if should_emit_codes() else self.version
 

@@ -25,6 +25,7 @@ class StageTask(Task[StageTaskArguments]):
             session.stage(
                 path=self.args.path,
                 project=project,
+                save_filename=self.args.save_filename,
                 version=version,
                 metadata=self.args.metadata,
             )
@@ -55,5 +56,6 @@ class StageTask(Task[StageTaskArguments]):
             metadata=make_metadata(args.get_list("metadata", [])),
             path=Path(args.get_string("stage")),
             project=args.get_string("project"),
+            save_filename=args.get_bool("filename", False),
             version=version,
         )

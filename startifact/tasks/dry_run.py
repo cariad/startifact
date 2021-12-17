@@ -26,6 +26,7 @@ class DryRunStageTask(Task[StageTaskArguments]):
             session.stage(
                 path=self.args.path,
                 project=self.args.project,
+                save_filename=self.args.save_filename,
                 version=self.args.version,
                 metadata=self.args.metadata,
             )
@@ -51,5 +52,6 @@ class DryRunStageTask(Task[StageTaskArguments]):
             metadata=make_metadata(args.get_list("metadata", [])),
             path=Path(args.get_string("dry_run")),
             project=args.get_string("project"),
+            save_filename=args.get_bool("filename", False),
             version=version,
         )

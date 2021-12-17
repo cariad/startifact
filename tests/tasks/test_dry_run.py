@@ -32,6 +32,7 @@ def test_invoke() -> None:
     stage.assert_called_once_with(
         path=Path("foo.zip"),
         project="SugarWater",
+        save_filename=False,
         version=VersionInfo(1, 2, 3),
         metadata=None,
     )
@@ -61,6 +62,7 @@ def test_invoke__fail() -> None:
     stage.assert_called_once_with(
         path=Path("foo.zip"),
         project="SugarWater",
+        save_filename=False,
         version=VersionInfo(1, 2, 3),
         metadata=None,
     )

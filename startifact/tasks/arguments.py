@@ -15,6 +15,7 @@ class StageTaskArguments:
     version: VersionInfo
     log_level: str = "CRITICAL"
     metadata: Optional[Dict[str, str]] = None
+    save_filename: bool = False
     session: Optional[Session] = None
 
 

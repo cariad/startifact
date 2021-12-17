@@ -132,6 +132,7 @@ class Session:
         version: VersionInfo,
         path: Path,
         metadata: Optional[Dict[str, str]] = None,
+        save_filename: bool = False,
     ) -> None:
         """
         Stages an artifact to as many regions as possible.
@@ -159,6 +160,7 @@ class Session:
         :param version: Version.
         :param path: Path to file to upload.
         :param metadata: Optional metadata.
+        :param save_filename: Save the filename as metadata.
         :raises ProjectNameError: if the project name is not acceptable.
         :raises CannotStageArtifact: if the artifact could not be staged at all.
         """
@@ -174,6 +176,11 @@ class Session:
 
         metadata_bytes: Optional[bytes] = None
         metadata_hash: Optional[str] = None
+
+        if save_filename:
+            metadata = metadata or {}
+            self._logger.debug("Filename is %s.", path.name)
+            metadata["startifact:filename"] = path.name
 
         if metadata:
             metadata_bytes = dumps(metadata, indent=2, sort_keys=True).encode("utf-8")

@@ -91,13 +91,14 @@ class Artifact:
     @property
     def downloader(self) -> ArtifactDownloader:
         """
-        Creates and returns a :class:`ArtifactDownloader`.
+        Creates and returns an :class:`ArtifactDownloader`.
         """
 
         if not self._cached_artifact_downloader:
             self._cached_artifact_downloader = ArtifactDownloader(
                 bucket_names=self._bucket_names,
                 key=self.key,
+                metadata_loader=self.metadata_loader,
                 out=self._out,
                 project=self._project,
                 regions=self._regions,
@@ -154,6 +155,10 @@ class Artifact:
 
     @property
     def version(self) -> VersionInfo:
+        """
+        Gets the version number of this artifact.
+        """
+
         if self._cached_version is None:
             self._cached_version = self.latest_version_loader.version
         return self._cached_version
