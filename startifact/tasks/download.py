@@ -17,6 +17,7 @@ class DownloadTaskArguments:
 
     path: Path
     project: str
+    load_filename: bool = False
     log_level: str = "CRITICAL"
     session: Optional[Session] = None
     version: Union[VersionInfo, Literal["latest"]] = "latest"
@@ -32,7 +33,12 @@ class DownloadTask(Task[DownloadTaskArguments]):
         session = self.args.session or Session()
         version = None if isinstance(self.args.version, str) else self.args.version
         artifact = session.get(project=self.args.project, version=version)
-        artifact.downloader.download(self.args.path)
+
+        artifact.downloader.download(
+            self.args.path,
+            load_filename=self.args.load_filename,
+        )
+
         return 0
 
     @classmethod
@@ -48,6 +54,7 @@ class DownloadTask(Task[DownloadTaskArguments]):
                 raise CannotMakeArguments(str(ex))
 
         return DownloadTaskArguments(
+            load_filename=args.get_bool("filename", False),
             log_level=args.get_string("log_level", "CRITICAL").upper(),
             path=Path(args.get_string("download")),
             project=args.get_string("project"),

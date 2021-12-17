@@ -56,7 +56,7 @@ def test_invoke(
         version=VersionInfo(1, 2, 3),
     )
 
-    download.assert_called_once_with(Path("download.zip"))
+    download.assert_called_once_with(Path("download.zip"), load_filename=False)
 
     assert out.getvalue() == ""
     assert exit_code == 0

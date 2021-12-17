@@ -90,6 +90,11 @@ class ArtifactDownloader:
 
         try:
             if load_filename:
+                self._logger.debug(
+                    "Will use original filename from metadata: %s",
+                    self._metadata_loader.loaded,
+                )
+
                 filename = self._metadata_loader.loaded["startifact:filename"]
                 path = path / filename
 
