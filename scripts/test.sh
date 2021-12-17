@@ -2,6 +2,6 @@
 
 set -euo pipefail
 
-pytest -vv -x
+pytest -vv
 
 ./scripts/build-documentation.sh

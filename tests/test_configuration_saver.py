@@ -58,7 +58,7 @@ def test_receive_done__delete(empty_config: Configuration, out: StringIO) -> Non
     saver.enqueue_delete("us-west-12")
     saver.receive_done()
     assert not saver.deletes_in_progress
-    assert out.getvalue() == "Configuration deleted from us-west-12 OK! 🧁\n"
+    assert out.getvalue() == "🌍 Configuration deleted from us-west-12 OK!\n"
 
 
 def test_receive_done__save(empty_config: Configuration, out: StringIO) -> None:
@@ -72,7 +72,7 @@ def test_receive_done__save(empty_config: Configuration, out: StringIO) -> None:
     saver.enqueue_save("us-west-12")
     saver.receive_done()
     assert not saver.saves_in_progress
-    assert out.getvalue() == "Configuration saved to us-west-12 OK! 🧁\n"
+    assert out.getvalue() == "🌍 Configuration saved to us-west-12 OK!\n"
 
 
 def test_receive_done__error(empty_config: Configuration, out: StringIO) -> None:
@@ -103,8 +103,8 @@ def test_save(empty_config: Configuration, out: StringIO) -> None:
 
     saver.save()
 
-    expect = """Configuration deleted from us-east-7 OK! 🧁
-Configuration saved to us-east-6 OK! 🧁
+    expect = """🌍 Configuration deleted from us-east-7 OK!
+🌍 Configuration saved to us-east-6 OK!
 """
 
     assert out.getvalue() == expect
@@ -119,4 +119,4 @@ def test_save__no_save_regions(empty_config: Configuration, out: StringIO) -> No
     )
 
     saver.save()
-    assert out.getvalue() == "Configuration deleted from us-east-7 OK! 🧁\n"
+    assert out.getvalue() == "🌍 Configuration deleted from us-east-7 OK!\n"

@@ -8,6 +8,7 @@ from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.bucket_names import BucketNames
+from startifact.constants import DELIVERED_EMOJI
 from startifact.exceptions import CannotDiscoverExistence, NoRegionsAvailable
 from startifact.s3 import exists
 
@@ -72,7 +73,9 @@ class ArtifactDownloader:
         raise NoRegionsAvailable(self._regions)
 
     def download(
-        self, path: Union[Path, str], session: Optional[Session] = None
+        self,
+        path: Union[Path, str],
+        session: Optional[Session] = None,
     ) -> None:
         """
         Downloads the artifact.
@@ -102,7 +105,9 @@ class ArtifactDownloader:
             project = yellow(self.project) if should_emit_codes() else self.project
             version = yellow(str(self.version)) if should_emit_codes() else self.version
 
-            msg = f"🧁 Downloaded {project} {version} from {region} to {path_fmt}.\n"
+            msg = f"Downloaded {project} {version} from {region} to {path_fmt}.\n"
+            self._out.write(DELIVERED_EMOJI)
+            self._out.write(" ")
             self._out.write(msg)
 
         except Exception:

@@ -7,6 +7,7 @@ from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
+from startifact.constants import INFO_EMOJI
 from startifact.exceptions import NoRegionsAvailable
 from startifact.parameters import LatestVersionParameter
 
@@ -60,7 +61,9 @@ class LatestVersionLoader:
             region_fmt = yellow(region) if self._color else region
             version_fmt = yellow(param.value) if self._color else param.value
 
-            msg = f"🧁 {region_fmt} claims {self._project_fmt} at {version_fmt}.\n"
+            msg = f"{region_fmt} claims {self._project_fmt} at {version_fmt}.\n"
+            self._out.write(INFO_EMOJI)
+            self._out.write(" ")
             self._out.write(msg)
 
             # pyright: reportUnknownMemberType=false

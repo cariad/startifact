@@ -26,7 +26,7 @@ def test_operate(empty_config: Configuration, out: StringIO, session: Mock) -> N
 
     config_param_cls.assert_called_once_with(read_only=True, session=session)
     assert config is empty_config
-    assert out.getvalue() == "🧁 Configuration loaded from eu-west-10.\n"
+    assert out.getvalue() == "🌍 Configuration loaded from eu-west-10.\n"
 
 
 def test_operate__fail(out: StringIO, session: Mock) -> None:

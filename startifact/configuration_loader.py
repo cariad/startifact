@@ -6,6 +6,7 @@ from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 
 from startifact.configuration import Configuration
+from startifact.constants import INFO_EMOJI
 from startifact.exceptions import NoRegionsAvailable
 from startifact.parameters import ConfigurationParameter
 
@@ -34,7 +35,7 @@ class ConfigurationLoader:
             param = ConfigurationParameter(read_only=True, session=session)
             config = param.value
             region_fmt = yellow(region) if should_emit_codes() else region
-            self._out.write(f"🧁 Configuration loaded from {region_fmt}.\n")
+            self._out.write(f"{INFO_EMOJI} Configuration loaded from {region_fmt}.\n")
             return config
 
         except Exception as ex:

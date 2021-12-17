@@ -9,6 +9,7 @@ from ansiscape.checks import should_emit_codes
 from boto3.session import Session
 
 from startifact.configuration import Configuration
+from startifact.constants import INFO_EMOJI
 from startifact.regional_configuration_deleter import RegionalConfigurationDeleter
 from startifact.regional_configuration_saver import RegionalConfigurationSaver
 from startifact.regional_process_result import RegionalProcessResult
@@ -87,7 +88,9 @@ class ConfigurationSaver:
 
         if region in self._deletes_in_progress:
             self._deletes_in_progress.remove(region)
-            self._out.write(f"Configuration deleted from {region_fmt} OK! 🧁\n")
+            self._out.write(INFO_EMOJI)
+            self._out.write(" ")
+            self._out.write(f"Configuration deleted from {region_fmt} OK!\n")
             return
 
         self._saves_in_progress.remove(region)
@@ -96,7 +99,7 @@ class ConfigurationSaver:
             self._any_fails = True
             return
 
-        self._out.write(f"Configuration saved to {region_fmt} OK! 🧁\n")
+        self._out.write(f"{INFO_EMOJI} Configuration saved to {region_fmt} OK!\n")
 
     def save(self) -> bool:
         """

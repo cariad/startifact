@@ -10,6 +10,7 @@ from boto3.session import Session
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact.bucket_names import BucketNames
+from startifact.constants import DELIVERED_EMOJI, DELIVERING_EMOJI
 from startifact.parameters.latest_version import LatestVersionParameter
 from startifact.regional_process_result import RegionalProcessResult
 from startifact.regional_stager import RegionalStager
@@ -116,7 +117,7 @@ class Stager:
             return
 
         note = " (not really)" if self._read_only else ""
-        self._out.write(f"🧁 Staged{note} to {region}.\n")
+        self._out.write(f"{DELIVERED_EMOJI} Staged{note} to {region}.\n")
 
     @property
     def regions_in_progress(self) -> List[str]:
@@ -124,11 +125,28 @@ class Stager:
         return [*self._regions_in_progress]
 
     def stage(self) -> bool:
+        path = self._path.resolve().absolute().as_posix()
+
         self._logger.info(
             "Starting global stage of %s as %s@%s.",
-            self._path.as_posix(),
+            path,
             self._project,
             self._version,
+        )
+
+        color = should_emit_codes()
+        version_str = str(self._version)
+
+        path_fmt = yellow(path) if color else path
+        project_fmt = yellow(self._project) if color else self._project
+        version_fmt = yellow(version_str) if color else version_str
+
+        note = " (not really)" if self._read_only else ""
+
+        self._out.write(DELIVERING_EMOJI)
+        self._out.write(" ")
+        self._out.write(
+            f"Staging{note} {path_fmt} as {project_fmt} version {version_fmt}…\n"
         )
 
         while self._regions or self._regions_in_progress:

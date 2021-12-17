@@ -155,8 +155,6 @@ class Session:
                 }
             )
 
-
-
         :param project: Project.
         :param version: Version.
         :param path: Path to file to upload.

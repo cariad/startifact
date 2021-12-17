@@ -59,7 +59,7 @@ def test_receive_done(
 
     stager.receive_done()
     assert not stager.regions_in_progress
-    assert out.getvalue() == "🧁 Staged (not really) to eu-west-10.\n"
+    assert out.getvalue() == "📦 Staged (not really) to eu-west-10.\n"
 
 
 def test_receive_done__error(
@@ -95,9 +95,11 @@ def test_stage(stager: Stager, out: StringIO) -> None:
         ):
             stager.stage()
 
-    expect = """🧁 Staged (not really) to eu-west-10.
-🧁 Staged (not really) to eu-west-11.
-🧁 Staged (not really) to eu-west-12.
-"""
+    actuals = out.getvalue().splitlines()
 
-    assert out.getvalue() == expect
+    assert actuals[0].startswith("🚚 Staging (not really) ")
+    assert actuals[0].endswith("/startifact/LICENSE as SugarWater version 1.2.3…")
+
+    assert actuals[1] == "📦 Staged (not really) to eu-west-10."
+    assert actuals[2] == "📦 Staged (not really) to eu-west-11."
+    assert actuals[3] == "📦 Staged (not really) to eu-west-12."
