@@ -98,7 +98,7 @@ def test_stage(stager: Stager, out: StringIO) -> None:
     actuals = out.getvalue().splitlines()
 
     assert actuals[0].startswith("🚚 Staging (not really) ")
-    assert actuals[0].endswith("/startifact/LICENSE as SugarWater version 1.2.3…")
+    assert actuals[0].endswith("/LICENSE as SugarWater version 1.2.3…")
 
     assert actuals[1] == "📦 Staged (not really) to eu-west-10."
     assert actuals[2] == "📦 Staged (not really) to eu-west-11."
