@@ -31,6 +31,12 @@ class StartifactCLI(ArgumentParserCli):
         )
 
         parser.add_argument(
+            "--filename",
+            help="save the filename as metadata when staging/restore the filename when downloading",
+            action="store_true",
+        )
+
+        parser.add_argument(
             "--info",
             help="get artifact information",
             action="store_true",

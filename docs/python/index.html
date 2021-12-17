@@ -126,9 +126,32 @@
 <span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Metadata keys that start with <code class="docutils literal notranslate"><span class="pre">startifact:</span></code> are reserved for internal metadata.</p>
+</div>
+<p>By default, Startifact does not save an artifact’s filename. Startifact assumes that the filename isn’t meaningful, and so saves time and energy by ignoring it.</p>
+<p>Sometimes, though – like when staging a Python package wheel – the filename is meaningful and should be saved.</p>
+<p>To have Startifact save an artifact’s filename, pass <code class="docutils literal notranslate"><span class="pre">save_filename=True</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">semver</span> <span class="kn">import</span> <span class="n">VersionInfo</span>
+<span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+    <span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span>
+    <span class="n">VersionInfo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">9000</span><span class="p">),</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;dist.tar.gz&quot;</span><span class="p">),</span>
+    <span class="n">save_filename</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>You must also pass <code class="docutils literal notranslate"><span class="pre">load_filename=True</span></code> when downloading the artifact.</p>
 </section>
 <section id="getting-the-latest-artifact-version-via-python">
 <h2>Getting the latest artifact version via Python<a class="headerlink" href="#getting-the-latest-artifact-version-via-python" title="Permalink to this headline"></a></h2>
+<p>To get the latest version number of a project, call <a class="reference internal" href="session.html#startifact.Session.get" title="startifact.Session.get"><code class="xref py py-func docutils literal notranslate"><span class="pre">startifact.Session.get()</span></code></a> to get an artifact then interrogate the <a class="reference internal" href="artifact.html#startifact.Artifact.version" title="startifact.Artifact.version"><code class="xref py py-attr docutils literal notranslate"><span class="pre">startifact.Artifact.version</span></code></a> property.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
@@ -141,13 +164,25 @@
 </section>
 <section id="downloading-an-artifact-via-python">
 <h2>Downloading an artifact via Python<a class="headerlink" href="#downloading-an-artifact-via-python" title="Permalink to this headline"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
 
 <span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.9000&quot;</span><span class="p">)</span>
 
-<span class="n">artifact</span><span class="o">.</span><span class="n">downloader</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;download.tar.gz&quot;</span><span class="p">)</span>
+<span class="n">artifact</span><span class="o">.</span><span class="n">downloader</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;download.tar.gz&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To restore the artifact’s original filename, pass a directory and include the <code class="docutils literal notranslate"><span class="pre">load_filename=True</span></code> flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">startifact</span> <span class="kn">import</span> <span class="n">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+<span class="n">artifact</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SugarWater&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.9000&quot;</span><span class="p">)</span>
+
+<span class="n">artifact</span><span class="o">.</span><span class="n">downloader</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">),</span> <span class="n">load_filename</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

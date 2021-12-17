@@ -81,14 +81,18 @@ class RegionalStager(RegionalProcess):
         Uploads the metadata.
         """
 
+        logger = getLogger("startifact")
+
         if not self._metadata or not self._metadata_hash:
+            logger.debug("No metadata to stage.")
             return
 
-        s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
+        logger.debug("Metadata: %s", self._metadata.decode("UTF-8"))
 
         if self._read_only:
             return
 
+        s3 = self._session.client("s3")  # pyright: reportUnknownMemberType=false
         s3.put_object(
             Body=self._metadata,
             Bucket=self._bucket,

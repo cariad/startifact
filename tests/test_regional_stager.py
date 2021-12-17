@@ -160,7 +160,7 @@ def test_put_metadata__read_only(
 
     uploader.put_metadata()
 
-    client.assert_called_once_with("s3")
+    client.assert_not_called()
     put_object.assert_not_called()
 
 

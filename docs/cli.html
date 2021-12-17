@@ -85,6 +85,10 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.9000 --stage dist.tar.gz
 </pre></div>
 </div>
+<p>To perform a dry run, swap <code class="docutils literal notranslate"><span class="pre">--stage</span></code> for <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.9000 --dry-run dist.tar.gz
+</pre></div>
+</div>
 <p>To attach metadata to the artifact, include any number of <code class="docutils literal notranslate"><span class="pre">--metadata</span></code> arguments. Each value must be a <code class="docutils literal notranslate"><span class="pre">key=value</span></code> pair. If the value contains multiple <code class="docutils literal notranslate"><span class="pre">=</span></code> characters then a pair will be made by splitting on the first.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.9000 <span class="se">\</span>
     --stage    dist.tar.gz <span class="se">\</span>
@@ -92,21 +96,27 @@
     --metadata <span class="nv">hash</span><span class="o">=</span><span class="nv">9876</span><span class="o">=</span>
 </pre></div>
 </div>
-<p>To perform a dry run, swap <code class="docutils literal notranslate"><span class="pre">--stage</span></code> for <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.9000 --dry-run dist.tar.gz
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Metadata keys that start with <code class="docutils literal notranslate"><span class="pre">startifact:</span></code> are reserved for internal metadata.</p>
+</div>
+<p>By default, Startifact does not save an artifact’s filename. Startifact assumes that the filename isn’t meaningful, and so saves time and energy by ignoring it.</p>
+<p>Sometimes, though – like when staging a Python package wheel – the filename is meaningful and should be saved.</p>
+<p>To have Startifact save an artifact’s filename, pass <code class="docutils literal notranslate"><span class="pre">--filename</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWaterPackage <span class="m">1</span>.0.9000 <span class="se">\</span>
+    --filename <span class="se">\</span>
+    --stage sugarwater-1.0.9000-py3-none-any.whl
 </pre></div>
 </div>
+<p>You must also pass <code class="docutils literal notranslate"><span class="pre">--filename</span></code> when downloading the artifact.</p>
 </section>
 <section id="getting-artifact-information-via-the-cli">
 <h2>Getting artifact information via the CLI<a class="headerlink" href="#getting-artifact-information-via-the-cli" title="Permalink to this headline"></a></h2>
 <p>To get information about a staged artifact, pass the project name, version and <code class="docutils literal notranslate"><span class="pre">--info</span></code>:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.1 --get
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.1 --info
 </pre></div>
 </div>
 <p>The version can be omitted or <code class="docutils literal notranslate"><span class="pre">latest</span></code> to infer the latest version.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater --get
-</pre></div>
-</div>
 </section>
 <section id="downloading-an-artifact-via-the-cli">
 <h2>Downloading an artifact via the CLI<a class="headerlink" href="#downloading-an-artifact-via-the-cli" title="Permalink to this headline"></a></h2>
@@ -115,6 +125,10 @@
 </pre></div>
 </div>
 <p>The version can be omitted or <code class="docutils literal notranslate"><span class="pre">latest</span></code> to infer the latest version.</p>
+<p>To restore the artifact’s original filename, set <code class="docutils literal notranslate"><span class="pre">--download</span></code> to a directory and include the <code class="docutils literal notranslate"><span class="pre">--filename</span></code> flag:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>startifact SugarWater <span class="m">1</span>.0.9000 --filename --download .
+</pre></div>
+</div>
 </section>
 </section>
 

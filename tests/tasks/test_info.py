@@ -15,16 +15,16 @@ from startifact.tasks.info import GetTaskArguments, InfoTask
     [
         (
             {},
-            """💡 The latest version of SugarWater is 0.0.0.
-💡 This version of SugarWater has no metadata.
+            """🌍 The latest version of SugarWater is 0.0.0.
+🌍 This version of SugarWater has no metadata.
 """,
         ),
         (
             {"foo": "bar", "wool": "wheel"},
-            """💡 The latest version of SugarWater is 0.0.0.
-💡 This version of SugarWater has metadata:
-💡   foo  = bar
-💡   wool = wheel
+            """🌍 The latest version of SugarWater is 0.0.0.
+🌍 This version of SugarWater has metadata:
+🌍   foo  = bar
+🌍   wool = wheel
 """,
         ),
     ],

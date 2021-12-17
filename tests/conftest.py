@@ -9,6 +9,7 @@ from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 from startifact import BucketNames
 from startifact.configuration import Configuration
 from startifact.configuration_loader import ConfigurationLoader
+from startifact.metadata_loader import MetadataLoader
 from startifact.parameters import BucketParameter, LatestVersionParameter
 from startifact.regional_process_result import RegionalProcessResult
 from startifact.regional_stager import RegionalStager
@@ -62,6 +63,18 @@ def latest_version_parameter(session: Mock) -> LatestVersionParameter:
         project="SugarWater",
         read_only=False,
         session=session,
+    )
+
+
+@fixture
+def metadata_loader(bucket_names: BucketNames) -> MetadataLoader:
+    return MetadataLoader(
+        bucket_names=bucket_names,
+        key="SugarWater@1.2.3/metadata",
+        regions=["eu-west-10", "eu-west-11", "eu-west-12"],
+        metadata={
+            "startifact:filename": "sugarwater-1.0.9000-py3-none-any.whl",
+        },
     )
 
 

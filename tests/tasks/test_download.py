@@ -8,13 +8,20 @@ from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
 from startifact import Artifact, BucketNames, Session
 from startifact.artifact_downloader import ArtifactDownloader
+from startifact.metadata_loader import MetadataLoader
 from startifact.tasks.download import DownloadTask, DownloadTaskArguments
 
 
-def test_invoke(bucket_names: BucketNames, out: StringIO) -> None:
+def test_invoke(
+    bucket_names: BucketNames,
+    metadata_loader: MetadataLoader,
+    out: StringIO,
+) -> None:
+
     artifact_downloader = ArtifactDownloader(
         bucket_names=bucket_names,
         key="",
+        metadata_loader=metadata_loader,
         out=out,
         project="",
         regions=[],

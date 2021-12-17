@@ -7,6 +7,7 @@ from ansiscape.checks import should_emit_codes
 from cline import CannotMakeArguments, CommandLineArguments, Task
 from semver import VersionInfo  # pyright: reportMissingTypeStubs=false
 
+from startifact.constants import INFO_EMOJI
 from startifact.session import Session
 
 
@@ -28,7 +29,8 @@ class InfoTask(Task[GetTaskArguments]):
     """
 
     def info(self, line: str) -> None:
-        self.out.write("💡 ")
+        self.out.write(INFO_EMOJI)
+        self.out.write(" ")
         self.out.write(line)
         self.out.write("\n")
 
